@@ -1,6 +1,5 @@
 from openai import OpenAI  # Import the OpenAI client class for API access
-import prompts  # Import the prompts dictionary containing pre-defined text prompts
-import prompting
+import prompting  # Import the prompts dictionary containing pre-defined text prompts
 import json  
 
 
