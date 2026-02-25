@@ -16,10 +16,10 @@ gemini_client = initialize_client_gemini()
 
 
 
-def generate_reply_gemini(user_prompt, system_prompt): 
+def generate_reply_gemini(full_prompt): 
     
     # Combine system-style instructions + character prompt into one text input
-    full_prompt = system_prompt + user_prompt
+    # full_prompt = system_prompt + user_prompt
 
     # Call Gemini instead of OpenAI
     response = gemini_client.models.generate_content(

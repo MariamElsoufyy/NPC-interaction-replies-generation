@@ -18,11 +18,11 @@ if __name__ == "__main__":
     print ("prompt:\n", prompt)
     try:
         if model == "1" or model == "gemini":
-            response = gemini_replies_generation.generate_reply_gemini(user_prompt, system_prompt)
+            response = gemini_replies_generation.generate_reply_gemini(prompt)
         if model == "2" or model == "openai":
-            response = openAI_replies_generation.generate_reply_openAI(user_prompt, system_prompt)
+            response = openAI_replies_generation.generate_reply_openAI(prompt)
         if model == "3" or model == "llama":
-            response = huggingface_replies_generation.generate_reply_huggingface(user_prompt, system_prompt)
+            response = huggingface_replies_generation.generate_reply_huggingface(prompt)
         print("response:\n", response)
     except Exception as e:
         print("generation failed:", e)
