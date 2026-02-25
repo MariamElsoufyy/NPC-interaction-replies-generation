@@ -22,14 +22,11 @@ client = initialize_client_huggingface()
 
 
 
-def generate_reply_huggingface(prompt,system_prompt):
-
-    # For LLaMA-style instruct models, we send everything as a single prompt string
-    full_prompt = system_prompt + prompt
+def generate_reply_huggingface(prompt):
 
     # Call the Hugging Face Inference API for text generation
     response = client.text_generation(
-        full_prompt,
+        prompt,
         #max_new_tokens=300,      # control length
         temperature=0.7,         # a bit of creativity
         top_p=0.9,

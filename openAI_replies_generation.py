@@ -21,9 +21,7 @@ openAI_client = initialize_client_openAI()
 
 def generate_reply_openAI(prompt, system_prompt): 
     # The chat API expects a list of message dictionaries (role + content) 
-    messages = [ { "role": "system", 
-                  "content": system_prompt }, 
-                { "role": "user", "content": prompt } ]
+    messages = [ { "role": "user",  "content": prompt }, ]
     # Send the request to the OpenAI API 
     response = openAI_client.chat.completions.create(
     model="gpt-4.1", # Specify the chat model to use 

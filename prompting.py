@@ -1,4 +1,3 @@
-from copy import replace
 import prompts_for_character_replies  # Import the prompts dictionary containing pre-defined text prompts
 import characters
 import json  
@@ -11,7 +10,7 @@ def load_prompt(prompt_type=None,prompt_key=None):
     return prompts_for_character_replies.user_prompts.get(prompt_key) # Retrieve user prompt if the type is not system
 
 
-def get_prompt(prompt_type=None,prompt_key = None,character_id = None): #prompt type (user/system), prompt key (e.g., "mohandeskhana-student"), character ID (e.g., "S1")
+def get_prompt(prompt_type=None,prompt_key = None,character_id = None, question=None): #prompt type (user/system), prompt key (e.g., "mohandeskhana-student"), character ID (e.g., "S1")
     """Replace placeholders in the prompt with actual values."""
     
     #Check if the prompt type is None, which indicates a missing or invalid prompt key
@@ -27,9 +26,6 @@ def get_prompt(prompt_type=None,prompt_key = None,character_id = None): #prompt 
     
     prompt = load_prompt(prompt_type, prompt_key=prompt_key)
     if prompt_type == "system": return prompt # Return the system prompt as is without replacement 
-
-  
-
    
     
     
@@ -49,6 +45,8 @@ def get_prompt(prompt_type=None,prompt_key = None,character_id = None): #prompt 
     prompt = prompt.replace("{good_traits}", ", ".join(characters.good_traits.get(character_id, [])))
     prompt = prompt.replace("{bad_traits}", ", ".join(characters.bad_traits.get(character_id, [])))
     prompt = prompt.replace("{internal_conflicts}", ", ".join(characters.internal_conflicts.get(character_id, [])))
+    if question is not None:
+        prompt = prompt.replace("{question}", question)
 
     return prompt
 
