@@ -1,5 +1,4 @@
-from huggingface_hub import InferenceClient   
-import prompts                                
+from huggingface_hub import InferenceClient                            
 import json
 
 

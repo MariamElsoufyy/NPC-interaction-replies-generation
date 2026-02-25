@@ -1,5 +1,7 @@
 {
     "openAI_api_key": "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",
-    "gemini_api_key": "AIzaSyDl3vw1hIMswHzX1axEp0bCMZ0_6qxPCX4",
-    "huggingface_api_key": "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"
+    "gemini_api_key1": "AIzaSyDl3vw1hIMswHzX1axEp0bCMZ0_6qxPCX4",
+    "gemini_api_key2": "AIzaSyAVMOQEA5YkG7JJAcCzk5ZpxrJjmjYU5ZI",
+    "huggingface_api_key": "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",
+    "elevenlabs_api_key": "sk_775f3ed9fed1e76d2a1bbed8c90f2730882e175233d94b44"
 }
