@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
-from STT_From_Scratch import AudioPreprocessor 
+from STT.STT_From_Scratch import AudioPreprocessor 
 import numpy as np
 import soundfile as sf
 import tempfile

@@ -226,11 +226,11 @@ class AudioPreprocessor:
         """Record and preprocess audio"""
         # Record
         audio = self.record_audio(duration)
-        self.save_audio(audio, "recording_raw.wav")
+        self.save_audio(audio, "STT/recording_raw.wav")
         
         # Preprocess
         audio_clean = self.preprocess_audio(audio)
-        self.save_audio(audio_clean, "recording_preprocessed.wav")
+        self.save_audio(audio_clean, "STT/recording_preprocessed.wav")
 
         text = self.Speech_to_Text(audio_clean)
         print(f"Text: {text}\n")
