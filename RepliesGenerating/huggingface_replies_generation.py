@@ -5,7 +5,7 @@ import json
 # Initialize the Hugging Face client with the API key from a local JSON file
 def initialize_client_huggingface():
     # Open the configuration file that stores your HF token securely
-    with open("keys.json", "r") as f:
+    with open("models_keys.json", "r") as f:
         api_key = json.load(f)["huggingface_api_key"]  # Load the key from JSON
 
     # Create and return an InferenceClient object using the token

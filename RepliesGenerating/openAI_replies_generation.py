@@ -13,7 +13,7 @@ import json
 def initialize_client_openAI():
 
     base_dir = os.path.dirname(__file__)
-    keys_path = os.path.join(base_dir, "helpers", "keys.json")
+    keys_path = os.path.join(base_dir, "helpers", "models_keys.json")
 
     with open(keys_path, "r", encoding="utf-8") as f:
         keys = json.load(f)

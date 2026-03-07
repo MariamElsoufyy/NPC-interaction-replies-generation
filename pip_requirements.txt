@@ -1,0 +1,9 @@
+soundfile
+pyaudio
+faster_whisper
+noisereduce
+openai
+huggingface_hub
+elevenlabs
+google
+audioop-lts

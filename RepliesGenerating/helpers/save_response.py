@@ -18,8 +18,8 @@ def save_response(question, response, file_path="output.json"):
 
     data[new_id] = {
         "question": question,
-        "response": response
-    }
+        "response": response}
+    
 
 
     with open(file_path, "w", encoding="utf-8") as f:

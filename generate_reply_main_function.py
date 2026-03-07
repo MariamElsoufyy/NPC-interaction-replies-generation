@@ -2,6 +2,7 @@ import os
 import sys
 import json
 from RepliesGenerating import openAI_replies_generation
+from AudioGeneration import audio_generation
 from CharactersAndPrompting.prompts_creation import generate_prompt
 from datetime import datetime
 from RepliesGenerating.helpers import save_response
@@ -19,7 +20,8 @@ def generate_reply(character_id, question,prompt_key):
     #print (f"full_prompt:{full_prompt}\n")
     try:
         response = openAI_replies_generation.generate_reply_openAI(user_prompt, system_prompt)
-        print(f"response:{response}\n")
+        #print(f"response:{response}\n")
+        response = json.loads(response)
         save_response.save_response(question, response)
         return response
     except Exception as e:
@@ -38,7 +40,10 @@ if __name__ == "__main__":
                 print("No speech detected.\n")
                 continue
             print(f"Question: {question}\n")
-            response = generate_reply("S2", question, "mohandeskhana-student")
-            print(f"NPC Response: {response}\n")
+            response = generate_reply("S1", question, "mohandeskhana-student")
+            print(f"NPC Response: {response['answer']}\n")
+            audio_generation.generate_audio_elevenLabs(response['answer'])
+            
     finally:
         preprocessor.cleanup()
+        

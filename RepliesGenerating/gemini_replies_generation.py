@@ -1,4 +1,4 @@
-from openai import OpenAI  # Import the OpenAI client class for API access
+
 from google import genai
 import CharactersAndPrompting.prompts_creation as prompts_creation
 import json  
@@ -6,7 +6,7 @@ import json
 
 def initialize_client_gemini():
     # Open the configuration file that stores your API key securely
-    with open("keys.json", "r") as f:
+    with open("models_keys.json", "r") as f:
         api_key = json.load(f)["gemini_api_key2"]  # Load the key from JSON
     # Create and return an OpenAI client object using the key
     return genai.Client(api_key=api_key)

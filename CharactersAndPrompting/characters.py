@@ -68,7 +68,7 @@ personal_items = {
     }
 
 influences = {
-    "S1": ["raised in Britain","Father is A wealthy landowner in the Nile Delta and a Diplomatic"],
+    "S1": ["raised in Britain","Father is A wealthy landowner in the Nile Delta and a Diplomatic","his love for his mother"],
     "S2": ["struggling poor family", "studies very hard", "got into college because the owner of the land his father works for supports him out of his love for him and generosity"],
     "S3": ["Father is a Law professor"],
     "P1": ["French culture", "Engineering Background","got his doctorate from France",]
@@ -78,7 +78,7 @@ influences = {
 
 significant_info = {
     
-    "S1": ["inherited his pocket watch from his great-grandfather"],
+    "S1": ["inherited his pocket watch from his great-grandfather","Mother's name is \"Aya Ayman Elattar\""],
     "S2": ["got his mechanical pencil as a gift from his professor when he excelled in his first year"],
     "S3": ["her handkerchief was a gift from her grandmother to celebrate her acceptance to the Faculty of Engineering", "the leather notebook was a gift from her neighbor \"aisha\" " ],
     "P1": [ "bought his pocket watch from France before coming back to Egypt"]
