@@ -221,13 +221,19 @@ class AudioPreprocessor:
         """Save audio to file"""
         sf.write(filename, audio_data.astype(np.float32), self.sample_rate)
         print(f"Audio saved to {filename}\n")
+
+    def load_audio(self, file_path):
+        audio,str = sf.read(file_path)
+        if sr != self.sample_rate:
+            audio = self.Resample(audio, sr)
+
+        audio = audio.astype(np.float32)
+        return audio
     
-    def run_test(self, duration=6):
+    def run_test(self, file_path):
         """Record and preprocess audio"""
         # Record
-        audio = self.record_audio(duration)
-        self.save_audio(audio, "STT/recording_raw.wav")
-        
+        audio = self.load_audio(file_path)
         # Preprocess
         audio_clean = self.preprocess_audio(audio)
         self.save_audio(audio_clean, "STT/recording_preprocessed.wav")
@@ -245,8 +251,8 @@ if __name__ == "__main__":
             input("Press ENTER to start recording...")
             
             try:
-                duration = 6
-                result = preprocessor.run_test(duration=duration)
+                file_path = "STT/recording_raw.wav"
+                result = preprocessor.run_test(file_path=file_path)
                 
                 continue_choice = input("\nTest again? (y/n): ").strip().lower()
                 if continue_choice == 'n':
