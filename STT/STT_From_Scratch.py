@@ -234,7 +234,7 @@ class AudioPreprocessor:
 
         text = self.Speech_to_Text(audio_clean)
         print(f"Text: {text}\n")
-        return audio_clean
+        return text
 
 
 if __name__ == "__main__":
@@ -261,4 +261,3 @@ if __name__ == "__main__":
                 traceback.print_exc()
     finally:
         preprocessor.cleanup()
-
