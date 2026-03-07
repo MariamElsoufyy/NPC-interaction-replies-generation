@@ -1,12 +1,11 @@
-
-from RepliesGenerating import openAI_replies_generation
-from CharactersAndPrompting.prompts_creation import generate_prompt
-import json
-from datetime import datetime
 import os
 import sys
-
+import json
+from RepliesGenerating import openAI_replies_generation
+from CharactersAndPrompting.prompts_creation import generate_prompt
+from datetime import datetime
 from RepliesGenerating.helpers import save_response
+from STT.STT_From_Scratch import AudioPreprocessor
 
 
 
@@ -29,4 +28,17 @@ def generate_reply(character_id, question,prompt_key):
 
 
 
-generate_reply("S2", "What are the most important things I should know about you?", "mohandeskhana-student")
+if __name__ == "__main__":
+    preprocessor = AudioPreprocessor()
+    try:
+        while True:
+            input("Press ENTER to start recording...")
+            question = preprocessor.run_test(duration=6)
+            if not question.strip():
+                print("No speech detected.\n")
+                continue
+            print(f"Question: {question}\n")
+            response = generate_reply("S2", question, "mohandeskhana-student")
+            print(f"NPC Response: {response}\n")
+    finally:
+        preprocessor.cleanup()
