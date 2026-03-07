@@ -1,16 +1,25 @@
+import os
 from openai import OpenAI  # Import the OpenAI client class for API access
-import prompting  # Import the prompts dictionary containing pre-defined text prompts
+import  CharactersAndPrompting.prompts_creation as prompts_creation  # Import the prompts dictionary containing pre-defined text prompts
 import json  
 
 
 
 
+
+
 # Initialize the OpenAI client with the API key from a local JSON file
+
 def initialize_client_openAI():
-    # Open the configuration file that stores your API key securely
-    with open("keys.json", "r") as f:
-        api_key = json.load(f)["openAI_api_key"]  # Load the key from JSON
-    # Create and return an OpenAI client object using the key
+
+    base_dir = os.path.dirname(__file__)
+    keys_path = os.path.join(base_dir, "helpers", "keys.json")
+
+    with open(keys_path, "r", encoding="utf-8") as f:
+        keys = json.load(f)
+
+    api_key = keys["openAI_api_key"]
+
     return OpenAI(api_key=api_key)
 
 
@@ -21,10 +30,12 @@ openAI_client = initialize_client_openAI()
 
 def generate_reply_openAI(prompt, system_prompt): 
     # The chat API expects a list of message dictionaries (role + content) 
-    messages = [ { "role": "user",  "content": prompt }, ]
+    messages = [         {"role": "system", "content": system_prompt},
+                { "role": "user",  "content": prompt },
+                ]
     # Send the request to the OpenAI API 
     response = openAI_client.chat.completions.create(
-    model="gpt-4.1", # Specify the chat model to use 
+    model="gpt-5-nano", # Specify the chat model to use 
     messages=messages, # Provide the user message(s) 
     #max_tokens=700, # Limit output tokens to control response length and cost 
     )

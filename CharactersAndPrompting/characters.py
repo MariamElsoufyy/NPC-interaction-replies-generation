@@ -1,5 +1,4 @@
 import json 
-#TODO add hobbies, family background, and more personality traits to the characters and use them in the prompts to make the replies richer and more personalized.
 #-----  Basic info -----#
 first_name = {
     "S1":"Kareem",
@@ -83,6 +82,14 @@ significant_info = {
     "S2": ["got his mechanical pencil as a gift from his professor when he excelled in his first year"],
     "S3": ["her handkerchief was a gift from her grandmother to celebrate her acceptance to the Faculty of Engineering", "the leather notebook was a gift from her neighbor \"aisha\" " ],
     "P1": [ "bought his pocket watch from France before coming back to Egypt"]
+}
+
+
+hobbies = {
+    "S1": ["Horseback riding", "Collecting stamps"],
+    "S2": ["Playing soccer"],
+    "S3": [ "Reading literature",  "Collecting stamps"],
+    "P1": ["Playing chess","Reading historical texts on architecture"]
 }
 
 

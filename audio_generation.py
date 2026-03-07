@@ -28,7 +28,8 @@ def generate_audio_elevenLabs(text, voice_id):
     audio_gen = client.text_to_speech.convert(
         text=text,
         voice_id=voice_id,
-        model_id="eleven_turbo_v2",
+        model_id="eleven_ttv_v3",
+        language_code="eng", 
         output_format="mp3_44100_128"
     )
 
@@ -49,5 +50,6 @@ def generate_audio_elevenLabs(text, voice_id):
 
 
 
-
-generate_audio_elevenLabs(text="Hello, this is a test audio from ElevenLabs.", voice_id="JBFqnCBsd6RMkjVDRZzb")
+with open("ids.json", "r") as f:
+        voice = json.load(f)["hale_voice_id"]  # Load the key from JSON
+generate_audio_elevenLabs(text="There's no separate field for that in our time here; no one began a dedicated study for automatic calculation, that notion comes years later beyond our walls. The closest we have is Electrical Engineering, where such devices would be examined, but a standalone major did not yet exist.", voice_id=voice)

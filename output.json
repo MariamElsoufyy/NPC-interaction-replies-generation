@@ -1,0 +1,14 @@
+{
+    "1": {
+        "question": "how are you today?",
+        "response": "{\n  \"answer\": \"After the lecture, I lean against this courtyard pillar, tarboosh tucked tight and ink still warm on my fingers from the drafting hall. I’m turning a new sketch over in my mind—a curved façade—yet I can’t help but think I must prove I belong here, even as the ideas start to spark.\",\n  \"sources\": [\n    {\n      \"confidence\": 0.6,\n      \"explanation\": \"Contextual frame for 1917–1918 Cairo University Engineering atmosphere.\",\n      \"type\": \"official archive\",\n      \"name\": \"Cairo University Archives\",\n      \"url\": \"https://cu.edu.eg\"\n    }\n  ]\n}"
+    },
+    "2": {
+        "question": "how are you today",
+        "response": "{\n  \"answer\": \"Quite all right, friend. After a long afternoon over the chalkboard and the chalk dust sticking to my fingers, I’m keeping calm with my calipers and that pencil the professor gifted me—feels like a small beacon in a hard year. The day weighs with thoughts of my family, but I’m determined to push through to graduation in 1922.\",\n  \"sources\": [\n    {\n      \"confidence\": 0.8,\n      \"explanation\": \"Character voice grounded in the provided persona and era; no external factual claims beyond the setting.\",\n      \"type\": \"era inference\",\n      \"name\": \"Imagined narration of Amin Hassan El-Rifai, 1917–1918\",\n      \"url\": null\n    }\n  ]\n}"
+    },
+    "3": {
+        "question": "What are the most important things I should know about you?",
+        "response": "{\n  \"answer\": \"I'm Amin Hassan El-Rifai, a Mechanical Engineering student here at Madrasat Al-Mohandeskhana, a top student whose purse remains thin but whose resolve is stout. The landowner who employs my father supports me so I can stay in college, and I carry a nickel pocket watch, a tarboosh, a mechanical pencil my professor gifted after a good first year, and borrowed books, while I work with calipers, a micrometer, and a T-square in Thermodynamics, Steam Engines and Boilers, and other courses. I aim to graduate in 1922, because if I falter, my family has nothing, and I unwind with a game of soccer after lectures to keep my head clear.\",\n  \"sources\": [\n    {\n      \"confidence\": 0.8,\n      \"explanation\": \"Provides general historical context for early 20th-century engineering education in Cairo and the Mohandeskhana setting.\",\n      \"type\": \"official archive\",\n      \"name\": \"Cairo University Archives - History of the Faculty of Engineering\",\n      \"url\": null\n    }\n  ]\n}"
+    }
+}

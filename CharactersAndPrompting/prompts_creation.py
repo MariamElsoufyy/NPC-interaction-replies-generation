@@ -1,19 +1,25 @@
-import prompts_for_character_replies  # Import the prompts dictionary containing pre-defined text prompts
-import characters
+import  CharactersAndPrompting.prompts_for_character_replies as prompts_for_character_replies 
+import CharactersAndPrompting.characters as characters
 import json  
 
 def load_prompt(prompt_type=None,prompt_key=None):
     """Retrieve a prompt from the prompts dictionary based on a given key."""
-    # Get the prompt text if the key exists; otherwise return an empty string
-    if prompt_type == "system":
+    if prompt_type == "system": 
         return prompts_for_character_replies.system_prompts.get(prompt_key)
-    return prompts_for_character_replies.user_prompts.get(prompt_key) # Retrieve user prompt if the type is not system
+    return prompts_for_character_replies.user_prompts.get(prompt_key) 
 
 
-def get_prompt(prompt_type=None,prompt_key = None,character_id = None, question=None): #prompt type (user/system), prompt key (e.g., "mohandeskhana-student"), character ID (e.g., "S1")
+
+
+def generate_prompt(prompt_type=None,prompt_key = None,character_id = None, question=None): #prompt type (user/system), prompt key (e.g., "mohandeskhana-student"), character ID (e.g., "S1")
     """Replace placeholders in the prompt with actual values."""
     
-    #Check if the prompt type is None, which indicates a missing or invalid prompt key
+   
+    if prompt_key is None:
+        print("Prompt key is None")
+        return None # Return None if the prompt key is None
+    
+  
     if prompt_type is None: 
         print(f"Prompt type is None for key: {prompt_key}")
         return None # Return None if the prompt key is None 
@@ -27,7 +33,9 @@ def get_prompt(prompt_type=None,prompt_key = None,character_id = None, question=
     prompt = load_prompt(prompt_type, prompt_key=prompt_key)
     if prompt_type == "system": return prompt # Return the system prompt as is without replacement 
    
-    
+    if question is None:
+        print(f"Question is None for user prompt key: {prompt_key} and character ID: {character_id}")
+        return None # Return None if the question is None for user prompts
     
     prompt = prompt.replace("{first_name}", characters.first_name.get(character_id))
     prompt = prompt.replace("{middle_name}", characters.middle_name.get(character_id)) 
@@ -45,8 +53,8 @@ def get_prompt(prompt_type=None,prompt_key = None,character_id = None, question=
     prompt = prompt.replace("{good_traits}", ", ".join(characters.good_traits.get(character_id, [])))
     prompt = prompt.replace("{bad_traits}", ", ".join(characters.bad_traits.get(character_id, [])))
     prompt = prompt.replace("{internal_conflicts}", ", ".join(characters.internal_conflicts.get(character_id, [])))
-    if question is not None:
-        prompt = prompt.replace("{question}", question)
+    prompt = prompt.replace("{hobbies}", ", ".join(characters.hobbies.get(character_id, [])))
+    prompt = prompt.replace("{question}", question)
 
     return prompt
 
@@ -56,4 +64,3 @@ def get_prompt(prompt_type=None,prompt_key = None,character_id = None, question=
 
 
 
-    

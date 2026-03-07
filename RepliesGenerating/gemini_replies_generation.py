@@ -1,6 +1,6 @@
 from openai import OpenAI  # Import the OpenAI client class for API access
 from google import genai
-import prompting
+import CharactersAndPrompting.prompts_creation as prompts_creation
 import json  
 
 
