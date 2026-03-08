@@ -5,11 +5,8 @@ openai
 huggingface_hub
 google-genai
 elevenlabs
-pydub
 faster-whisper
 numpy
 scipy
 soundfile
-pyaudio
 noisereduce
-audioop-lts

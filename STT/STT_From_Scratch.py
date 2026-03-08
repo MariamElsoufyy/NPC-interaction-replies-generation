@@ -2,7 +2,7 @@ from faster_whisper import WhisperModel
 from scipy.signal import resample
 from scipy import signal
 import numpy as np
-import pyaudio
+#import pyaudio
 import soundfile as sf
 import time
 import noisereduce as nr
@@ -19,38 +19,38 @@ class AudioPreprocessor:
             compute_type="int8"
         )
         
-        self.audio = pyaudio.PyAudio()
-        self.stream = None
+        # self.audio = pyaudio.PyAudio()
+        # self.stream = None
     
-    def record_audio(self, duration=6):
-        """Record audio from microphone"""
-        if self.stream is None:
-            self.stream = self.audio.open(
-                format=pyaudio.paInt16,
-                channels=self.channels,
-                rate=self.sample_rate,
-                input=True,
-                frames_per_buffer=self.chunk
-            )
-            time.sleep(0.2)
-            self.stream.read(self.chunk, exception_on_overflow=False)
+    # def record_audio(self, duration=6):
+    #     """Record audio from microphone"""
+    #     if self.stream is None:
+    #         self.stream = self.audio.open(
+    #             format=pyaudio.paInt16,
+    #             channels=self.channels,
+    #             rate=self.sample_rate,
+    #             input=True,
+    #             frames_per_buffer=self.chunk
+    #         )
+    #         time.sleep(0.2)
+    #         self.stream.read(self.chunk, exception_on_overflow=False)
         
-        print("Speak now!\n")
-        frames = []
+    #     print("Speak now!\n")
+    #     frames = []
         
-        for i in range(0, int(self.sample_rate / self.chunk * duration)):
-            data = self.stream.read(self.chunk, exception_on_overflow=False)
-            frames.append(data)
-            if i % 10 == 0:
-                print("Recording" + "." * (i // 10 % 4), end="\r")
+    #     for i in range(0, int(self.sample_rate / self.chunk * duration)):
+    #         data = self.stream.read(self.chunk, exception_on_overflow=False)
+    #         frames.append(data)
+    #         if i % 10 == 0:
+    #             print("Recording" + "." * (i // 10 % 4), end="\r")
         
-        print("\nRecording complete!\n")
+    #     print("\nRecording complete!\n")
         
-        # Convert to numpy array
-        audio_data = np.frombuffer(b''.join(frames), dtype=np.int16)
-        audio_data = audio_data.astype(np.float32) / 32768.0
+    #     # Convert to numpy array
+    #     audio_data = np.frombuffer(b''.join(frames), dtype=np.int16)
+    #     audio_data = audio_data.astype(np.float32) / 32768.0
         
-        return audio_data
+    #     return audio_data
     
     def cleanup(self):
         """Close audio stream"""

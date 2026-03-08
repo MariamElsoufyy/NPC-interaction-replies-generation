@@ -49,5 +49,104 @@
                 }
             ]
         }
+    },
+    "4": {
+        "character_id": "S1",
+        "timestamp": "2026-03-09T00:58:49.625706",
+        "question": " Hi Karim, tell us more about your courses.",
+        "response": {
+            "answer": "Hydraulics has us tracing how water moves through canals—the heads, the discharges, and how a gate or weir reshapes the river’s mood, all sketched on the chalkboard and in tidy little tables. In Irrigation Systems Design and Canal Construction we lay out distributaries, size drops, and set slopes, always checking the line with the theodolite, surveying chains, and the dumpy level to keep things true. Surveying and Leveling, together with Engineering Mathematics and Applied Mechanics, knit it all together as I plot cross-sections, run through calculations, and wonder if I’ll ever feel absolutely sure of myself, all while the tarboosh stays firmly in place.",
+            "sources": [
+                {
+                    "confidence": 0.85,
+                    "explanation": "Official histories of Cairo University and its early engineering school (the Mohandeskhana) describe the curriculum and the common field tools of the era, including theodolite, surveying chains, and dumpy level.",
+                    "type": "official archive / institutional history",
+                    "name": "Cairo University – History of the Faculty of Engineering",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "5": {
+        "character_id": "S1",
+        "timestamp": "2026-03-09T01:01:04.591122",
+        "question": " Hi Karim, tell us more about your courses.",
+        "response": {
+            "answer": "Hydraulics shows us how water behaves in canals and sluices, while Irrigation Systems Design and Canal Construction push us to map gradients and lay out schemes that will endure. In Surveying and Leveling I chase points with the theodolite and surveying chains, and the Dumpy Level keeps elevations honest, all while Engineering Mathematics and Applied Mechanics give the numbers their due. I sometimes wonder if I’m proving myself or merely bearing my family name, but I’ll walk straight and learn well, tarboosh tilted and my fountain pen ready.",
+            "sources": [
+                {
+                    "confidence": 0.6,
+                    "explanation": "General context of the School of Engineers in Cairo and early 20th-century engineering education in Egypt.",
+                    "type": "official archive",
+                    "name": "Cairo University Archives",
+                    "url": null
+                },
+                {
+                    "confidence": 0.5,
+                    "explanation": "Overview of the history of engineering education in Egypt during Muhammad Ali era and the subsequent development.",
+                    "type": "historical record",
+                    "name": "Egyptian Engineering Education in the Modern Era",
+                    "url": null
+                },
+                {
+                    "confidence": 0.4,
+                    "explanation": "Context on the Madrasat al-Mohandeskhana and the evolution toward Cairo University’s engineering faculty.",
+                    "type": "academic book",
+                    "name": "The History of Engineering Training in Egypt",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "6": {
+        "character_id": "S1",
+        "timestamp": "2026-03-09T01:04:44.109179",
+        "question": " Hi Karim, tell us more about your courses.",
+        "response": {
+            "answer": "Across Hydraulics, we hear the Nile's whisper in pressure and discharge, and Irrigation Systems Design shows how to feed crops without wasting a drop. Canal Construction is all about shaping earth and timber to guide waters, while Surveying and Leveling—with the Theodolite, the dumpy level, and the trusty surveying chains—pins down every acre for our drafts. Engineering Mathematics and Applied Mechanics keep my mind sharp, even when a stubborn problem makes me pace the drafting hall.",
+            "sources": [
+                {
+                    "confidence": 0.68,
+                    "explanation": "Reflects standard early-20th-century civil engineering curriculum in Egyptian institutions, consistent with the period and courses listed (Hydraulics, Irrigation, Canal Construction, Surveying, Leveling, Mathematics, Mechanics).",
+                    "type": "academic book",
+                    "name": "History of Cairo University and its Faculty of Engineering (1908–1920)",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "7": {
+        "character_id": "S1",
+        "timestamp": "2026-03-09T01:05:04.678710",
+        "question": " Hi Karim, tell us more about your courses.",
+        "response": {
+            "answer": "My days drift between Hydraulics and Irrigation Systems Design, where we learn how to move water from river to field and size canals so nothing runs dry or spills away. Canal Construction trains my hands for earthworks and alignment, while Surveying and Leveling has me handling the theodolite, surveying chains, and the dumpy level to pin down ground and rise. Engineering Mathematics and Applied Mechanics keep my mind sharp, though I sometimes doubt whether I belong more to the family name than to the craft, and I keep at it, hoping every measurement I take proves something of my own worth.",
+            "sources": [
+                {
+                    "confidence": 0.6,
+                    "explanation": "Based on general knowledge of early 20th-century Egyptian engineering curricula; not drawn from a specific primary source.",
+                    "type": "era inference",
+                    "name": "History of Cairo University Faculty of Engineering, early 20th century",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "8": {
+        "character_id": "S1",
+        "timestamp": "2026-03-09T01:06:42.373978",
+        "question": " Hi Karim, tell us more about your courses.",
+        "response": {
+            "answer": "Well, after lectures I lean against the courtyard pillar, and Hydraulics has us tracing how water behaves—head, flow, and the surprises that show up in a canal—as I try to keep my notes neat enough to sleep on. Then Irrigation Systems Design, Canal Construction, Surveying and Leveling push me to sketch networks, check gradients, and lay out lines with the theodolite, surveying chains, and the dumpy level, while Engineering Mathematics and Applied Mechanics keep my brain from wandering off the chalkboard.",
+            "sources": [
+                {
+                    "confidence": 0.9,
+                    "explanation": "Based on the provided character and the listed courses in the 1917–1918 academic life.",
+                    "type": "era inference",
+                    "name": "Madrasat Al-Mohandeskhana curriculum (1910s)",
+                    "url": null
+                }
+            ]
+        }
     }
 }
