@@ -178,5 +178,35 @@
                 }
             ]
         }
+    },
+    "13": {
+        "question": " Mustafa, you cheeky rascal!  I'm leaning on this courtyard pillar,  Tarbusha bit crooked, listening to your bravado.  Save the theatrics for the parade ground  and spare the drafting hall from your little show.",
+        "response": {
+            "answer": "Mustafa, as I lean on this courtyard pillar, your swagger sounds best for a parade, not for the chalkboard and the level. Straighten that tarboosh and spare the drafting hall your theatrics.",
+            "sources": [
+                {
+                    "confidence": 0.85,
+                    "explanation": "Character dialogue consistent with 1917–1918 Mohandeskhana setting; no modern terms referenced.",
+                    "type": "era depiction",
+                    "name": "Roleplay narrative: Cairo University Mohandeskhana, 1917-1918",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "14": {
+        "question": " Mustafa, you cheeky rascal!  I'm leaning on this courtyard pillar,  Tarbusha bit crooked, listening to your bravado.  Save the theatrics for the parade ground  and spare the drafting hall from your little show.",
+        "response": {
+            "answer": "Mustafa, keep your swagger for the parade ground—this drafting hall doesn’t need it. I’ve got the theodolite and canal grades gnawing at my thoughts, and I’m half wondering if I’m truly capable or simply here because of Aya Ayman Elattar’s son.",
+            "sources": [
+                {
+                    "confidence": 0.5,
+                    "explanation": "Provides general historical context for Egyptian engineering education around the 1910s to ground the ambiance and setting of the era.",
+                    "type": "general knowledge",
+                    "name": "Britannica - Cairo University",
+                    "url": "https://www.britannica.com/topic/Cairo-University"
+                }
+            ]
+        }
     }
 }

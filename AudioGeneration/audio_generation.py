@@ -43,5 +43,4 @@ def generate_audio_elevenLabs(text, output_filename="output.mp3"):
                 f.write(chunk)
 
     print(f"Audio saved successfully to: {output_path}")
-
-    os.startfile(output_path)
+    return output_path

@@ -224,8 +224,8 @@ class AudioPreprocessor:
 
     def load_audio(self, file_path):
         audio,str = sf.read(file_path)
-        if sr != self.sample_rate:
-            audio = self.Resample(audio, sr)
+        if str != self.sample_rate:
+            audio = self.Resample(audio, str)
 
         audio = audio.astype(np.float32)
         return audio
