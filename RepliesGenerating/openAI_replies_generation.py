@@ -1,7 +1,8 @@
-import os
+
 from openai import OpenAI  # Import the OpenAI client class for API access
 import  CharactersAndPrompting.prompts_creation as prompts_creation  # Import the prompts dictionary containing pre-defined text prompts
 import json  
+import os
 
 
 
@@ -18,7 +19,7 @@ def initialize_client_openAI():
     with open(keys_path, "r", encoding="utf-8") as f:
         keys = json.load(f)
 
-    api_key = keys["openAI_api_key"]
+    api_key = os.getenv("OPENAI_API_KEY")
 
     return OpenAI(api_key=api_key)
 

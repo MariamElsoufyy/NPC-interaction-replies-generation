@@ -1,9 +1,10 @@
 
 import json
 import os
+from datetime import datetime
 
 
-def save_response(question, response, file_path="output.json"):
+def save_response(question, response, file_path="output_log.json", character_id= "unknown"):
     
 
     if os.path.exists(file_path):
@@ -17,6 +18,8 @@ def save_response(question, response, file_path="output.json"):
 
 
     data[new_id] = {
+        "character_id": character_id,
+        "timestamp": datetime.now().isoformat(),
         "question": question,
         "response": response}
     

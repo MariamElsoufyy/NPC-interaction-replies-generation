@@ -1,0 +1,53 @@
+{
+    "1": {
+        "character_id": "S2",
+        "timestamp": "2026-03-08T23:37:18.134026",
+        "question": " Hi Dr. Abdel Khayle, can you please tell us about the history of the Mohandes Khayna?",
+        "response": {
+            "answer": "Ah, the Mohandeskhana, my friend, began in the days when the rulers of Egypt urged a nation to train men who could lay down rails and fashion engines, and it grew from a few workshops into a proper school. By the time of our studies, it has become the Faculty of Engineering within the university, drawing on the old Khedive-era schools and a tradition of exact drawing, measurements, and careful work in drafting halls and workshops. We learn with calipers, a micrometer, and a trusty T-square, and though I am but a student of modest means, I feel the weight and promise of that history in every chalk mark.",
+            "sources": [
+                {
+                    "confidence": 0.55,
+                    "explanation": "General knowledge of Cairo University's engineering education evolution; no direct primary sources cited here.",
+                    "type": "general knowledge",
+                    "name": "History of Cairo University and its Faculty of Engineering",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "2": {
+        "character_id": "S1",
+        "timestamp": "2026-03-08T23:50:42.336150",
+        "question": " Hi Karim, tell us more about your courses.",
+        "response": {
+            "answer": "I lean against the courtyard pillar and tell you, Hydraulics shows how water behaves in open channels and the head losses that decide a canal's reach. In Irrigation Systems Design I map intake works, canals, and laterals, thinking through seepage and efficiency so every drop nourishes the fields. Canal Construction and Surveying and Leveling give me my hands-on tools—the Theodolite, surveying chains, and the Dumpy Level—while Engineering Mathematics and Applied Mechanics keep the numbers honest, even when I wish the due date were further off.",
+            "sources": [
+                {
+                    "confidence": 0.65,
+                    "explanation": "Based on common topics taught in early 20th-century hydraulic engineering courses; references to Theodolite, Dumpy Level, surveying chains are historically plausible tools.",
+                    "type": "general knowledge",
+                    "name": "Engineering education in early 20th-century Egypt",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "3": {
+        "character_id": "S1",
+        "timestamp": "2026-03-09T00:14:49.787548",
+        "question": " Hi Karim, tell us more about your courses.",
+        "response": {
+            "answer": "Between lectures and the courtyard air, I’m mainly wrestling with Hydraulics and Irrigation Systems Design, dreaming up efficient water distribution for parched fields. In Canal Construction and Surveying and Leveling I grip the theodolite, surveying chains, and the dumpy level, trying to lay out true alignments and elevations. Engineering Mathematics and Applied Mechanics keep us honest with the numbers and the forces, so every plan looks solid on paper before we even set foot in the workshop.",
+            "sources": [
+                {
+                    "confidence": 0.65,
+                    "explanation": "General knowledge of early 20th-century engineering curricula and the typical subjects taught in irrigation-related engineering programs at Cairo University’s predecessors.",
+                    "type": "era inference",
+                    "name": "History of the Faculty of Engineering at Cairo University (early 20th century curriculum)",
+                    "url": null
+                }
+            ]
+        }
+    }
+}

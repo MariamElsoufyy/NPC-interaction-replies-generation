@@ -59,3 +59,8 @@ async def voice_chat(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+        # 6) cleanup temp files
+    finally: 
+        if os.path.exists(input_path):
+            os.remove(input_path)

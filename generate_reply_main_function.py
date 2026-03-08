@@ -22,7 +22,7 @@ def generate_reply(character_id, question,prompt_key):
         response = openAI_replies_generation.generate_reply_openAI(user_prompt, system_prompt)
         #print(f"response:{response}\n")
         response = json.loads(response)
-        save_response.save_response(question, response)
+        save_response.save_response(question, response,character_id = character_id)
         return response
     except Exception as e:
         print("generation failed:", e)
@@ -46,4 +46,11 @@ if __name__ == "__main__":
             
     finally:
         preprocessor.cleanup()
-        
+    
+    
+    
+    
+    
+    print("Finished testing generate_reply function.\n")
+    print(os.getenv("OPENAI_API_KEY"))
+    print(os.getenv("ELEVENLABS_API_KEY"))
