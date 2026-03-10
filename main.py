@@ -25,7 +25,12 @@ async def voice_chat(
     character_id: str = Form(...),
     role: str = Form("mohandeskhana-student")
 ):
+    input_path = None
     try:
+        supported = {".wav", ".mp3", ".ogg", ".flac", ".m4a", ".aac", ".wma"}
+        input_ext = os.path.splitext(audio_file.filename)[1].lower()
+        if input_ext not in supported:
+            raise HTTPException(status_code=400, detail=f"Unsupported audio format: {input_ext}")
         # 1) save uploaded audio temporarily
         temp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp_uploads")
         os.makedirs(temp_dir, exist_ok=True)
