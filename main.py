@@ -27,19 +27,21 @@ async def voice_chat(
 ):
     input_path = None
     try:
-        supported = {".wav", ".mp3", ".ogg", ".flac", ".m4a", ".aac", ".wma"}
         input_ext = os.path.splitext(audio_file.filename)[1].lower()
-        if input_ext not in supported:
-            raise HTTPException(status_code=400, detail=f"Unsupported audio format: {input_ext}")
+        if input_ext != ".wav":
+            raise HTTPException(status_code=400, detail=f"Only .wav is supported. Got: {input_ext}")
+
         # 1) save uploaded audio temporarily
         temp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp_uploads")
         os.makedirs(temp_dir, exist_ok=True)
 
-        input_ext = os.path.splitext(audio_file.filename)[1] or ".mp3"
-        input_path = os.path.join(temp_dir, f"{uuid.uuid4()}{input_ext}")
+        input_path = os.path.join(temp_dir, f"{uuid.uuid4()}.wav")
+        contents = await audio_file.read()
+        if not contents:
+            raise HTTPException(status_code=400, detail="Uploaded file is empty")
 
         with open(input_path, "wb") as f:
-            f.write(await audio_file.read())
+            f.write(contents)
 
         # 2) speech to text
         question_text = AudioPreprocessor().run_test(input_path)
@@ -61,11 +63,14 @@ async def voice_chat(
             media_type="audio/mpeg",
             filename=os.path.basename(output_audio_path)
         )
+    
+    except HTTPException:
+        raise
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
-        # 6) cleanup temp files
+
     finally: 
-        if os.path.exists(input_path):
+        if input_path and os.path.exists(input_path):
             os.remove(input_path)
+

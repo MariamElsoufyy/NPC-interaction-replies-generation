@@ -2,9 +2,7 @@ from faster_whisper import WhisperModel
 from scipy.signal import resample
 from scipy import signal
 import numpy as np
-#import pyaudio
 import soundfile as sf
-from pydub import AudioSegment
 import time
 import noisereduce as nr
 
@@ -20,46 +18,9 @@ class AudioPreprocessor:
             compute_type="int8"
         )
         
-        # self.audio = pyaudio.PyAudio()
-        # self.stream = None
-    
-    # def record_audio(self, duration=6):
-    #     """Record audio from microphone"""
-    #     if self.stream is None:
-    #         self.stream = self.audio.open(
-    #             format=pyaudio.paInt16,
-    #             channels=self.channels,
-    #             rate=self.sample_rate,
-    #             input=True,
-    #             frames_per_buffer=self.chunk
-    #         )
-    #         time.sleep(0.2)
-    #         self.stream.read(self.chunk, exception_on_overflow=False)
-        
-    #     print("Speak now!\n")
-    #     frames = []
-        
-    #     for i in range(0, int(self.sample_rate / self.chunk * duration)):
-    #         data = self.stream.read(self.chunk, exception_on_overflow=False)
-    #         frames.append(data)
-    #         if i % 10 == 0:
-    #             print("Recording" + "." * (i // 10 % 4), end="\r")
-        
-    #     print("\nRecording complete!\n")
-        
-    #     # Convert to numpy array
-    #     audio_data = np.frombuffer(b''.join(frames), dtype=np.int16)
-    #     audio_data = audio_data.astype(np.float32) / 32768.0
-        
-    #     return audio_data
-    
     def cleanup(self):
         """Close audio stream"""
-        if self.stream:
-            self.stream.stop_stream()
-            self.stream.close()
-        if self.audio:
-            self.audio.terminate()
+        pass
     
     def convert_to_mono(self, audio):
         """Convert stereo audio to mono by averaging channels"""
@@ -224,28 +185,11 @@ class AudioPreprocessor:
         print(f"Audio saved to {filename}\n")
 
     def load_audio(self, file_path):
-        try:
-            audio, sample_rate = sf.read(file_path)
-            audio = audio.astype(np.float32)
-            if sample_rate != self.sample_rate:
-                audio = self.Resample(audio, sample_rate)
-            return self.convert_to_mono(audio)
-        except Exception:
-            try:
-                audio_segment = AudioSegment.from_file(file_path)
-
-                # Convert to mono, 16000 Hz, 16-bit
-                audio_segment = audio_segment.set_channels(1)
-                audio_segment = audio_segment.set_frame_rate(self.sample_rate)
-                audio_segment = audio_segment.set_sample_width(2)  # 16-bit
-
-                # Convert to numpy float32
-                samples = np.array(audio_segment.get_array_of_samples(), dtype=np.int16)
-                audio = samples.astype(np.float32) / 32768.0
-                return audio
-            except Exception as e:
-                raise ValueError(f"Could not load audio file '{file_path}': {e}")
-        
+        audio, sample_rate = sf.read(file_path)
+        audio = audio.astype(np.float32)
+        if sample_rate != self.sample_rate:
+            audio = self.Resample(audio, sample_rate)
+        return self.convert_to_mono(audio)
     
     def run_test(self, file_path):
         """Record and preprocess audio"""
