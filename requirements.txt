@@ -10,5 +10,3 @@ numpy
 scipy
 soundfile
 noisereduce
-pydub
-soundfile
