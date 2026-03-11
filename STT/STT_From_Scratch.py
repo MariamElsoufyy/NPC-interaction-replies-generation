@@ -5,6 +5,7 @@ import numpy as np
 import soundfile as sf
 import time
 import noisereduce as nr
+import librosa
 
 class AudioPreprocessor:
     def __init__(self):
@@ -185,11 +186,13 @@ class AudioPreprocessor:
         print(f"Audio saved to {filename}\n")
 
     def load_audio(self, file_path):
-        audio, sample_rate = sf.read(file_path)
-        audio = audio.astype(np.float32)
-        if sample_rate != self.sample_rate:
-            audio = self.Resample(audio, sample_rate)
-        return self.convert_to_mono(audio)
+        audio, sample_rate = librosa.load(file_path, sr=self.sample_rate, mono=True)
+        return audio.astype(np.float32)
+        # audio, sample_rate = sf.read(file_path)
+        # audio = audio.astype(np.float32)
+        # if sample_rate != self.sample_rate:
+        #     audio = self.Resample(audio, sample_rate)
+        # return self.convert_to_mono(audio)
     
     def run_test(self, file_path):
         """Record and preprocess audio"""
