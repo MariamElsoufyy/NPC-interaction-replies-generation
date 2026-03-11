@@ -27,15 +27,16 @@ async def voice_chat(
 ):
     input_path = None
     try:
+        accepted_formats = {".wav", ".mp3", ".ogg", ".flac"}
         input_ext = os.path.splitext(audio_file.filename)[1].lower()
-        if input_ext != ".wav":
-            raise HTTPException(status_code=400, detail=f"Only .wav is supported. Got: {input_ext}")
+        if input_ext not in accepted_formats:
+            raise HTTPException(status_code=400, detail=f"Unsupported format : {input_ext}. Only {', '.join(accepted_formats)} are supported.")
 
         # 1) save uploaded audio temporarily
         temp_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp_uploads")
         os.makedirs(temp_dir, exist_ok=True)
 
-        input_path = os.path.join(temp_dir, f"{uuid.uuid4()}.wav")
+        input_path = os.path.join(temp_dir, f"{uuid.uuid4()}{input_ext}")
         contents = await audio_file.read()
         if not contents:
             raise HTTPException(status_code=400, detail="Uploaded file is empty")
