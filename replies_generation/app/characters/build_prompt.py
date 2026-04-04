@@ -11,7 +11,7 @@ def load_prompt(prompt_type=None, prompt_key=None):
 
 def generate_prompt(prompt_type=None, prompt_key=None, character_id=None, question=None):
     """Replace placeholders in the prompt with actual values."""
-
+     
     if prompt_key is None:
         print("Prompt key is None")
         return None
