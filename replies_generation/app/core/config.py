@@ -12,6 +12,7 @@ SST_beam_size = 2
 audio_preprocessing_sample_rate = 16000
 openAI_model_name = "gpt-5-nano"
 openAI_max_completion_tokens = 3000
+audio_preprocessing_max_length_seconds = 30
 
 
 def get_prompt_key_by_character_id(character_id):

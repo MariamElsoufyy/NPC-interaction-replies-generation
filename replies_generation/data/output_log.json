@@ -303,5 +303,23 @@
             "answer": "A steady day, thanks. I worked on hydraulics and canal design, sketched surveys with the theodolite, and planned our irrigation layouts for the next project.",
             "sources": []
         }
+    },
+    "26": {
+        "character_id": "S1",
+        "timestamp": "2026-04-04T15:00:38.303270",
+        "question": "Okay, so this is a stress test recording.  I will speak at different speeds,  include boses and repeat some words and mix languages.  So hi Kareem, how was your day in Wanda's hair  and I did you study engineering subjects  like mechanics, electricity or irrigation  or did you just relax today?  Now I will speak a bit faster  to just how the system handles quick speech.  Some people talk very quickly  and words may not be very clear.  So this is important for testing performance under speed.  Now I will repeat some words, repeat, repeat.  And I will also include similar words sound like  fan, van, ban, ban.  Let's test numbers again.  13, 30, 50, 15, 151.  Now I will lower my voice a little  as if the microphone is far away  and then I'll raise my voice again to normal level.  Finally, I will add some small boses  between words, stress segmentation.  This is the end of the stress test recording.",
+        "response": {
+            "answer": "Busy day in Irrigation Engineering—hydraulics, canal design, and leveling with the theodolite and dumpy level, then a ride home with my tarboosh and treasured pocket watch.",
+            "sources": []
+        }
+    },
+    "27": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T12:08:03.949941",
+        "question": "Okay, so this is a stress test recording.  I will speak at different speeds,  include boses and repeat some words and mix languages.  So hi Kareem, how was your day in Wanda's hair  and I did you study engineering subjects  like mechanics, electricity or irrigation  or did you just relax today?  Now I will speak a bit faster  to just how the system handles quick speech.  Some people talk very quickly  and words may not be very clear.  So this is important for testing performance under speed.",
+        "response": {
+            "answer": "Today I lingered in the workshop with theodolite and dumpy level, studying irrigation and hydraulics; a quiet balance between work and a touch of courtyard banter.",
+            "sources": []
+        }
     }
 }

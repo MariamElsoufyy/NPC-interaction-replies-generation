@@ -22,7 +22,6 @@ class AudioGenerationElevenLabsService:
         try:
             output_path = os.path.join(self.temp_dir, output_filename)
 
-            print(self.voice_id)
             audio_stream = self.client.text_to_speech.convert(
                 text=text,
                 voice_id=self.voice_id,

@@ -10,7 +10,6 @@ class LLMOpenAIService:
         self.max_completion_tokens = config.openAI_max_completion_tokens
 
     def generate_reply(self, user_prompt, system_prompt):
-        print("starting generating reply with OpenAI...")
 
         messages = [
             {"role": "system", "content": system_prompt},
@@ -27,13 +26,11 @@ class LLMOpenAIService:
             choice = response.choices[0]
             content = choice.message.content
 
-            print(f"Finish reason: {choice.finish_reason}")
-
             if not content:
                 print(f"Generated reply is empty. Full response: {response}")
                 return ""
             
-            print ("generating reply with OpenAI completed successfully.")
+            
             return content.strip()
 
         except Exception as e:

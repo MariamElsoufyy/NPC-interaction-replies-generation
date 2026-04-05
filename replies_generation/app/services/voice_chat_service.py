@@ -16,11 +16,13 @@ class VoiceChatService:
     def process_voice_chat(self, input_audio_path: str, character_id: str, role: str) -> str:
         total_start = time.time()
         start = time.time()
-        print("Voice chat processing started...")
+        print("Voice chat processing started...\n")
         preprocessed_audio = self.preprocessor_service.preprocess_audio(input_audio_path)
+        print("----------------preprocessing time:", time.time() - start)
+        start = time.time()
         question_text = self.SST_whisper_service.transcribe(preprocessed_audio)
-        print(f"Transcribed text: {question_text}")
-        print("----------------STT time:", time.time() - start)
+        print(f"\nTranscribed text: {question_text}\n")
+        print(f"\n----------------STT time:", time.time() - start)
 
         start = time.time()
         response = self.generate_character_reply(
@@ -36,18 +38,18 @@ class VoiceChatService:
             raise ValueError("Model response is invalid or missing 'answer'")
 
         answer_text = response["answer"]
-        print("---------------LLM time:", time.time() - start)
+        print(f"\n---------------LLM time:", time.time() - start)
 
 
         start = time.time()
         output_audio_path = self.audio_generation_elevenlabs_service.generate_audio(answer_text)
-        print("---------------TTS time:", time.time() - start)
+        print(f"\n---------------TTS time:", time.time() - start)
 
-        print("---------------Total processing time:", time.time() - total_start)
+        print("\n---------------Total processing time:", time.time() - total_start)
         return output_audio_path
 
     def generate_character_reply(self, character_id: str, question: str, prompt_key: str):
-        print(f"Generating reply started for character_id: {character_id}, prompt_key: {prompt_key}")
+        print(f"\nGenerating reply started for character_id: {character_id}, prompt_key: {prompt_key}\n")
         user_prompt, system_prompt = build_prompts(
             character_id=character_id,
             question=question,
@@ -64,7 +66,6 @@ class VoiceChatService:
         else:
             parsed_response = response
 
-        print(f"Generated response: {parsed_response}")
+        print(f"\nGenerated response: {parsed_response}\n")
         save_response(question, parsed_response, character_id=character_id)
-        print(f"Generating reply completed for character_id: {character_id}")
         return parsed_response
