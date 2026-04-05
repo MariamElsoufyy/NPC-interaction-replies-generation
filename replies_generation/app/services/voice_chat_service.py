@@ -16,7 +16,7 @@ class VoiceChatService:
     def process_voice_chat(self, input_audio_path: str, character_id: str, role: str) -> str:
         total_start = time.time()
         start = time.time()
-        print("Voice chat processing started...\n")
+        print("\n🤎🤎🤎🤎🤎🤎🤎🤎🤎🤎🤎🤎🤎🤎🤎🤎🤎\nVoice chat processing started...\n")
         preprocessed_audio = self.preprocessor_service.preprocess_audio(input_audio_path)
         print("----------------preprocessing time:", time.time() - start)
         start = time.time()
@@ -49,7 +49,7 @@ class VoiceChatService:
         return output_audio_path
 
     def generate_character_reply(self, character_id: str, question: str, prompt_key: str):
-        print(f"\nGenerating reply started for character_id: {character_id}, prompt_key: {prompt_key}\n")
+        print(f"\n🩷🩷🩷🩷🩷🩷🩷🩷🩷🩷🩷🩷🩷🩷🩷🩷🩷\nGenerating reply started for character_id: {character_id}, prompt_key: {prompt_key}\n")
         user_prompt, system_prompt = build_prompts(
             character_id=character_id,
             question=question,

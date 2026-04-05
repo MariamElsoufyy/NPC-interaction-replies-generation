@@ -5,8 +5,8 @@ import noisereduce as nr
 import librosa
 from scipy import signal
 import app.core.config as config
-
-
+import time
+import soundfile 
 class AudioPreprocessor:
     def __init__(self, sample_rate=16000):
         self.sample_rate = config.audio_preprocessing_sample_rate
@@ -47,13 +47,21 @@ class AudioPreprocessor:
         return (audio / max_value).astype(np.float32)
 
     def preprocess_audio(self, audio_path):
-        
-        audio = self.trim_silence(self.load_audio(audio_path).astype(np.float32))
-        
+        start = time.time()
+        audio = self.load_audio(audio_path)
+
+        print(f"Audio loaded in {time.time() - start:.2f} seconds")
+        start = time.time()
+        audio = self.trim_silence(audio)
+        print(f"Silence trimmed in {time.time() - start:.2f} seconds")
+        start = time.time()
         if len(audio) > self.max_length_samples:
             audio = self.trim_to_length(audio)
-            
+        print(f"Audio trimmed to max length in {time.time() - start:.2f} seconds")
+        start = time.time()
         audio = self.noise_reduction(self.high_pass_filter(audio, cutoff=80), prop_decrease=0.8)
+        print(f"Audio processed with noise reduction (and high pass filter) in {time.time() - start:.2f} seconds")
+
         return audio.astype(np.float32)
     
     def save_audio(self, audio_data, filename="recording.wav"):
@@ -62,3 +70,4 @@ class AudioPreprocessor:
     def load_audio(self, file_path):
         audio, _ = librosa.load(file_path, sr=self.sample_rate, mono=True)
         return audio.astype(np.float32)
+    

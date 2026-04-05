@@ -321,5 +321,174 @@
             "answer": "Today I lingered in the workshop with theodolite and dumpy level, studying irrigation and hydraulics; a quiet balance between work and a touch of courtyard banter.",
             "sources": []
         }
+    },
+    "28": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T12:15:28.425282",
+        "question": "Okay, so this is a stress test recording.  I will speak at different speeds,  include boses and repeat some words and mix languages.  So hi Kareem, how was your day in Wanda's hair  and I did you study engineering subjects  like mechanics, electricity or irrigation  or did you just relax today?  Now I will speak a bit faster  to just how the system handles quick speech.  Some people talk very quickly  and words may not be very clear.  So this is important for testing performance under speed.",
+        "response": {
+            "answer": "My day went steady— I reviewed hydraulics, irrigation systems, and canal construction, worked some layouts with the theodolite, then rode a little and relaxed in the courtyard.",
+            "sources": []
+        }
+    },
+    "29": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T12:16:49.846113",
+        "question": "Okay, so this is a stress test recording.  I will speak at different speeds,  include boses and repeat some words and mix languages.  So hi Kareem, how was your day in Wanda's hair  and I did you study engineering subjects  like mechanics, electricity or irrigation  or did you just relax today?  Now I will speak a bit faster  to just how the system handles quick speech.  Some people talk very quickly  and words may not be very clear.  So this is important for testing performance under speed.",
+        "response": {
+            "answer": "Today I wrestled Hydraulics and Canal Construction, and did some Surveying with the theodolite; afterward a quiet ride to steady my nerves.",
+            "sources": []
+        }
+    },
+    "30": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T12:17:55.894227",
+        "question": "Okay, so this is a stress test recording.  I will speak at different speeds,  include boses and repeat some words and mix languages.  So hi Kareem, how was your day in Wanda's hair  and I did you study engineering subjects  like mechanics, electricity or irrigation  or did you just relax today?  Now I will speak a bit faster  to just how the system handles quick speech.  Some people talk very quickly  and words may not be very clear.  So this is important for testing performance under speed.",
+        "response": {
+            "answer": "Busy day in the courtyard—hydraulics and irrigation design, canal layouts sketched with theodolite; I squeezed in a quick horse ride between lectures.",
+            "sources": []
+        }
+    },
+    "31": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T12:18:50.561319",
+        "question": "Hello, my name is Mariam.  This is a test recording.  Today, I want to check the quality of the voice,  the clarity of the words and the background noise.  I'm speaking normally not too fast and not too slowly.  This audio should help me test the speech recognition  and the response generation.  Hi Karim, how was your day in one strain?  I tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class?  Or did you stay in the workshop?  I want to know how.",
+        "response": {
+            "answer": "Karim here, Mariam. I tackled Hydraulics, Irrigation Systems Design, and Canal Construction, then sat in the courtyard with friends before a quiet shift in the workshop.",
+            "sources": []
+        }
+    },
+    "32": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T12:25:06.125714",
+        "question": "",
+        "response": {
+            "answer": "I wonder if I'm truly capable, not just my family's name; tomorrow I'll fine-tune the canal with the theodolite and dumpy level after class.",
+            "sources": []
+        }
+    },
+    "33": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T12:27:40.135283",
+        "question": "",
+        "response": {
+            "answer": "Ask me anything about surveying or irrigation works; I’ve my theodolite and a mind set on showing I belong beyond my name.",
+            "sources": []
+        }
+    },
+    "34": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T12:28:05.639376",
+        "question": "",
+        "response": {
+            "answer": "I wonder if I’m truly capable, or just my family name—tonight the theodolite ticks while the chalkboard waits.",
+            "sources": []
+        }
+    },
+    "35": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T12:33:56.913598",
+        "question": "Thank you for watching!",
+        "response": {
+            "answer": "You're welcome, my friend. May our field notes and irrigation schemes stand steady like the Nile after a good lecture.",
+            "sources": []
+        }
+    },
+    "36": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T12:34:29.637939",
+        "question": "Thank you for watching!",
+        "response": {
+            "answer": "Glad you were here in the courtyard; keen to hear your thoughts on the canal construction. We'll compare notes after the workshop, if you like.",
+            "sources": []
+        }
+    },
+    "37": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T12:35:13.411424",
+        "question": "Thank you for watching!",
+        "response": {
+            "answer": "Glad you could stay after the lecture; keep your chalk ready, and may our canal designs steady your hands.",
+            "sources": []
+        }
+    },
+    "38": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T12:35:39.898337",
+        "question": "Thank you for watching!",
+        "response": {
+            "answer": "The pleasure is mine, friend. Till the next class, keep your notes steady; meet me in the courtyard after lectures to review the canal designs.",
+            "sources": []
+        }
+    },
+    "39": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T12:36:14.748195",
+        "question": "the best of your cross first.",
+        "response": {
+            "answer": "If you mean cross-section, I start with a baseline and a quick traverse using the theodolite, then fix elevations with the dumpy level before plotting the canal profile.",
+            "sources": [
+                {
+                    "confidence": 0.85,
+                    "type": "document",
+                    "name": "Field Practice Notes, Cairo University, Faculty of Engineering (1916–1918)",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "40": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T12:38:12.314838",
+        "question": "the best of your cross first.",
+        "response": {
+            "answer": "Start with the cross-section first, mate; I’d set the dumpy level, take many vertical readings, and chart the profile before the line.",
+            "sources": []
+        }
+    },
+    "41": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T12:39:08.536693",
+        "question": "Hello, my name is Mariam.  This is a test recording.  Today, I want to check the quality of the voice,  the clarity of the words and the background noise.  I'm speaking normally not too fast and not too slowly.  This audio should help me test the speech recognition  and the response generation.  Hi Karim, how was your day in one strain?  I tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class?  Or did you stay in the workshop?  I want to know how.",
+        "response": {
+            "answer": "Busy day—hydraulics and canal design swallowed my notes. I walked the courtyard with a fellow student, then stayed in the workshop to check the theodolite and leveling staff.",
+            "sources": []
+        }
+    },
+    "42": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T12:40:03.331710",
+        "question": "Hello, my name is Mariam.  This is a test recording.  Today, I want to check the quality of the voice,  the clarity of the words and the background noise.  I'm speaking normally not too fast and not too slowly.  This audio should help me test the speech recognition  and the response generation.  Hi Karim, how was your day in one strain?  I tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class?  Or did you stay in the workshop?  I want to know how.",
+        "response": {
+            "answer": "Today I wrestled hydraulics and canal design, checked survey lines with the theodolite, and spoke with a friend in the workshop. After class I sat in the courtyard a while.",
+            "sources": []
+        }
+    },
+    "43": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T12:40:58.934026",
+        "question": "Thank you for watching!",
+        "response": {
+            "answer": "Anytime, mate. We'll meet by the chalkboard tomorrow and go over the canal plans and hydraulics.",
+            "sources": []
+        }
+    },
+    "44": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T12:41:52.915360",
+        "question": "Thank you for watching!",
+        "response": {
+            "answer": "You're welcome, mate. We press on with surveying and canal design—the courtyard knows my resolve.",
+            "sources": []
+        }
+    },
+    "45": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T12:44:15.853981",
+        "question": "Hello, my name is Mariam. This is at this recording today. I want to check the quality of the voice the clarity of the words and the background  Don't I'm speaking normally not too fast and not too slowly  This audio should help me test the speech recognition and their response generation  Hi, Karim  How was your day and one this thing? I tell me everything. What did you study today? And who did you spend time with?  Did you go to the courtyard after class or did you stay?",
+        "response": {
+            "answer": "Today in Hydraulics and Canal Construction I used the theodolite for levels and sketched canal sections; after class I lingered in the courtyard with a few mates.",
+            "sources": []
+        }
     }
 }

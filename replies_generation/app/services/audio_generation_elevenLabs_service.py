@@ -9,6 +9,7 @@ class AudioGenerationElevenLabsService:
         self.voice_id = voice_id
         
         
+        
         current_dir = os.path.dirname(os.path.abspath(__file__))   # app/services
         app_dir = os.path.dirname(current_dir)                     # app
         project_root = os.path.dirname(app_dir)                    # project root
