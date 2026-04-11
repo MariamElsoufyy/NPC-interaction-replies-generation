@@ -50,7 +50,7 @@ async def websocket_voice_chat(websocket: WebSocket):
             if message_type == "start_session":
                 character_id = data.get("character_id")
                 sample_rate = data.get("sample_rate", 16000)
-                audio_format = data.get("audio_format", "pcm16")
+                audio_format = data.get("audio_format", "wav")
 
                 print(
                     f"🚀 [START_SESSION] session_id={session_id} | "

@@ -12,7 +12,7 @@ class StreamSession:
     session_id: str
     character_id: Optional[str] = None
     sample_rate: int = config.audio_preprocessing_sample_rate
-    audio_format: str = "pcm16"
+    audio_format: str = "wav"
     state: str = "CONNECTED"
     dead_time_start: Optional[float] = None
     dead_time_end: Optional[float] = None
@@ -27,7 +27,7 @@ class StreamSession:
         self,
         character_id: str,
         sample_rate: int = config.audio_preprocessing_sample_rate,
-        audio_format: str = "pcm16",
+        audio_format: str = "wav",
     ) -> None:
         self.character_id = character_id
         self.sample_rate = sample_rate
