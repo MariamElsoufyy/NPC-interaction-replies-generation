@@ -104,3 +104,7 @@ app.include_router(websocket_router)
 @app.get("/")
 def root():
     return {"message": "Mohandeskhana WebSocket Voice Chat API is running 🗣️"}
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
