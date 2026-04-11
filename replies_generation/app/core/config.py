@@ -14,6 +14,8 @@ openAI_model_name = "gpt-5-nano"
 openAI_max_completion_tokens = 3000
 
 
+
+
 def get_prompt_key_by_character_id(character_id):
     if character_id[0].lower() == "s":
         return "mohandeskhana-student"

@@ -303,5 +303,122 @@
             "answer": "A steady day, thanks. I worked on hydraulics and canal design, sketched surveys with the theodolite, and planned our irrigation layouts for the next project.",
             "sources": []
         }
+    },
+    "26": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T13:11:13.428547",
+        "question": "Okay, so this is a stress test recording.  I will speak at different speeds,  include boses and repeat some words and mix languages.  So hi Kareem, how was your day in Wanda's hair  and I did you study engineering subjects  like mechanics, electricity or irrigation  or did you just relax today?  Now I will speak a bit faster  to just how the system handles quick speech.  Some people talk very quickly  and words may not be very clear.  So this is important for testing performance under speed.  Now I will repeat some words, repeat, repeat.  And I will also include similar words sound like  fan, van, ban, ban.  Let's test numbers again.  13, 30, 50, 15, 151.  Now I will lower my voice a little  as if the microphone is far away  and then I'll raise my voice again to normal level.  Finally, I will add some small boses  between words, stress segmentation.  This is the end of the stress test recording.",
+        "response": {
+            "answer": "Busy, lad; spent the day with hydraulics and canal design, measured furrows with the theodolite, sharpened notes—nervous but hopeful about proving myself beyond the family name.",
+            "sources": []
+        }
+    },
+    "27": {
+        "character_id": "S1",
+        "timestamp": "2026-04-05T13:19:12.658066",
+        "question": "Okay, so this is a stress test recording.  I will speak at different speeds,  include boses and repeat some words and mix languages.  So hi Kareem, how was your day in Wanda's hair  and I did you study engineering subjects  like mechanics, electricity or irrigation  or did you just relax today?  Now I will speak a bit faster  to just how the system handles quick speech.  Some people talk very quickly  and words may not be very clear.  So this is important for testing performance under speed.  Now I will repeat some words, repeat, repeat.  And I will also include similar words sound like  fan, van, ban, ban.  Let's test numbers again.  13, 30, 50, 15, 151.  Now I will lower my voice a little  as if the microphone is far away  and then I'll raise my voice again to normal level.  Finally, I will add some small boses  between words, stress segmentation.  This is the end of the stress test recording.",
+        "response": {
+            "answer": "A steady day, mate; I worked with the theodolite, surveyed canals in hydraulics, and drafted irrigation designs, then rode out a while to clear my head.",
+            "sources": []
+        }
+    },
+    "28": {
+        "character_id": "s1",
+        "timestamp": "2026-04-11T16:08:30.737810",
+        "question": "The stale smell of old beard lingers.  It takes heat to bring out...",
+        "response": {
+            "answer": "The smell lingers; heat in the forge brings out the temper in iron—and the stubborn resolve I bear in the courtyard.",
+            "sources": []
+        }
+    },
+    "29": {
+        "character_id": "s1",
+        "timestamp": "2026-04-11T16:12:43.050606",
+        "question": "Hello, my name is Mariam.  This is a test recording.  Today I want to check the quality of the voice,  the clarity of the words and the background noise.  I'm speaking normally not too fast and not too slowly.  This audio should help me test the speech recognition  and the response generation.  Hi Karim, how was your day in one strain?  I tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class  or did you stay in the workshop?  I want to know how your friends are doing.",
+        "response": {
+            "answer": "Today was busy; I tackled machine drawing and statics, sketched beams with compasses and a ruler. After class I joined friends in the courtyard; some stayed in the workshop.",
+            "sources": []
+        }
+    },
+    "30": {
+        "character_id": "s1",
+        "timestamp": "2026-04-11T16:14:38.794229",
+        "question": "Hello, my name is Mariam.  This is a test recording.  Today I want to check the quality of the voice,  the clarity of the words and the background noise.  I'm speaking normally not too fast and not too slowly.  This audio should help me test the speech recognition  and the response generation.  Hi Karim, how was your day in one strain?  I tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class  or did you stay in the workshop?  I want to know how your friends are doing.",
+        "response": {
+            "answer": "Hello Mariam, your voice comes through clearly in the courtyard. I spent today in the workshop solving a beam problem with friends, then we lingered in the courtyard after class.",
+            "sources": []
+        }
+    },
+    "31": {
+        "character_id": "s1",
+        "timestamp": "2026-04-11T16:18:45.664857",
+        "question": "Hello, my name is Mariam.  This is a test recording.  Today I want to check the quality of the voice,  the clarity of the words and the background noise.  I'm speaking normally not too fast and not too slowly.  This audio should help me test the speech recognition  and the response generation.  Hi Karim, how was your day in one strain?  I tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class  or did you stay in the workshop?  I want to know how your friends are doing.",
+        "response": {
+            "answer": "My day was busy—took measurements in the metal shop, sketched engines, and chatted with Samir and Farid; we lingered in the courtyard after class as the sun warmed the stones.",
+            "sources": []
+        }
+    },
+    "32": {
+        "character_id": "s1",
+        "timestamp": "2026-04-11T16:21:26.621470",
+        "question": "Hello, my name is Mariam.  This is a test recording.  Today I want to check the quality of the voice,  the clarity of the words and the background noise.  I'm speaking normally not too fast and not too slowly.  This audio should help me test the speech recognition  and the response generation.  Hi Karim, how was your day in one strain?  I tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class  or did you stay in the workshop?  I want to know how your friends are doing.",
+        "response": {
+            "answer": "Day was busy; I worked through statics and drawing, and spent the afternoon with friends in the workshop. Then we sat in the courtyard, everyone's fine.",
+            "sources": []
+        }
+    },
+    "33": {
+        "character_id": "s1",
+        "timestamp": "2026-04-11T16:28:35.178238",
+        "question": "Hello, my name is Mariam.  This is a test recording.  Today I want to check the quality of the voice,  the clarity of the words and the background noise.  I'm speaking normally not too fast and not too slowly.  This audio should help me test the speech recognition  and the response generation.  Hi Karim, how was your day in one strain?  I tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class  or did you stay in the workshop?  I want to know how your friends are going through.  Was the day gone?  Was it full of white answer prices?",
+        "response": {
+            "answer": "I spent the day drafting a beam on the chalkboard, ran quick calculations in the workshop, then paused in the courtyard with mates to swap notes.",
+            "sources": []
+        }
+    },
+    "34": {
+        "character_id": "s1",
+        "timestamp": "2026-04-11T16:34:28.970577",
+        "question": "Hello, my name is Mariam.  This is a test recording.  Today I want to check the quality of the voice,  the clarity of the words and the background noise.  I'm speaking normally not too fast and not too slowly.  This audio should help me test the speech recognition  and the response generation.  Hi Karim, how was your day in one strain?  I tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class  or did you stay in the workshop?  I want to know how your friends are going through.  Was the day gone?  Was it full of white answer prices?",
+        "response": {
+            "answer": "Today I studied drawing and steam engine theory, and spent the afternoon with Ahmed in the courtyard; afterwards we helped in the workshop with the lathe.",
+            "sources": []
+        }
+    },
+    "35": {
+        "character_id": "s1",
+        "timestamp": "2026-04-11T16:39:04.021557",
+        "question": "Hello, my name is Mariam.  This is a test recording.  Today I want to check the quality of the voice,  the clarity of the words and the background noise.  I'm speaking normally not too fast and not too slowly.  This audio should help me test the speech recognition  and the response generation.  Hi Karim, how was your day in one strain?  I tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class  or did you stay in the workshop?  I want to know how your friends are going through.  Was the day gone?  Was it full of white answer prices?",
+        "response": {
+            "answer": "Today we studied hydraulics and surveying; I walked in the courtyard with Ali and Farid, then stayed in the workshop to assemble a small steam engine model—it felt rewarding.",
+            "sources": []
+        }
+    },
+    "36": {
+        "character_id": "s1",
+        "timestamp": "2026-04-11T16:42:48.484934",
+        "question": "The stale smell of old-beer lingers.  It takes heat to bring out the odor.  A cold dip restores health and zest.  A salt pickle tastes fine with ham.  Taco's al pastor are my favorite.  A zestful food is the hot cross bun.",
+        "response": {
+            "answer": "That playful riddle of tastes stirs me after the workshop; heat, cold, and zest—each note echoing the courtyard, the chalkboard, and a hungry engineer's quick bite.",
+            "sources": []
+        }
+    },
+    "37": {
+        "character_id": "s1",
+        "timestamp": "2026-04-11T16:49:14.205064",
+        "question": "The stale smell of old-beer lingers.  It takes heat to bring out the odor.  A cold dip restores health and zest.  A salt pickle tastes fine with ham.  Taco's al pastor are my favorite.  A zestful food is the hot cross bun.",
+        "response": {
+            "answer": "Heat reveals what the forge hides; a cold dip restores vigor, and salt keeps us steady—much like a zestful bite after a long workshop day.",
+            "sources": []
+        }
+    },
+    "38": {
+        "character_id": "s1",
+        "timestamp": "2026-04-11T16:52:56.442934",
+        "question": "The stale smell of old-beer lingers.  It takes heat to bring out the odor.  A cold dip restores health and zest.  A salt pickle tastes fine with ham.  Taco's al pastor are my favorite.  A zestful food is the hot cross bun.",
+        "response": {
+            "answer": "Heat reveals the workshop's odors, a cold rinse restores my zest, and a hot cross bun steadies me between chalkboards and gears.",
+            "sources": []
+        }
     }
 }
