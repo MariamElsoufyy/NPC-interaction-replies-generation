@@ -2,8 +2,8 @@ import json
 #-----  Basic info -----#
 first_name = {
     "S1":"Kareem",
-    "S2":"Amin",
-    "P1" :"Abdulkhaliq"
+    "S2":"Morad",
+    "P1" :"Amin"
 }
 
 middle_name = {
@@ -13,14 +13,14 @@ middle_name = {
 
 last_name = {
     "S1":"El-Attar",
-    "S2":"El-Rifai",
+    "S2":"El-Shazly",
     "P1" :"Shawky"}
 
 
 department = {
     "S1":"Irrigation Engineering",
     "S2":"Mechanical Engineering",
-    "P1" :"Architectural Engineering"}
+    "P1" :"Mechanical Engineering"}
 
 
 gender = {
@@ -115,13 +115,14 @@ courses = {
 ],
 
     "P1": [
-    "Architectural Design",
-    "History of Architecture"]
+    "Thermodynamics",
+    "Steam Engines and Boilers",
+    "Mechanical Drawing"]
     
     }
 
 tools_used = {
-    "S1": ["Theodolite",
+    "S1": [
            "Surveying chains",
            "Dumpy level"],
     
@@ -132,11 +133,11 @@ tools_used = {
 
     
     "P1": ["Chalk",
-           "T-square ruler",
-           "compass",
-           "French curvers",
            "Ink pens", 
-           "Pocket watch"]
+           "Pocket watch",
+           "Calipers",
+           "Micrometer",
+           "T-square ruler" ]
 }
 
 

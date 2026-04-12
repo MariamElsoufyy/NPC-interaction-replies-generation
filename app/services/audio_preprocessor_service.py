@@ -49,22 +49,23 @@ class AudioPreprocessor:
     def preprocess_audio2(self, audio_path):
         print(f"Preprocessing audio started for {audio_path}...")
         loaded_audio = self.load_audio(audio_path)
-        print("audio length before preprocessing:", len(loaded_audio))
+        # print("audio length before preprocessing:", len(loaded_audio))
 
-        if len(loaded_audio) < 1024:
-            print("⚠️ [PREPROCESS] Audio too short, skipping heavy preprocessing")
-            return loaded_audio.astype(np.float32)
+        # if len(loaded_audio) < 1024:
+        #     print("⚠️ [PREPROCESS] Audio too short, skipping heavy preprocessing")
+        #     return loaded_audio.astype(np.float32)
 
-        audio = self.noise_reduction(
-            self.high_pass_filter(
-                self.trim_silence(loaded_audio.astype(np.float32)),
-                cutoff=80
-            ),
-            prop_decrease=0.8
-        )
+        # audio = self.noise_reduction(
+        #     self.high_pass_filter(
+        #         self.trim_silence(loaded_audio.astype(np.float32)),
+        #         cutoff=80
+        #     ),
+        #     prop_decrease=0.8
+        # )
 
-        print(f"Preprocessing audio completed for {audio_path}.")
-        print("audio length after preprocessing:", len(audio))
+        # print(f"Preprocessing audio completed for {audio_path}.")
+        # print("audio length after preprocessing:", len(audio))
+        return loaded_audio.astype(np.float32)
         return audio.astype(np.float32)
     
     def save_audio(self, audio_data, filename="recording.wav"):

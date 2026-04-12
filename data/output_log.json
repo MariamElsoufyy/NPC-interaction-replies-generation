@@ -420,5 +420,59 @@
             "answer": "Heat reveals the workshop's odors, a cold rinse restores my zest, and a hot cross bun steadies me between chalkboards and gears.",
             "sources": []
         }
+    },
+    "39": {
+        "character_id": "s1",
+        "timestamp": "2026-04-11T21:56:47.914849",
+        "question": "Hello, my name is Mariam.  This is a test recording.  Today I want to check the quality of the voice,  the clarity of the words and the background noise.  I'm speaking normally not too fast and not too slowly.  This audio should help me test the speech recognition  and the response generation.  Hi Karim, how was your day in one strain?  I tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class  or did you stay in the workshop?  I want to know how your friends are going to post the day on  but was it full of white answer prices?",
+        "response": {
+            "answer": "[hopeful] Hey Mariam, today I studied surveying and metalwork, sketched plans in the workshop, and in the courtyard after class I caught up with Ali and Hassan.",
+            "sources": []
+        }
+    },
+    "40": {
+        "character_id": "s1",
+        "timestamp": "2026-04-11T22:05:04.859187",
+        "question": "Hello, my name is Mariam.  This is a test recording.  Today I want to check the quality of the voice,  the clarity of the words and the background noise.  I'm speaking normally not too fast and not too slowly.  This audio should help me test the speech recognition  and the response generation.  Hi Karim, how was your day in one strain?  I tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class  or did you stay in the workshop?  I want to know how your friends are going to post the day on  but was it full of white answer prices?",
+        "response": {
+            "answer": "[nostalgic] I spent the day drafting machine drawings in the workshop with Omar and Youssef. Then we cooled in the courtyard after class, swapping notes and jokes.",
+            "sources": []
+        }
+    },
+    "41": {
+        "character_id": "s1",
+        "timestamp": "2026-04-11T22:06:54.027155",
+        "question": "Hello, my name is Mariam.  This is a test recording.  Today I want to check the quality of the voice,  the clarity of the words and the background noise.  I'm speaking normally not too fast and not too slowly.  This audio should help me test the speech recognition  and the response generation.  Hi Karim, how was your day in one strain?  I tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class  or did you stay in the workshop?  I want to know how your friends are going to post the day on  but was it full of white answer prices?",
+        "response": {
+            "answer": "[proud] Today was busy—morning in the workshop, shaping brass for the steam engine, afternoon lectures on thermodynamics, and I relaxed in the courtyard with Omar and Hassan after class.",
+            "sources": []
+        }
+    },
+    "42": {
+        "character_id": "s1",
+        "timestamp": "2026-04-11T22:09:21.971272",
+        "question": "Hello, my name is Mariam.  This is a test recording.  Today I want to check the quality of the voice,  the clarity of the words and the background noise.  I'm speaking normally not too fast and not too slowly.  This audio should help me test the speech recognition  and the response generation.  Hi Karim, how was your day in one strain?  I tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class  or did you stay in the workshop?  I want to know how your friends are going to post the day on  but was it full of white answer prices?",
+        "response": {
+            "answer": "(hopeful) Hey Mariam, today I fixed a pump in the workshop, sketched a new engine plan, and lounged by the courtyard with Sam—feels like a solid, steady day.",
+            "sources": []
+        }
+    },
+    "43": {
+        "character_id": "s1",
+        "timestamp": "2026-04-11T22:11:36.973327",
+        "question": "Hello, my name is Mariam.  This is a test recording.  Today I want to check the quality of the voice,  the clarity of the words and the background noise.  I'm speaking normally not too fast and not too slowly.  This audio should help me test the speech recognition  and the response generation.  Hi Karim, how was your day in one strain  and tell me everything?  What did you study today and who did you spend time with?  Did you go to the courtyard after class  or did you stay in the workshop?  I want to know how your friends are going through.  Was the day gone?  Was it full of white answer prizes?",
+        "response": {
+            "answer": "Day's steady, Mariam. I wrestled with surveying and machine drawing, popped outdoors to the courtyard with Ahmed and Youssef, then stayed in the workshop tinkering with gauges.",
+            "sources": []
+        }
+    },
+    "44": {
+        "character_id": "s1",
+        "timestamp": "2026-04-11T22:17:57.691703",
+        "question": "Hello, my name is Mariam. This is at this recording. Today I want to check the quality of the voice, the clarity of the words and the background noise.  I'm speaking normally not too fast and not too slowly.  This audio should help me test the speech recognition and the response generation.  Hi Karim.  How was your day and one this thing? I tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class or did you stay in the workshop?  I want to know how your friends are going to post the day call, but was it full of work and surprises?",
+        "response": {
+            "answer": "Hey Mariam, today in the workshop I tuned a gear train with a vernier caliper, then sat in the courtyard for tea with Omar and Ali—lots of notes, no surprises.",
+            "sources": []
+        }
     }
 }
