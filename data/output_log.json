@@ -499,5 +499,14 @@
             "answer": "Ha, the workshop scent lingers—the heat wakes beer, a cold dip revives me, and a cross bun cheers us; tacos al pastor would be exotic here, not in the canteen.",
             "sources": []
         }
+    },
+    "47": {
+        "character_id": "s1",
+        "timestamp": "2026-04-15T20:58:56.222434",
+        "question": "The stale smell of old-beer lingers, it takes heat to bring out the odor, a cold Little dip restores health and zest.  A salt pickle tastes fine with ham.  Tacos al pastor are my favorite. A zestful food is the hot cross bun.",
+        "response": {
+            "answer": "Ah, a curious stew of flavors; heat wakes the task, cold dips refresh; a salty pickle with ham keeps us steady. Tacos al pastor? rare curiosity for us in Cairo.",
+            "sources": []
+        }
     }
 }

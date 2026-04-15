@@ -26,13 +26,6 @@ def build_error_event(message: str, **extra) -> dict:
 
 
 
-def build_partial_transcript_event(text: str) -> dict:
-    return {
-        "type": "partial_transcript",
-        "text": text
-    }
-
-
 def build_final_transcript_event(text: str) -> dict:
     return {
         "type": "final_transcript",
