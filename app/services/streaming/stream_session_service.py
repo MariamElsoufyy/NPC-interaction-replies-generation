@@ -19,6 +19,17 @@ class StreamSession:
     audio_buffer: AudioBufferService = field(default_factory=AudioBufferService)
     final_transcript: str = ""
     reply_text: str = ""
+    partial_transcripts: list = field(default_factory=list)
+    processed_chunk_count: int = 0
+    wav_header: bytes = field(default_factory=bytes)
+
+    def append_partial_transcript(self, text: str) -> None:
+        if text.strip():
+            self.partial_transcripts.append(text.strip())
+            print(f"[STT PARTIAL] session_id={self.session_id} | partial={text[:60]}")
+
+    def get_combined_transcript(self) -> str:
+        return " ".join(self.partial_transcripts).strip()
 
     def touch(self) -> None:
         self.updated_at = time.time()
@@ -106,6 +117,8 @@ class StreamSession:
         self.audio_buffer.reset()
         self.final_transcript = ""
         self.reply_text = ""
+        self.partial_transcripts = []
+        self.processed_chunk_count = 0
         self.state = "LISTENING"
         self.dead_time_start = None
         self.dead_time_end = None

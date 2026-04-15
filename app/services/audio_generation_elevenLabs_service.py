@@ -1,5 +1,9 @@
+import io
 import os
 from datetime import datetime
+
+import numpy as np
+import soundfile as sf
 
 
 class AudioGenerationElevenLabsService:
@@ -26,7 +30,7 @@ class AudioGenerationElevenLabsService:
             audio_stream = self.client.text_to_speech.convert(
                 text=text,
                 voice_id=self.voice_id,
-                model_id="eleven_multilingual_v2",
+                model_id="eleven_turbo_v2_5",
                 output_format="mp3_44100_128"
             )
 
@@ -41,6 +45,24 @@ class AudioGenerationElevenLabsService:
         except Exception as e:
             print(f"❌ [TTS FILE ERROR] {repr(e)}")
             return None
+
+    def collect_and_save_wav(self, text: str, output_path: str = "output.wav") -> str:
+        """Collects all TTS audio and saves as output.wav. For debugging only — does not send to client."""
+        print(f"[DEBUG TTS] Generating audio for: {text!r}")
+
+        pcm_stream = self.client.text_to_speech.convert(
+            text=text,
+            voice_id=self.voice_id,
+            model_id="eleven_turbo_v2_5",
+            output_format="pcm_44100",
+        )
+
+        pcm_bytes = b"".join(chunk for chunk in pcm_stream if chunk)
+        audio = np.frombuffer(pcm_bytes, dtype=np.int16).astype(np.float32) / 32768.0
+        sf.write(output_path, audio, samplerate=44100)
+
+        print(f"[DEBUG TTS] Saved to {output_path} ({len(audio)} samples)")
+        return output_path
 
     def build_debug_output_path(self, session_id: str = "unknown") -> str:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -57,7 +79,7 @@ class AudioGenerationElevenLabsService:
             audio_stream = self.client.text_to_speech.convert(
                 text=text,
                 voice_id=self.voice_id,
-                model_id="eleven_multilingual_v2",
+                model_id="eleven_turbo_v2_5",
                 output_format="mp3_44100_128"
             )
 

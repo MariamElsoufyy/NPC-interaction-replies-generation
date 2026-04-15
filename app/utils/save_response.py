@@ -34,7 +34,7 @@ def save_response(question, response, file_path=None, character_id="unknown"):
 
     data[new_id] = {
         "character_id": character_id,
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now().strftime("%b %d, %Y  %I:%M:%S %p"),
         "question": question,
         "response": response,
     }

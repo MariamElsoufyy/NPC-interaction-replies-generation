@@ -1,7 +1,7 @@
 from openai import OpenAI
 from elevenlabs import ElevenLabs
-import app.core.config as config    
-import os
+from groq import Groq
+import app.core.config as config
 from faster_whisper import WhisperModel
 
 
@@ -14,10 +14,12 @@ class Models:
             device=config.whisper_device,
             compute_type=config.whisper_compute_type
         )
-        
+        self.groq_client = Groq(api_key=config.GROQ_API_KEY)
+
     def get_all_models(self):
         return {
             "openai_client": self.openai_client,
             "elevenlabs_client": self.elevenlabs_client,
-            "whisper_model": self.whisper_model
+            "whisper_model": self.whisper_model,
+            "groq_client": self.groq_client
         }
