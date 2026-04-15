@@ -4,7 +4,7 @@ import json
 import websockets
 
 WS_URL = "ws://127.0.0.1:8000/ws/voice-chat"
-AUDIO_FILE = "test1.wav"
+AUDIO_FILE = "harvard.wav"
 CHUNK_SIZE = 262144  # bytes
 
 

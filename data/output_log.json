@@ -474,5 +474,30 @@
             "answer": "Hey Mariam, today in the workshop I tuned a gear train with a vernier caliper, then sat in the courtyard for tea with Omar and Ali—lots of notes, no surprises.",
             "sources": []
         }
+    },
+    "45": {
+        "character_id": "s1",
+        "timestamp": "2026-04-14T22:14:14.682592",
+        "question": "Hello, my name is Mariam. This is at this recording. Today I want to check the quality of the voice, the clarity of the words and the background noise.  I'm speaking normally not too fast and not too slowly.  This audio should help me test the speech recognition and the response generation.  Hi Karim.  How was your day and one this thing? I tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class or did you stay in the workshop?  I want to know how your friends are going to post the day call, but was it full of work and surprises?",
+        "response": {
+            "answer": "Hey Mariam, today I was busy in the workshop, sketching a steam-turbine and checking a boiler part, then a quick chat in the courtyard with Ahmed and Youssef—pleasant, but tiring.",
+            "sources": [
+                {
+                    "confidence": 0.9,
+                    "type": "archive",
+                    "name": "Cairo University, Faculty of Engineering (Al-Mohandeskhana) Records, 1917–1918",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "46": {
+        "character_id": "s1",
+        "timestamp": "2026-04-14T22:15:26.863561",
+        "question": "The stale smell of old-beer lingers.  It takes heat to bring out the odor.  A cold dip restores health and zest.  A salt pickle tastes fine with ham.  Tacos al pastor are my favorite.  A zestful food is the hot cross bun.",
+        "response": {
+            "answer": "Ha, the workshop scent lingers—the heat wakes beer, a cold dip revives me, and a cross bun cheers us; tacos al pastor would be exotic here, not in the canteen.",
+            "sources": []
+        }
     }
 }
