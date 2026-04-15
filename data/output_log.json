@@ -553,5 +553,49 @@
             "answer": "Hello Mariam, today's been a rush with thermodynamics and workshop sessions - our instructor, Professor Abdel Rahman, was showing us the mechanics of steam engines while the smell of burning coal wafted through the hall.",
             "sources": []
         }
+    },
+    "53": {
+        "character_id": "s1",
+        "timestamp": "Apr 15, 2026  10:04:53 PM",
+        "question": "Hello, my name is Mariam, this is at this recording.  Today I want to check the quality of the voice,  the clarity of the words and the background noise. speaking normally not too fast and not too slowly. This audio should help me test the speech  recognition and their response generation. Hi Karim, have a... cause your day and one to stay and tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are going to post the day con, but was it full of white  answer prizes?",
+        "response": {
+            "answer": "As-salamu alaykum Mariam, it's nice to speak with you. Today was a good day, I studied civil engineering with Profesor Hassan in the main hall, and it was filled with the scent of freshly sharpened graphite pencils.",
+            "sources": []
+        }
+    },
+    "54": {
+        "character_id": "s1",
+        "timestamp": "Apr 15, 2026  10:17:57 PM",
+        "question": "Hello, my name is Mariam, this is at this recording.  Today I want to check the quality of the voice,  the clarity of the words and the background noise. speaking normally not too fast and not too slowly. This audio should help me test the speech  recognition and their response generation. Hi Karim, have a... cause your day and one to stay and tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are going to post the day con, but was it full of white  answer prizes?",
+        "response": {
+            "answer": "What a lovely conversation! I studied Mechanical Engineering today, trying to understand those tricky lever systems in the workshop.",
+            "sources": []
+        }
+    },
+    "55": {
+        "character_id": "s1",
+        "timestamp": "Apr 15, 2026  10:20:27 PM",
+        "question": "Thank you. Bye.",
+        "response": {
+            "answer": "\"Shukraan, abu anib!\" (Thanks, dad). I'll see you later, I have to get back to my notes on engineering mechanics.",
+            "sources": []
+        }
+    },
+    "56": {
+        "character_id": "s1",
+        "timestamp": "Apr 15, 2026  10:25:34 PM",
+        "question": "I'm going to have a little bit of fun with you, and I'm going to have a little bit of fun with you, and I'm going to have a little bit of fun with you,",
+        "response": {
+            "answer": "For Heaven's sake, can you please repeat that? My brain is reeling like the steam engine in Workshop 3, and I can smell the turpentine from the art room."
+        }
+    },
+    "57": {
+        "character_id": "s1",
+        "timestamp": "Apr 15, 2026  10:47:44 PM",
+        "question": "Okay so this is a stress test recording I will speak at different speeds, include  it goes and repeat some words and mix like this. So, hi Kareem, how was your day in Wanda's hair and I did you study engineering subjects  like mechanics, electricity or irrigation or the user's relaxed today?  Now I- speak a bit faster to just how the system handles quick speech. Some people talk very quickly and  words may not be very clear. So this is the important for testing performance under... speed. Now I will repeat some words, repeat, repeat, repeat, and I will also include similar  words sound like fan, van, van. and ban. Let's dis numbers again. 13, 30, 50, 15, 151. Now I will... lower my voice a little as if the microphone is far away and then I'll raise my voice  again to normal level. Finally I will add some small boses. between words, stress segmentation.  This is the end of the stress test recording.",
+        "response": {
+            "answer": "I think I just got lost listening, to be honest! The noise from the printing press in the university's main hall made it tough to focus, anyway.",
+            "sources": []
+        }
     }
 }

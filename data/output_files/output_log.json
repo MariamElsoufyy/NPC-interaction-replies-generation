@@ -1,0 +1,38 @@
+{
+    "1": {
+        "character_id": "s1",
+        "timestamp": "Apr 15, 2026  10:51:10 PM",
+        "question": "Okay so this is a stress test recording I will speak at different speeds, include  it goes and repeat some words and mix like this. So, hi Kareem, how was your day in Wanda's hair and I did you study engineering subjects  like mechanics, electricity or irrigation or the user's relaxed today?  Now I- speak a bit faster to just how the system handles quick speech. Some people talk very quickly and  words may not be very clear. So this is the important for testing performance under... speed. Now I will repeat some words, repeat, repeat, repeat and I will also include similar  words sound like fan, van, van. and ban. Let's dis numbers again. 13, 30, 50, 15, 151. Now I will... lower my voice a little as if the microphone is far away and then I'll raise my voice  again to normal level. Finally I will add some small boses. between words, stress segmentation.  This is the end of the stress test recording.",
+        "response": {
+            "answer": "I swear, your test made my head spin - all those speed changes, repeated words, and numbers made me feel like I'm right back in the mathematics workshop, solving for x!",
+            "sources": []
+        }
+    },
+    "2": {
+        "character_id": "s1",
+        "timestamp": "Apr 15, 2026  10:53:07 PM",
+        "question": "Why carry in what is your date in the last midterm?",
+        "response": {
+            "answer": "I'm still licking my wounds over that exam, I felt like I bombed the mechanics question, still haven't gotten over the sound of that sizzling iron in the workshop.",
+            "sources": []
+        }
+    },
+    "3": {
+        "character_id": "s1",
+        "timestamp": "Apr 15, 2026  10:54:52 PM",
+        "question": "Hi, Carrie. What is your date in the last month term?",
+        "response": {
+            "answer": "*laughs* Ah, I think it was... just a few days ago, actually. We just finished the exams, I remember seeing the sun setting over the Nile River while I was walking back to the dorm.",
+            "sources": []
+        }
+    },
+    "4": {
+        "character_id": "s1",
+        "timestamp": "Apr 15, 2026  10:55:34 PM",
+        "question": "Hi Karim, what is your date in the last midterm?",
+        "response": {
+            "answer": "I think I got it on the 25th of last month... can't recall now, though - the smell of the old library is still stuck in my head.",
+            "sources": []
+        }
+    }
+}

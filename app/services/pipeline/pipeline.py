@@ -2,8 +2,6 @@ import asyncio
 import base64
 import io
 import json
-import os
-import tempfile
 import threading
 import time
 
@@ -65,9 +63,10 @@ class Pipeline:
         t = self._timings.pop(session_id, None)
         if not t:
             return
+        from datetime import datetime
         lines = [
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-            "  ⏱  LATENCY REPORT",
+            f"  ⏱  LATENCY REPORT  —  {datetime.now().strftime('%b %d, %Y  %I:%M:%S %p')}",
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
         ]
         for i, d in enumerate(t["preprocess"]):
@@ -86,7 +85,9 @@ class Pipeline:
         if t["total"] is not None:
             lines.append(f"  Total                  : {t['total']:.3f}s")
         lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
-        print("\n".join(lines))
+        report = "\n".join(lines)
+        print(report)
+        self._save_latency_log(report)
 
     async def enqueue(self, session_id: str, audio_bytes: bytes, is_final: bool = False):
         await self.preprocess_queue.put((session_id, audio_bytes, is_final))
@@ -247,21 +248,29 @@ class Pipeline:
     # --- Helpers ---
 
     def _run_preprocess(self, audio_bytes: bytes):
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
-            f.write(audio_bytes)
-            temp_path = f.name
-        try:
-            return self.audio_preprocessor.preprocess_audio(temp_path)
-        finally:
-            if os.path.exists(temp_path):
-                os.remove(temp_path)
+        # Rebuild a proper WAV in memory (correct header sizes) and process.
+        # No temp file → no Windows file-locking issues, no librosa/audioread fallback.
+        audio = self.audio_preprocessor.load_audio_from_wav_bytes(audio_bytes)
+        processed = self.audio_preprocessor.process_audio(audio)
+        path = self.elevenlabs_service._debug_path("preprocessed_audio.wav")
+        self.audio_preprocessor.save_audio(processed, filename=path)
+        return processed
 
-    def _save_wav(self, chunks: list[bytes], path: str = "output.wav"):
+    def _save_latency_log(self, report: str):
+        path = self.elevenlabs_service._debug_path("latency_log.txt")
+        try:
+            with open(path, "a", encoding="utf-8") as f:
+                f.write(report + "\n\n")
+        except Exception as e:
+            print(f"[DEBUG] Failed to save latency log: {e}")
+
+    def _save_wav(self, chunks: list[bytes]):
+        path = self.elevenlabs_service._debug_path("output.wav")
         try:
             mp3_bytes = b"".join(chunks)
             audio, sr = librosa.load(io.BytesIO(mp3_bytes), sr=None)
             sf.write(path, audio, sr)
-            print(f"[DEBUG] Saved output.wav ({len(audio)} samples @ {sr}Hz)")
+            print(f"[DEBUG] Saved {path} ({len(audio)} samples @ {sr}Hz)")
         except Exception as e:
             print(f"[DEBUG] Failed to save output.wav: {e}")
 
