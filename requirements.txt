@@ -11,3 +11,4 @@ scipy
 soundfile
 noisereduce
 librosa
+groq

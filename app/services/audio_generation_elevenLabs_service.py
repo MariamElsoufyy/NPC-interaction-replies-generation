@@ -30,7 +30,7 @@ class AudioGenerationElevenLabsService:
             audio_stream = self.client.text_to_speech.convert(
                 text=text,
                 voice_id=self.voice_id,
-                model_id="eleven_multilingual_v2",
+                model_id="eleven_turbo_v2_5",
                 output_format="mp3_44100_128"
             )
 
@@ -53,7 +53,7 @@ class AudioGenerationElevenLabsService:
         pcm_stream = self.client.text_to_speech.convert(
             text=text,
             voice_id=self.voice_id,
-            model_id="eleven_multilingual_v2",
+            model_id="eleven_turbo_v2_5",
             output_format="pcm_44100",
         )
 
@@ -79,7 +79,7 @@ class AudioGenerationElevenLabsService:
             audio_stream = self.client.text_to_speech.convert(
                 text=text,
                 voice_id=self.voice_id,
-                model_id="eleven_multilingual_v2",
+                model_id="eleven_turbo_v2_5",
                 output_format="mp3_44100_128"
             )
 

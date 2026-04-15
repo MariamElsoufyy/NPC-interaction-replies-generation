@@ -1,3 +1,4 @@
+import io
 import numpy as np
 import soundfile as sf
 import noisereduce as nr
@@ -9,6 +10,20 @@ import app.core.config as config
 class AudioPreprocessor:
     def __init__(self):
         self.sample_rate = config.audio_preprocessing_sample_rate
+        self._warmup()
+
+    def _warmup(self):
+        """Run the full pipeline on silent audio at startup to trigger all JIT compilations."""
+        import tempfile, os
+        silent = np.zeros(self.sample_rate, dtype=np.float32)  # 1 second of silence
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as f:
+            sf.write(f.name, silent, self.sample_rate)
+            tmp = f.name
+        try:
+            self.preprocess_audio(tmp)
+        finally:
+            os.remove(tmp)
+        print("✅ [AUDIO] Preprocessor warmed up (librosa + noisereduce + scipy)")
 
     def load_audio(self, file_path):
         audio, _ = librosa.load(file_path, sr=self.sample_rate, mono=True)
@@ -34,7 +49,13 @@ class AudioPreprocessor:
         return (audio / max_value).astype(np.float32)
 
     def preprocess_audio(self, audio_path):
-        return self.load_audio(audio_path)
-
+        return self.normalize_audio(
+            self.noise_reduction(
+                self.trim_silence(
+                    self.high_pass_filter(
+                        self.load_audio(audio_path)
+                    )
+                )
+            ))
     def save_audio(self, audio_data, filename="recording.wav"):
         sf.write(filename, audio_data.astype(np.float32), self.sample_rate)

@@ -8,6 +8,7 @@ import app.core.config as config
 from app.services.audio_preprocessor_service import AudioPreprocessor
 from app.services.STT_whisper_service import STTWhisperService
 from app.services.LLM_openAI_service import LLMOpenAIService
+from app.services.LLM_grog_service import LLMGroqService
 from app.services.audio_generation_elevenLabs_service import AudioGenerationElevenLabsService
 from app.services.pipeline.pipeline import Pipeline
 
@@ -22,7 +23,7 @@ async def lifespan(app: FastAPI):
         connection_manager=connection_manager,
         audio_preprocessor=AudioPreprocessor(),
         stt_service=STTWhisperService(model=models["whisper_model"]),
-        llm_service=LLMOpenAIService(client=models["openai_client"]),
+        llm_service=LLMGroqService(client=models["groq_client"]),
         elevenlabs_service=AudioGenerationElevenLabsService(
             client=models["elevenlabs_client"],
             voice_id=config.ELEVENLABS_VOICE_ID,

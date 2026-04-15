@@ -508,5 +508,50 @@
             "answer": "Ah, a curious stew of flavors; heat wakes the task, cold dips refresh; a salty pickle with ham keeps us steady. Tacos al pastor? rare curiosity for us in Cairo.",
             "sources": []
         }
+    },
+    "48": {
+        "character_id": "s1",
+        "timestamp": "Apr 15, 2026  09:30:14 PM",
+        "question": "Hello, my name is Mariam. This is at this recording today. I want to check the quality of the voice the clarity of the words and the background noise speaking normally not too fast and not too slowly. This audio should help me test the speech  recognition and the response generation. Hi Karim. Have a... What did you study today and who did you spend time with?  Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are going to post the day call, but was it full of work and surprises?",
+        "response": {
+            "answer": "Hello Mariam, delighted to assist in this test. \n\nI studied mechanical engineering today, spent most of it in the workshop with Taha and Abdelrahman, we worked on designing a new water wheel, and the sound of the pen scratching on paper, the smell of wood shavings filled my senses.",
+            "sources": []
+        }
+    },
+    "49": {
+        "character_id": "s1",
+        "timestamp": "Apr 15, 2026  09:36:05 PM",
+        "question": "Hello, my name is Mariam. This is at this recording today. I want to check the quality of the voice the clarity of the words and the background noise speaking normally not too fast and not too slowly. This audio should help me test the speech  recognition and the response generation. Hi Karim. Have a... What did you study today and who did you spend time with?  Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are going to post the day call, but was it full of work and surprises?",
+        "response": {
+            "answer": "As-salamu alaykum, Mariam! I'm studying civil engineering, and I spend my days in the workshop, where the smell of coal and wood fills the air.",
+            "sources": []
+        }
+    },
+    "50": {
+        "character_id": "s1",
+        "timestamp": "Apr 15, 2026  09:39:49 PM",
+        "question": "Hello, my name is Mariam, this is at this recording.  Today I want to check the quality of the voice,  the clarity of the words and the background noise. speaking normally not too fast and not too slowly. This audio should help me test the speech  recognition and their response generation. Hi Karim, have a... cause your day and one to stay and tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are going to post the day con, but was it full of white  answer prizes?",
+        "response": {
+            "answer": "The voice of the recording sounds quite clear, almost like the sweet fragrance of jessamine filling the courtyard.   Oh, Mariam, it's great to see you! Today in class we studied applied mechanics under Professor Abdul Raouf, I tried to grasp the concepts, but my mind wandered a bit, thinking about helping my brother with our family's woodworking project.",
+            "sources": []
+        }
+    },
+    "51": {
+        "character_id": "s1",
+        "timestamp": "Apr 15, 2026  09:41:44 PM",
+        "question": "Hello, my name is Mariam, this is at this recording.  Today I want to check the quality of the voice,  the clarity of the words and the background noise. speaking normally not too fast and not too slowly. This audio should help me test the speech  recognition and their response generation. Hi Karim, have a... cause your day and one to stay and tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are going to post the day con, but was it full of white  answer prizes?",
+        "response": {
+            "answer": "Assalamu alaikum Mariam, it's good to see you here. Today was a long day, I spent most of it in the workshop, fixing the lathe to get some practice before the exam.   I must admit, I'm a bit concerned about meeting my father's expectations, he's always pushing me to pursue engineering as a way to secure our family's future.  I went to the courtyard after class and ran into my pals, Abdul and Mahmoud, we had a lively discussion about the latest issue of 'Al-Moustaqbal' magazine, can you believe the latest stories on the Balfour Declaration?",
+            "sources": []
+        }
+    },
+    "52": {
+        "character_id": "s1",
+        "timestamp": "Apr 15, 2026  09:42:48 PM",
+        "question": "Hello, my name is Mariam, this is at this recording.  Today I want to check the quality of the voice,  the clarity of the words and the background noise. speaking normally not too fast and not too slowly. This audio should help me test the speech  recognition and their response generation. Hi Karim, have a... cause your day and one to stay and tell me everything.  What did you study today and who did you spend time with?  Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are going to post the day con, but was it full of white  answer prizes?",
+        "response": {
+            "answer": "Hello Mariam, today's been a rush with thermodynamics and workshop sessions - our instructor, Professor Abdel Rahman, was showing us the mechanics of steam engines while the smell of burning coal wafted through the hall.",
+            "sources": []
+        }
     }
 }
