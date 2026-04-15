@@ -16,7 +16,8 @@ def save_response(question, response, file_path=None, character_id="unknown"):
     os.makedirs(data_dir, exist_ok=True)
 
     if file_path is None:
-        file_path = os.path.join(data_dir, "output_log.json")
+        file_path = os.path.join(data_dir, "output_files", "output_log.json")
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
     print(f"💾 [SAVE RESPONSE] Saving output to: {file_path}")
 

@@ -1,0 +1,66 @@
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⏱  LATENCY REPORT  —  Apr 15, 2026  10:51:13 PM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Preprocess  (batch 1)  : 0.375s
+  Preprocess  (batch 2)  : 0.309s
+  Preprocess  (batch 3)  : 0.266s
+  Preprocess  (batch 4)  : 0.241s
+  Preprocess  (batch 5)  : 0.307s
+  Preprocess  (batch 6)  : 0.237s
+  Preprocess  (batch 7)  : 0.166s
+  Preprocess  (batch 8)  : 0.083s
+  STT         (batch 1)  : 2.224s
+  STT         (batch 2)  : 1.294s
+  STT         (batch 3)  : 1.170s
+  STT         (batch 4)  : 2.545s
+  STT         (batch 5)  : 0.939s
+  STT         (batch 6)  : 1.065s
+  STT         (batch 7)  : 0.904s
+  STT         (batch 8)  : 0.846s
+  LLM                    : 1.114s
+  TTS first chunk        : 0.884s
+  TTS total              : 2.461s
+  ─────────────────────────────────────
+  Time to first audio    : 9.105s
+  Total                  : 10.684s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⏱  LATENCY REPORT  —  Apr 15, 2026  10:53:09 PM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Preprocess  (batch 1)  : 0.091s
+  STT         (batch 1)  : 0.863s
+  LLM                    : 0.903s
+  TTS first chunk        : 0.767s
+  TTS total              : 1.511s
+  ─────────────────────────────────────
+  Time to first audio    : 2.759s
+  Total                  : 3.506s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⏱  LATENCY REPORT  —  Apr 15, 2026  10:54:53 PM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Preprocess  (batch 1)  : 0.143s
+  STT         (batch 1)  : 2.192s
+  LLM                    : 1.138s
+  TTS first chunk        : 0.917s
+  TTS total              : 1.329s
+  ─────────────────────────────────────
+  Time to first audio    : 4.507s
+  Total                  : 4.920s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⏱  LATENCY REPORT  —  Apr 15, 2026  10:55:35 PM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Preprocess  (batch 1)  : 0.169s
+  STT         (batch 1)  : 0.911s
+  LLM                    : 0.731s
+  TTS first chunk        : 0.691s
+  TTS total              : 0.900s
+  ─────────────────────────────────────
+  Time to first audio    : 2.626s
+  Total                  : 2.835s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+

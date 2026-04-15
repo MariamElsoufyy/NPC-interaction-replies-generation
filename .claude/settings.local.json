@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:console.groq.com)"
+      "WebFetch(domain:console.groq.com)",
+      "Bash(xargs grep:*)"
     ]
   }
 }
