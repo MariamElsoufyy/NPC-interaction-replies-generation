@@ -156,5 +156,226 @@
             "answer": "Ah, Mariam, nice to meet you, by the way. To be honest, my day was pretty packed, still trying to catch up on notes for Irrigation Systems Design; had a small disagreement with Abdel over the surveying calculations, but we made up in the courtyard, actually.",
             "sources": []
         }
+    },
+    "19": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  01:51:29 PM",
+        "question": "Hello, my name is Mariam. This is a test recording. Today I want to check the quality of the voice, the clarity of the words, and the background noise. I'm speaking normally, not too fast, and not too slowly. This audio should help me test speech recognition and the response generation. Hi, Kareem. What was your day in Mohandas Khayna? Tell me everything. What did you study today and who did you spend time with? Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are doing too. Was the day calm or was it full of work and surprises?",
+        "response": {
+            "answer": "{sighing} Ah, Mariam, nice to meet you. My day was chaotic, as it always seems to be - lectures on Hydraulics with Professor Fahmy went by like a breeze, I managed to scribble down some decent notes, but that's about it.  The courtyard after class was a hubbub of excitement, I saw Abdullah and Hassan playing cards, and Ali was showing off his fancy new compass. I didn't join in, too engrossed in my thoughts, I suppose. As for surprises, I spent most of my day wrestling with my own doubts in front of the Dumpy level, wondering if I'm truly cut out for this.",
+            "sources": []
+        }
+    },
+    "20": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:11:41 PM",
+        "question": "Okay, so this is a stress test recording. I will speak at different speeds, include poses, and repeat some words and mixed languages. So, hi, Kareem. How was your day in Mohandas Khayana? Did you study engineering subjects like mechanics, electricity, or irrigation, or did you just relax today? speak a bit faster to test how the system handles quick speech. Some people talk very quickly and words may not be very clear. So this is the part is important for testing performance under speed. Now I will repeat some words. Repeat, repeat, repeat. And I will also include similar words sound like fan, van, ban, And ban. Let's test numbers again. 13, 30, 50, 15, 151. Now I will lower my voice a little, as if the microphone is far away. And then I'll raise my voice again to normal level. Finally, I will add some small voices. between words to test segmentation. This is the end of the stress test recording.",
+        "response": {
+            "answer": "{laughs} Ah, my day in Al-Mohandeskhana... was tolerable. I managed to sneak in some horseback riding after a quick stop in the mosque, and then spent some time reviewing Irrigation Systems Design, just to be sure I don't mess it up in front of my father.",
+            "sources": []
+        }
+    },
+    "21": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:14:29 PM",
+        "question": "Okay, so this is a stress test recording. I will speak at different speeds, include poses, and repeat some words and mixed languages. So, hi, Kareem. How was your day in Mohandas Khayana? Did you study engineering subjects like mechanics, electricity, or irrigation, or did you just relax today? speak a bit faster to test how the system handles quick speech. Some people talk very quickly and words may not be very clear. So this is the part is important for testing performance under speed. Now I will repeat some words. Repeat, repeat, repeat. And I will also include similar words sound like fan, van, ban, And ban. Let's test numbers again. 13, 30, 50, 15, 151. Now I will lower my voice a little, as if the microphone is far away. And then I'll raise my voice again to normal level. Finally, I will add some small voices. between words to test segmentation. This is the end of the stress test recording.",
+        "response": {
+            "answer": "{chuckles} Ah, what a unique day it's been here in Al-Mohandeskhana. Studied irrigation designs in workshop, trying to perfect my use of the dumpy level (no sources).",
+            "sources": []
+        }
+    },
+    "22": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:17:51 PM",
+        "question": "Okay, so this is a stress test recording. I will speak at different speeds, include poses, and repeat some words and mixed languages. So, hi, Kareem. How was your day in Mohandas Khayana? Did you study engineering subjects like mechanics, electricity, or irrigation, or did you just relax today? speak a bit faster to test how the system handles quick speech. Some people talk very quickly and words may not be very clear. So this is the part is important for testing performance under speed. Now I will repeat some words. Repeat, repeat, repeat. And I will also include similar words sound like fan, van, ban, And ban. Let's test numbers again. 13, 30, 50, 15, 151. Now I will lower my voice a little, as if the microphone is far away. And then I'll raise my voice again to normal level. Finally, I will add some small voices. between words to test segmentation. This is the end of the stress test recording.",
+        "response": {
+            "answer": "The day was alright, I suppose. **(pauses)** I went to the workshop and helped set up the surveying chains for the next day's measurements <{starting to speak}>, and we had a few issues with the dumpy level. **(fidgets with fountain pen)**",
+            "sources": []
+        }
+    },
+    "23": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:21:28 PM",
+        "question": "Okay, so this is a stress test recording. I will speak at different speeds, include poses, and repeat some words and mixed languages. So, hi, Kareem. How was your day in Mohandas Khayana? Did you study engineering subjects like mechanics, electricity, or irrigation, or did you just relax today? speak a bit faster to test how the system handles quick speech. Some people talk very quickly and words may not be very clear. So this is the part is important for testing performance under speed. Now I will repeat some words. Repeat, repeat, repeat. And I will also include similar words sound like fan, van, ban, And ban. Let's test numbers again. 13, 30, 50, 15, 151. Now I will lower my voice a little, as if the microphone is far away. And then I'll raise my voice again to normal level. Finally, I will add some small voices. between words to test segmentation. This is the end of the stress test recording.",
+        "response": {
+            "answer": "\"Hey, I managed to sneak in some studying between horseback rides, did a few problems in Applied Mechanics, but now my mind's a bit... fuzzy. The workshop was quiet, except for the smell of freshly sharpened pencils.\"  {   \"answer\": \"Hey, I managed to sneak in some studying between horseback rides, did a few problems in Applied Mechanics, but now my mind's a bit... fuzzy. The workshop was quiet, except for the smell of freshly sharpened pencils.\",   \"sources\": [] }",
+            "sources": []
+        }
+    },
+    "24": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:24:39 PM",
+        "question": "Okay, so this is a stress test recording. I will speak at different speeds, include poses, and repeat some words and mixed languages. So, hi, Kareem. How was your day in Mohandas Khayana? Did you study engineering subjects like mechanics, electricity, or irrigation, or did you just relax today? speak a bit faster to test how the system handles quick speech. Some people talk very quickly and words may not be very clear. So this is the part is important for testing performance under speed. Now I will repeat some words. Repeat, repeat, repeat. And I will also include similar words sound like fan, van, ban, And ban. Let's test numbers again. 13, 30, 50, 15, 151. Now I will lower my voice a little, as if the microphone is far away. And then I'll raise my voice again to normal level. Finally, I will add some small voices. between words to test segmentation. This is the end of the stress test recording.",
+        "response": {
+            "answer": "That sounds like a test all right. I hope I passed with flying colors, by the way, today was decent.",
+            "sources": []
+        }
+    },
+    "25": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:26:46 PM",
+        "question": "Okay, so this is a stress test recording. I will speak at different speeds, include poses, and repeat some words and mixed languages. So, hi, Kareem. How was your day in Mohandas Khayana? Did you study engineering subjects like mechanics, electricity, or irrigation, or did you just relax today? speak a bit faster to test how the system handles quick speech. Some people talk very quickly and words may not be very clear. So this is the part is important for testing performance under speed. Now I will repeat some words. Repeat, repeat, repeat. And I will also include similar words sound like fan, van, ban, And ban. Let's test numbers again. 13, 30, 50, 15, 151. Now I will lower my voice a little, as if the microphone is far away. And then I'll raise my voice again to normal level. Finally, I will add some small voices. between words to test segmentation. This is the end of the stress test recording.",
+        "response": {
+            "answer": "Oh, it's been a decent day, I've got my notes for Hydraulics all over the table in the workshop, and I spent some time practicing calculations for surveying with our dumpy level.",
+            "sources": []
+        }
+    },
+    "26": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:27:55 PM",
+        "question": "Okay, so this is a stress test recording. I will speak at different speeds, include poses, and repeat some words and mixed languages. So, hi, Kareem. How was your day in Mohandas Khayana? Did you study engineering subjects like mechanics, electricity, or irrigation, or did you just relax today? speak a bit faster to test how the system handles quick speech. Some people talk very quickly and words may not be very clear. So this is the part is important for testing performance under speed. Now I will repeat some words. Repeat, repeat, repeat. And I will also include similar words sound like fan, van, ban, And ban. Let's test numbers again. 13, 30, 50, 15, 151. Now I will lower my voice a little, as if the microphone is far away. And then I'll raise my voice again to normal level. Finally, I will add some small voices. between words to test segmentation. This is the end of the stress test recording.",
+        "response": {
+            "answer": "Ah, day's alright. Quick morning run, got some studying done in the workshop for Irrigation Systems Design – measured water flow with the Surveying chains and Dumpy level, then had a snack from the cafe.",
+            "sources": []
+        }
+    },
+    "27": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:28:54 PM",
+        "question": "Okay, so this is a stress test recording. I will speak at different speeds, include poses, and repeat some words and mixed languages. So, hi, Kareem. How was your day in Mohandas Khayana? Did you study engineering subjects like mechanics, electricity, or irrigation, or did you just relax today? speak a bit faster to test how the system handles quick speech. Some people talk very quickly and words may not be very clear. So this is the part is important for testing performance under speed. Now I will repeat some words. Repeat, repeat, repeat. And I will also include similar words sound like fan, van, ban, And ban. Let's test numbers again. 13, 30, 50, 15, 151. Now I will lower my voice a little, as if the microphone is far away. And then I'll raise my voice again to normal level. Finally, I will add some small voices. between words to test segmentation. This is the end of the stress test recording.",
+        "response": {
+            "answer": "Woohoo, that's quite a speech, my friend! Oh, my day was alright, I went over irrigation design and surveying levels in the workshop – spent most of my time with the dumpy level, getting the hang of it.",
+            "sources": []
+        }
+    },
+    "28": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:29:38 PM",
+        "question": "Hello, my name is Mariam. This is a test recording. Today I want to check the quality of the voice, the clarity of the words, and the background noise. I'm speaking normally, not too fast, and not too slowly. This audio should help me test speech recognition and the response generation. Hi, Kareem. What was your day in Mohandas Khayna? Tell me everything. What did you study today and who did you spend time with? Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are doing too. Was the day calm or was it full of work and surprises?",
+        "response": {
+            "answer": "Assalamu alaikum, Mariam! Today has been a typical one, to be honest, with Hydraulics class in the morning and a lengthy math problem in Applied Mechanics that I still need to finish. Can't even concentrate with that smell of freshly cut grass from the courtyard, you know?",
+            "sources": [
+                {
+                    "confidence": 0.9,
+                    "type": "person",
+                    "name": "",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "29": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:30:32 PM",
+        "question": "Hello, my name is Mariam. This is a test recording. Today I want to check the quality of the voice, the clarity of the words, and the background noise. I'm speaking normally, not too fast, and not too slowly. This audio should help me test speech recognition and the response generation. Hi, Kareem. What was your day in Mohandas Khayna? Tell me everything. What did you study today and who did you spend time with? Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are doing too. Was the day calm or was it full of work and surprises?",
+        "response": {
+            "answer": "Ah, Mariam! It's your turn to know me, isn't it? *chuckles* Well, today was quite an eventful day. We worked tirelessly on our Irrigation Systems Design projects in the workshop – measuring the flow rates and plotting the canal layouts on large paper *sound of pencil scratching*. I must say, the smell of fresh ink and wood shavings always gets me focused!",
+            "sources": []
+        }
+    },
+    "30": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:35:15 PM",
+        "question": "Hello, my name is Mariam. This is a test recording. Today I want to check the quality of the voice, the clarity of the words, and the background noise. I'm speaking normally, not too fast, and not too slowly. This audio should help me test speech recognition and the response generation. Hi, Kareem. What was your day in Mohandas Khayna? Tell me everything. What did you study today and who did you spend time with? Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are doing too. Was the day calm or was it full of work and surprises?",
+        "response": {
+            "answer": "Ah, nice to meet you, Mariam! {smiles} We've had a {frustrated} morning trying to fix that pesky Dumpy level in the workshop - levels keep getting knocked off. I went to class, then met Ali Fahmy in the courtyard for a snack of flatbread and fava beans.",
+            "sources": []
+        }
+    },
+    "31": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:37:10 PM",
+        "question": "Hello, my name is Mariam. This is a test recording. Today I want to check the quality of the voice, the clarity of the words, and the background noise. I'm speaking normally, not too fast, and not too slowly. This audio should help me test speech recognition and the response generation. Hi, Kareem. What was your day in Mohandas Khayna? Tell me everything. What did you study today and who did you spend time with? Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are doing too. Was the day calm or was it full of work and surprises?",
+        "response": {
+            "answer": "{   \"answer\": \"Oh, Salam Mariam, today was pretty standard, I guess. We covered sections of canal construction and I worked on perfecting my chain surveying skills in the workshop. The smell of fresh wood and oil still lingers inside.\" } {   \"sources\": [] }",
+            "sources": []
+        }
+    },
+    "32": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:38:05 PM",
+        "question": "Hello, my name is Mariam. This is a test recording. Today I want to check the quality of the voice, the clarity of the words, and the background noise. I'm speaking normally, not too fast, and not too slowly. This audio should help me test speech recognition and the response generation. Hi, Kareem. What was your day in Mohandas Khayna? Tell me everything. What did you study today and who did you spend time with? Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are doing too. Was the day calm or was it full of work and surprises?",
+        "response": {
+            "answer": "Hello Mariam, nice to meet you. My day's been alright, a bit warm in the workshop, smell of coal and oil everywhere, reminds me of Father's estate in the Delta. Studied Hydraulics today and spent some time with Aziz, that's my friend from class.",
+            "sources": [
+                {
+                    "confidence": 1.0,
+                    "type": "Personal Experience",
+                    "name": "Kareem Ali El-Attar",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "33": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:39:09 PM",
+        "question": "Hello, my name is Mariam. This is a test recording. Today I want to check the quality of the voice, the clarity of the words, and the background noise. I'm speaking normally, not too fast, and not too slowly. This audio should help me test speech recognition and the response generation. Hi, Kareem. What was your day in Mohandas Khayna? Tell me everything. What did you study today and who did you spend time with? Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are doing too. Was the day calm or was it full of work and surprises?",
+        "response": {
+            "answer": "Assalamu alaykum, Mariam. Nice to speak with you. Today was a typical day, I suppose. We had a lesson on Hydraulics in the workshop; I was struggling to grasp it, as per usual.",
+            "sources": [
+                {
+                    "confidence": 1.0,
+                    "type": "Personal",
+                    "name": "Kareem Ali El-Attar",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "34": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:41:00 PM",
+        "question": "Hello, my name is Mariam. This is a test recording. Today I want to check the quality of the voice, the clarity of the words, and the background noise. I'm speaking normally, not too fast, and not too slowly. This audio should help me test speech recognition and the response generation. Hi, Kareem. What was your day in Mohandas Khayna? Tell me everything. What did you study today and who did you spend time with? Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are doing too. Was the day calm or was it full of work and surprises?",
+        "response": {
+            "answer": "Ah, Mariam, my day was just like every other day, filled with trying to grasp 'Hydraulics', but my mind kept drifting away to those long horseback rides my father and I had in the British countryside. I must say, I was looking forward to a quiet day in the workshop, though.",
+            "sources": []
+        }
+    },
+    "35": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:43:12 PM",
+        "question": "Hello, my name is Mariam. This is a test recording. Today I want to check the quality of the voice, the clarity of the words, and the background noise. I'm speaking normally, not too fast, and not too slowly. This audio should help me test speech recognition and the response generation. Hi, Kareem. What was your day in Mohandas Khayna? Tell me everything. What did you study today and who did you spend time with? Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are doing too. Was the day calm or was it full of work and surprises?",
+        "response": {
+            "answer": "Hi Mariam, *ahem* nice to chat with you. Today was a bit of a struggle, to be honest. We were working with surveying chains in Engineering Mathematics, trying to calculate the length of a canal.",
+            "sources": []
+        }
+    },
+    "36": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:45:16 PM",
+        "question": "Hello, my name is Mariam. This is a test recording. Today I want to check the quality of the voice, the clarity of the words, and the background noise. I'm speaking normally, not too fast, and not too slowly. This audio should help me test speech recognition and the response generation. Hi, Kareem. What was your day in Mohandas Khayna? Tell me everything. What did you study today and who did you spend time with? Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are doing too. Was the day calm or was it full of work and surprises?",
+        "response": {
+            "answer": "I spent most of it studying Surveying and Leveling; I'm struggling to grasp the principles of leveling and adjustment.",
+            "sources": [
+                {
+                    "confidence": 0.8,
+                    "type": "Personal account",
+                    "name": "Diary entry",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "37": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:47:19 PM",
+        "question": "Hello, my name is Mariam. This is a test recording. Today I want to check the quality of the voice, the clarity of the words, and the background noise. I'm speaking normally, not too fast, and not too slowly. This audio should help me test speech recognition and the response generation. Hi, Kareem. What was your day in Mohandas Khayna? Tell me everything. What did you study today and who did you spend time with? Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are doing too. Was the day calm or was it full of work and surprises?",
+        "response": {
+            "answer": "Today was a chaotic mix of hydraulics and surveying in the workshop, where I spent most of my afternoon trying to calculate water depths. It was intense, but I managed to sneak out for a brief horseback ride afterwards.",
+            "sources": [
+                {
+                    "confidence": 0.9,
+                    "type": "personal",
+                    "name": "Self-recall"
+                }
+            ]
+        }
+    },
+    "38": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:48:52 PM",
+        "question": "Hello, my name is Mariam. This is a test recording. Today I want to check the quality of the voice, the clarity of the words, and the background noise. I'm speaking normally, not too fast, and not too slowly. This audio should help me test speech recognition and the response generation. Hi, Kareem. What was your day in Mohandas Khayna? Tell me everything. What did you study today and who did you spend time with? Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are doing too. Was the day calm or was it full of work and surprises?",
+        "response": {
+            "answer": "Ah, Mariam! My day's been a mixed bag - spent most of it figuring out those tricky canal construction models, with the sweat and smell of the workshop getting on my clothes. Then, I strolled to the courtyard, where Aziz was showing off his horseback riding skills, and I couldn't help but feel a twinge of envy!",
+            "sources": [
+                {
+                    "confidence": 0.9,
+                    "type": "personal",
+                    "name": "Kareem's Journal",
+                    "url": null
+                }
+            ]
+        }
     }
 }

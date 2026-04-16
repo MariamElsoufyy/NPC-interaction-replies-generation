@@ -5,7 +5,10 @@ from datetime import datetime
 import numpy as np
 import soundfile as sf
 
+
 from app.core import config
+
+
 
 
 class AudioGenerationElevenLabsService:
@@ -32,6 +35,7 @@ class AudioGenerationElevenLabsService:
                 voice_id=self.voice_id,
                 model_id=self.model_id,
                 output_format="mp3_44100_128",
+                voice_settings=config.VOICE_SETTINGS,
             )
             with open(output_path, "wb") as f:
                 for chunk in audio_stream:
@@ -51,6 +55,7 @@ class AudioGenerationElevenLabsService:
             voice_id=self.voice_id,
             model_id=self.model_id,
             output_format="pcm_44100",
+            voice_settings=config.VOICE_SETTINGS,
         )
         pcm_bytes = b"".join(chunk for chunk in pcm_stream if chunk)
         audio = np.frombuffer(pcm_bytes, dtype=np.int16).astype(np.float32) / 32768.0
@@ -68,6 +73,7 @@ class AudioGenerationElevenLabsService:
                 voice_id=self.voice_id,
                 model_id=self.model_id,
                 output_format="mp3_44100_128",
+                voice_settings=config.VOICE_SETTINGS,
             )
 
             output_file = open(debug_output_path, "wb") if debug_output_path else None

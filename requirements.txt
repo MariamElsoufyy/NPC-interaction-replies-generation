@@ -12,3 +12,4 @@ soundfile
 noisereduce
 librosa
 groq
+python-dotenv
