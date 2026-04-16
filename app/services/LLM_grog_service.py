@@ -7,6 +7,7 @@ class LLMGroqService:
         self.client = client
         self.model_name = config.groq_model_name
         self.max_completion_tokens = config.groq_max_completion_tokens
+        print(f"✅ [LLM] Groq LLM ready (model={self.model_name})")
 
     def generate_reply(self, user_prompt, system_prompt):
         messages = [

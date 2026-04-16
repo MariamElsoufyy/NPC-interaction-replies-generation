@@ -4,8 +4,8 @@ import json
 import websockets
 
 WS_URL = "ws://127.0.0.1:8000/ws/voice-chat"
-AUDIO_FILE = "test_18_secs.wav"
-CHUNK_SIZE = 262144  # bytes
+AUDIO_FILE = "test_38_secs.wav"
+CHUNK_SIZE = 131072  # bytes
 
 
 async def main():
@@ -17,7 +17,7 @@ async def main():
         # 2) start_session
         await websocket.send(json.dumps({
             "type": "start_session",
-            "character_id": "s1",
+            "character_id": "S1",
             "sample_rate": 16000,
             "audio_format": "wav_base64_chunks"
         }))

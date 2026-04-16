@@ -2,8 +2,12 @@ import asyncio
 import base64
 import io
 import json
+import queue as thread_queue
+import re
 import threading
 import time
+
+import numpy as np
 
 import librosa
 import soundfile as sf
@@ -93,14 +97,24 @@ class Pipeline:
         await self.preprocess_queue.put((session_id, audio_bytes, is_final))
 
     async def enqueue_finalize(self, session_id: str):
-        """Called when end_of_utterance lands exactly on a 5-chunk boundary — no remaining audio."""
-        await self.stt_queue.put((session_id, None, True))
+        """Called when end_of_utterance lands exactly on a 5-chunk boundary — no remaining audio.
+        Routes through preprocess_queue (not stt_queue directly) so it always arrives
+        AFTER all pending batches finish preprocessing — prevents the finalize signal
+        from racing ahead of still-running preprocess threads."""
+        await self.preprocess_queue.put((session_id, None, True))
 
     # --- Workers ---
 
     async def _preprocess_worker(self):
         while True:
             session_id, audio_bytes, is_final = await self.preprocess_queue.get()
+
+            # Finalize-only signal (no audio) — pass straight to stt_queue so it
+            # arrives after all previously queued preprocess jobs complete.
+            if audio_bytes is None:
+                await self.stt_queue.put((session_id, None, True))
+                continue
+
             t0 = time.perf_counter()
             try:
                 preprocessed = await asyncio.to_thread(self._run_preprocess, audio_bytes)
@@ -152,10 +166,7 @@ class Pipeline:
                 )
                 reply_raw = await asyncio.to_thread(self.llm_service.generate_reply, user_prompt, system_prompt)
                 self._t(session_id)["llm"] = time.perf_counter() - t0
-                try:
-                    parsed = json.loads(reply_raw)
-                except Exception:
-                    parsed = {"answer": reply_raw, "sources": []}
+                parsed = self._parse_llm_reply(reply_raw)
 
                 save_response(question=transcript, response=parsed, character_id=character_id)
                 if session:
@@ -182,23 +193,83 @@ class Pipeline:
             except Exception as e:
                 await self._send_error(session_id, f"TTS failed: {e}")
 
+    # --- TTS sentence helpers ---
+
+    @staticmethod
+    def _split_sentences(text: str) -> list[str]:
+        """Split text on sentence boundaries, keeping punctuation with the sentence."""
+        parts = re.split(r'(?<=[.!?؟،])\s+', text.strip())
+        return [p.strip() for p in parts if p.strip()]
+
+    def _start_sentence_tts(self, sentence: str) -> thread_queue.Queue:
+        """Kick off ElevenLabs for one sentence in a background thread.
+        Collects the full sentence audio, trims trailing silence, then puts
+        a single clean WAV chunk in the queue followed by a None sentinel."""
+        q: thread_queue.Queue = thread_queue.Queue()
+
+        def run():
+            try:
+                # Collect all MP3 chunks for this sentence
+                mp3_chunks = []
+                for chunk in self.elevenlabs_service.stream_audio(sentence):
+                    if chunk:
+                        mp3_chunks.append(chunk)
+
+                if not mp3_chunks:
+                    return
+
+                # Decode → trim trailing silence → re-encode as WAV
+                mp3_bytes = b"".join(mp3_chunks)
+                audio, sr = librosa.load(io.BytesIO(mp3_bytes), sr=None, mono=True)
+                trimmed, _ = librosa.effects.trim(audio, top_db=35, frame_length=512, hop_length=128)
+
+                wav_buf = io.BytesIO()
+                sf.write(wav_buf, trimmed, sr, format="WAV", subtype="PCM_16")
+                wav_buf.seek(0)
+                q.put(wav_buf.read())
+
+            except Exception as e:
+                q.put(e)
+            finally:
+                q.put(None)  # sentinel
+
+        threading.Thread(target=run, daemon=True).start()
+        return q
+
     async def _stream_tts_live(self, session_id: str, text: str, t0: float):
         bridge: asyncio.Queue = asyncio.Queue()
         loop = asyncio.get_running_loop()
         collected: list[bytes] = []
 
-        def run():
+        sentences = self._split_sentences(text) or [text]
+
+        def run_all():
             try:
-                for chunk in self.elevenlabs_service.stream_audio(text):
-                    if chunk:
-                        collected.append(chunk)
-                        loop.call_soon_threadsafe(bridge.put_nowait, chunk)
+                # Start sentence 0 immediately; prefetch sentence N+1 while N plays.
+                queues = [self._start_sentence_tts(sentences[0])]
+                next_idx = 1
+
+                for q in queues:
+                    # Fire off the next sentence's TTS request before blocking on current.
+                    if next_idx < len(sentences):
+                        queues.append(self._start_sentence_tts(sentences[next_idx]))
+                        next_idx += 1
+
+                    while True:
+                        item = q.get()
+                        if item is None:
+                            break
+                        if isinstance(item, Exception):
+                            raise item
+                        collected.append(item)
+                        loop.call_soon_threadsafe(bridge.put_nowait, item)
+
             except Exception as e:
                 loop.call_soon_threadsafe(bridge.put_nowait, e)
             finally:
                 loop.call_soon_threadsafe(bridge.put_nowait, None)
 
-        threading.Thread(target=run, daemon=True).start()
+        threading.Thread(target=run_all, daemon=True).start()
 
         chunk_index = 0
         first_chunk = True
@@ -247,6 +318,40 @@ class Pipeline:
 
     # --- Helpers ---
 
+    @staticmethod
+    def _parse_llm_reply(reply_raw: str) -> dict:
+        """Robustly extract {answer, sources} from whatever the LLM returned.
+
+        Handles three cases the model sometimes produces:
+          1. Clean JSON object  → parse directly
+          2. Plain text + JSON appended at the end → extract the last {...} block
+          3. Anything else      → treat the whole string as the answer
+        """
+        # 1. Try direct parse first
+        try:
+            parsed = json.loads(reply_raw)
+            if isinstance(parsed, dict) and "answer" in parsed:
+                return parsed
+            # Parsed but not the right shape (e.g. a bare string in quotes)
+            return {"answer": str(parsed), "sources": []}
+        except Exception:
+            pass
+
+        # 2. Try to pull out the last {...} block (model prepended plain text before JSON)
+        match = re.search(r'\{[\s\S]*\}(?=[^}]*$)', reply_raw)
+        if match:
+            try:
+                parsed = json.loads(match.group())
+                if isinstance(parsed, dict) and "answer" in parsed:
+                    return parsed
+            except Exception:
+                pass
+
+        # 3. Fall back: use the raw string but strip any trailing JSON blob
+        # so TTS doesn't read out the JSON syntax
+        clean = re.sub(r'\s*\{[\s\S]*\}\s*$', '', reply_raw).strip()
+        return {"answer": clean or reply_raw, "sources": []}
+
     def _run_preprocess(self, audio_bytes: bytes):
         # Rebuild a proper WAV in memory (correct header sizes) and process.
         # No temp file → no Windows file-locking issues, no librosa/audioread fallback.
@@ -267,10 +372,18 @@ class Pipeline:
     def _save_wav(self, chunks: list[bytes]):
         path = self.elevenlabs_service._debug_path("output.wav")
         try:
-            mp3_bytes = b"".join(chunks)
-            audio, sr = librosa.load(io.BytesIO(mp3_bytes), sr=None)
-            sf.write(path, audio, sr)
-            print(f"[DEBUG] Saved {path} ({len(audio)} samples @ {sr}Hz)")
+            # chunks are already trimmed WAV files (one per sentence) — concatenate their PCM data
+            all_audio = []
+            sr = None
+            for wav_bytes in chunks:
+                audio, file_sr = sf.read(io.BytesIO(wav_bytes), dtype="float32", always_2d=False)
+                if sr is None:
+                    sr = file_sr
+                all_audio.append(audio)
+            if all_audio and sr:
+                combined = np.concatenate(all_audio)
+                sf.write(path, combined, sr)
+                print(f"[DEBUG] Saved {path} ({len(combined)} samples @ {sr}Hz)")
         except Exception as e:
             print(f"[DEBUG] Failed to save output.wav: {e}")
 

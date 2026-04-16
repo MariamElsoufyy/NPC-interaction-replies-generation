@@ -13,10 +13,17 @@ class AudioPreprocessor:
         self._warmup()
 
     def _warmup(self):
-        """Run the full pipeline on a silent array to trigger all JIT compilations."""
-        silent = np.zeros(self.sample_rate, dtype=np.float32)  # 1 second of silence
-        self.process_audio(silent)
-        print("✅ [AUDIO] Preprocessor warmed up (librosa + noisereduce + scipy)")
+        """Run the full pipeline twice to trigger all JIT compilations and
+        pre-allocate memory for realistic batch sizes.
+        - Pass 1 (1s): short array — initialises Numba kernels and scipy filters.
+        - Pass 2 (5s): matches a real 5-chunk batch — pre-allocates noisereduce
+          buffers and librosa trim structures so batch 1 has no cold-start penalty.
+        """
+        print("⏳ [AUDIO] Warming up preprocessor (librosa + noisereduce + scipy)...")
+        for seconds in (1, 5):
+            silent = np.zeros(self.sample_rate * seconds, dtype=np.float32)
+            self.process_audio(silent)
+        print("✅ [AUDIO] Preprocessor ready")
 
     def load_audio(self, file_path):
         audio, _ = librosa.load(file_path, sr=self.sample_rate, mono=True)

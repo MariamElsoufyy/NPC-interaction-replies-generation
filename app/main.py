@@ -8,6 +8,7 @@ import app.core.config as config
 from app.services.audio_preprocessor_service import AudioPreprocessor
 from app.services.STT_whisper_service import STTWhisperService
 from app.services.LLM_openAI_service import LLMOpenAIService
+from app.services.STT_groq_whisper_service import STTGroqWhisperService
 from app.services.LLM_grog_service import LLMGroqService
 from app.services.audio_generation_elevenLabs_service import AudioGenerationElevenLabsService
 from app.services.pipeline.pipeline import Pipeline
@@ -18,11 +19,17 @@ async def lifespan(app: FastAPI):
     print("🚀 [STARTUP] Loading models...")
     models = Models().get_all_models()
 
+    # Pick STT service based on config
+    if config.stt_provider == "groq":
+        stt_service = STTGroqWhisperService(client=models["groq_client"])
+    else:
+        stt_service = STTWhisperService(model=models["whisper_model"])
+
     connection_manager = ConnectionManager()
     pipeline = Pipeline(
         connection_manager=connection_manager,
         audio_preprocessor=AudioPreprocessor(),
-        stt_service=STTWhisperService(model=models["whisper_model"]),
+        stt_service=stt_service,
         llm_service=LLMGroqService(client=models["groq_client"]),
         elevenlabs_service=AudioGenerationElevenLabsService(
             client=models["elevenlabs_client"],
