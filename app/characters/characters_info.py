@@ -130,8 +130,6 @@ tools_used = {
            "Micrometer",
            "T-square ruler" ],
     
-
-    
     "P1": ["Chalk",
            "Ink pens", 
            "Pocket watch",

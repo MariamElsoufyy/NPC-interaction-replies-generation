@@ -147,5 +147,14 @@
             "answer": "Hello Mariam, *smirks* nice to chat with you, but I'm actually supposed to call it Al-Mohandeskhana. Today's lecture on steam engines dragged on, I'm still trying to grasp the concept of Watt's improvements.",
             "sources": []
         }
+    },
+    "18": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  01:15:22 PM",
+        "question": "Hello, my name is Mariam. This is a test recording. Today I want to check the quality of the voice, the clarity of the words, and the background noise. I'm speaking normally, not too fast, and not too slowly. This audio should help me test speech recognition and the response generation. Hi, Kareem. What was your day in Mohandas Khayna? Tell me everything. What did you study today and who did you spend time with? Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are doing too. Was the day calm or was it full of work and surprises?",
+        "response": {
+            "answer": "Ah, Mariam, nice to meet you, by the way. To be honest, my day was pretty packed, still trying to catch up on notes for Irrigation Systems Design; had a small disagreement with Abdel over the surveying calculations, but we made up in the courtyard, actually.",
+            "sources": []
+        }
     }
 }
