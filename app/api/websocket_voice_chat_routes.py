@@ -64,10 +64,6 @@ async def websocket_voice_chat(websocket: WebSocket):
                 session.add_audio_chunk(audio_data)
                 total = session.get_audio_chunk_count()
 
-                # Store WAV header from the very first chunk (first 44 bytes)
-                if total == 1:
-                    session.wav_header = base64.b64decode(audio_data)[:44]
-
                 await manager.send_json(session_id, build_ack_event(
                     event="audio_chunk",
                     message="Audio chunk received",
@@ -75,13 +71,13 @@ async def websocket_voice_chat(websocket: WebSocket):
                     total_chunks=total,
                 ))
 
-                # Trigger rolling STT every 5 chunks
-                if total % 5 == 0:
-                    batch = session.audio_buffer.get_last_n_chunks(5)
+                # Trigger rolling STT every 3 chunks (smaller batches = lower latency).
+                # Include 1 overlap chunk from the previous batch so words at
+                # boundaries aren't split across two separate transcriptions.
+                if total % 3 == 0:
+                    overlap = 1 if total > 3 else 0
+                    batch = session.audio_buffer.get_last_n_chunks(3 + overlap)
                     audio_bytes = b"".join(base64.b64decode(c) for c in batch)
-                    # Batches after the first don't have a WAV header — prepend it
-                    if total > 5:
-                        audio_bytes = session.wav_header + audio_bytes
                     session.processed_chunk_count = total
                     await pipeline.enqueue(session_id, audio_bytes, is_final=False)
 
@@ -98,12 +94,9 @@ async def websocket_voice_chat(websocket: WebSocket):
                 remaining = session.audio_buffer.get_all_chunks()[session.processed_chunk_count:]
                 if remaining:
                     audio_bytes = b"".join(base64.b64decode(c) for c in remaining)
-                    # Remaining chunks also have no header if they're not from the start
-                    if session.processed_chunk_count > 0:
-                        audio_bytes = session.wav_header + audio_bytes
                     await pipeline.enqueue(session_id, audio_bytes, is_final=True)
                 else:
-                    # Chunks count was exactly divisible by 5 — all already processed
+                    # Total chunks exactly divisible by 3 — all already enqueued
                     await pipeline.enqueue_finalize(session_id)
 
             elif msg_type == "close_session":

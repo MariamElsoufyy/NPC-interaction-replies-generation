@@ -91,7 +91,14 @@ class AudioPreprocessor:
         return (audio / max_value).astype(np.float32)
 
     def process_audio(self, audio: np.ndarray) -> np.ndarray:
-        """Run the full pipeline on an in-memory numpy array."""
+        """Normalize only — fast path for real-time use.
+        Full pipeline (high_pass_filter → trim_silence → noise_reduction) is kept
+        below and can be re-enabled if audio quality needs improvement.
+        """
+        return self.normalize_audio(audio)
+
+    def process_audio_full(self, audio: np.ndarray) -> np.ndarray:
+        """Full quality pipeline — ~0.28s per batch, use when latency is not critical."""
         return self.normalize_audio(
             self.noise_reduction(
                 self.trim_silence(

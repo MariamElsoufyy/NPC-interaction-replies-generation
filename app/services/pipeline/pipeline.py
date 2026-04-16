@@ -160,41 +160,79 @@ class Pipeline:
                     question=transcript,
                     prompt_key=prompt_key,
                 )
-                reply_raw = await asyncio.to_thread(self.llm_service.generate_reply, user_prompt, system_prompt)
-                self._t(session_id)["llm"] = time.perf_counter() - t0
-                try:
-                    parsed = json.loads(reply_raw)
-                    # json.loads can succeed but return a plain string if the model
-                    # wrapped its answer in JSON quotes (e.g. '"some text"').
-                    # Normalise anything that isn't a proper dict.
-                    if not isinstance(parsed, dict):
-                        parsed = {"answer": str(parsed), "sources": []}
-                except Exception:
-                    parsed = {"answer": reply_raw, "sources": []}
 
+                # Stream sentences from the LLM via a thread bridge so we can
+                # push each sentence to TTS immediately without waiting for the
+                # full reply to finish generating.
+                bridge: asyncio.Queue = asyncio.Queue()
+                loop = asyncio.get_running_loop()
+                all_sentences: list[str] = []
+
+                def run_llm():
+                    try:
+                        for sentence in self.llm_service.generate_reply_sentences(user_prompt, system_prompt):
+                            all_sentences.append(sentence)
+                            loop.call_soon_threadsafe(bridge.put_nowait, sentence)
+                    except Exception as e:
+                        loop.call_soon_threadsafe(bridge.put_nowait, e)
+                    finally:
+                        loop.call_soon_threadsafe(bridge.put_nowait, None)  # sentinel
+
+                threading.Thread(target=run_llm, daemon=True).start()
+
+                first = True
+                sentences_sent: list[str] = []
+                while True:
+                    item = await bridge.get()
+                    if item is None:
+                        break
+                    if isinstance(item, Exception):
+                        raise item
+                    if first:
+                        self._t(session_id)["llm"] = time.perf_counter() - t0
+                        first = False
+                    sentences_sent.append(item)
+                    is_last = False  # updated below once stream ends
+                    await self.tts_queue.put((session_id, item, False))
+
+                # Mark the last sentence so TTS worker knows when to send tts_done
+                if sentences_sent:
+                    await self.tts_queue.put((session_id, None, True))  # end-of-reply sentinel
+
+                # Build full reply from accumulated sentences for logging/client event
+                full_answer = " ".join(sentences_sent)
+                parsed = {"answer": full_answer, "sources": []}
                 save_response(question=transcript, response=parsed, character_id=character_id)
                 if session:
                     session.set_reply_text(parsed)
+                await self.connection_manager.send_json(session_id, build_reply_text_done_event(full_answer))
 
-                await self.connection_manager.send_json(session_id, build_reply_text_done_event(parsed["answer"]))
-                await self.tts_queue.put((session_id, parsed["answer"]))
             except Exception as e:
                 await self._send_error(session_id, f"LLM failed: {e}")
 
     async def _tts_worker(self):
+        # Track per-session TTS start time across multiple sentences
+        tts_start: dict[str, float] = {}
         while True:
-            session_id, reply_text = await self.tts_queue.get()
-            t0 = time.perf_counter()
+            session_id, reply_text, is_sentinel = await self.tts_queue.get()
             try:
-                session = self.connection_manager.get_session(session_id)
-                if session:
-                    session.set_state("STREAMING_TTS")
-                    session.dead_time_end = time.time()
+                # End-of-reply sentinel — all sentences done, send tts_done
+                if is_sentinel:
+                    self._t(session_id)["tts_total"] = time.perf_counter() - tts_start.pop(session_id, time.perf_counter())
+                    await self.send_queue.put((session_id, None, -1))
+                    continue
 
-                await self._stream_tts_live(session_id, reply_text, t0)
-                self._t(session_id)["tts_total"] = time.perf_counter() - t0
-                await self.send_queue.put((session_id, None, -1))  # signal TTS done
+                # First sentence for this session — initialise state and timing
+                if session_id not in tts_start:
+                    tts_start[session_id] = time.perf_counter()
+                    session = self.connection_manager.get_session(session_id)
+                    if session:
+                        session.set_state("STREAMING_TTS")
+                        session.dead_time_end = time.time()
+
+                await self._stream_tts_live(session_id, reply_text, tts_start[session_id])
             except Exception as e:
+                tts_start.pop(session_id, None)
                 await self._send_error(session_id, f"TTS failed: {e}")
 
     async def _stream_tts_live(self, session_id: str, text: str, t0: float):
@@ -224,7 +262,9 @@ class Pipeline:
             if isinstance(item, Exception):
                 raise item
             if first_chunk:
-                self._t(session_id)["tts_first_chunk"] = time.perf_counter() - t0
+                # Only record on the very first audio chunk across all sentences
+                if self._t(session_id)["tts_first_chunk"] is None:
+                    self._t(session_id)["tts_first_chunk"] = time.perf_counter() - t0
                 first_chunk = False
             await self.send_queue.put((session_id, item, chunk_index))
             chunk_index += 1

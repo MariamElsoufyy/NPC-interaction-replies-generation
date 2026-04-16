@@ -156,5 +156,14 @@
             "answer": "Ah, Mariam, nice to meet you, by the way. To be honest, my day was pretty packed, still trying to catch up on notes for Irrigation Systems Design; had a small disagreement with Abdel over the surveying calculations, but we made up in the courtyard, actually.",
             "sources": []
         }
+    },
+    "19": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  01:23:41 PM",
+        "question": "Hello, my name is Mariam. This is a test recording. Today I want to check the quality of the voice, the clarity of the words and the background noise. I'm speaking normally, not too fast and not too fast. Oh,",
+        "response": {
+            "answer": "{sigh, fanning a fly away from my ear} That sounds like the professor preparing for a lecture, doesn't it? The scent of dust and old books wafts through my mind.",
+            "sources": []
+        }
     }
 }

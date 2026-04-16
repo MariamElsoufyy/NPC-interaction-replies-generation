@@ -17,7 +17,7 @@ openAI_model_name = "gpt-5-nano"
 openAI_max_completion_tokens = 3000
 groq_model_name = "llama-3.1-8b-instant"  # fastest, or use "llama3-70b-8192" for better quality
 groq_max_completion_tokens = 1024
-ELEVENLABS_MODEL_ID = "eleven_v3"  # or "eleven_v2" for older model, or "eleven_v3_pro" for higher quality (if you have access)
+ELEVENLABS_MODEL_ID = "eleven_turbo_v2_5"  # fastest model — swap to "eleven_v3" for higher quality
 
 def get_prompt_key_by_character_id(character_id):
     if character_id[0].lower() == "s":
