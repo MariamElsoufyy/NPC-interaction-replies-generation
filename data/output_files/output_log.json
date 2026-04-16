@@ -34,5 +34,118 @@
             "answer": "I think I got it on the 25th of last month... can't recall now, though - the smell of the old library is still stuck in my head.",
             "sources": []
         }
+    },
+    "5": {
+        "character_id": "s1",
+        "timestamp": "Apr 16, 2026  12:29:20 PM",
+        "question": "Okay, so this is a stress test recording. I will speak at different speeds, include poses, and repeat some words and mix languages. So, hi, Kareem. How was your day in Mohandas Khayana? Did you study engineering subjects like mechanics, electricity, or irrigation, or did you just relax today? Now I will speak a bit faster to test how the system handles quick speech. Some people talk very quickly, and words may not be very clear. So this is important for testing performance under speed. Now I will repeat some words. Repeat, repeat, repeat. And I will also include similar words sound like fan, van, ban.",
+        "response": {
+            "answer": "The recording is playing back my day alright. I actually skipped morning prayers to help Aziz with that broken bridge in our workshop - just the smell of freshly cut steel and sweat, you know?",
+            "sources": []
+        }
+    },
+    "6": {
+        "character_id": "s1",
+        "timestamp": "Apr 16, 2026  12:42:32 PM",
+        "question": "so so and that one of these can all the answers on this one they can read you will go 3 clickируs on the elim so",
+        "response": {
+            "answer": "I think we're trying to say the answers are related, but it's as confusing as the smell of smoke and oil in the workshop – can you clarify?",
+            "sources": []
+        }
+    },
+    "7": {
+        "character_id": "s1",
+        "timestamp": "Apr 16, 2026  12:47:39 PM",
+        "question": "The stale smell of old-beer lingers, it takes heat to bring out the odor, a cold Little dip restores health and zest.  A salt pickle tastes fine with ham.  Tacos al pastor are my favorite. A zestful food is the hot cross bun.",
+        "response": {
+            "answer": "I'm famished after lunch, that stale smell reminds me of the beer served in the Cairo streets, makes me crave something hearty like a warm hot cross bun, perfect comfort food.",
+            "sources": []
+        }
+    },
+    "8": {
+        "character_id": "s1",
+        "timestamp": "Apr 16, 2026  12:48:37 PM",
+        "question": "Okay. So this is a stress test recording. I will speak at different speeds,  include boses and repeat some words and next languages. So hi Kareem, how was your day in  Wanda's hair? And did you study engineering subjects like mechanics, electricity or irrigation,  or did you just relax today? Now I will speak a bit faster to just how the system  handles quick speech. Some people talk very quickly and words may not be very clear.  So this is the important, is important for testing performance under speed.  Now I will repeat some words, repeat, repeat, repeat. And I will also include similar words  sounds like fan, van, van. and ban. Let's test numbers again. 13, 30, 50, 15, 151. Now I will lower my voice a little  as if the microphone is far away and then I'll raise my voice again to normal level.  Finally, I will add some small bosses between words, test segmentation. This is the end of the  stress test recording.",
+        "response": "What's all this racket? Can't understand a word, you're speaking faster than my teacher when explaining irrigation calculations in the dusty workshop."
+    },
+    "9": {
+        "character_id": "s1",
+        "timestamp": "Apr 16, 2026  12:54:25 PM",
+        "question": "Okay, so this is a stress test recording.  I will speak at different speeds, include boses and repeat some words and next languages.  So hi Kareem, how was your day in Wanda's hair?  And I did you study engineering subjects like mechanics, electricity or irrigation, or  did you just relax today?  Now I will speak a bit faster to just how the system handles quick speech.  Some people talk very quickly and words may not be very clear.  So this is the important, is important for testing performance under speed.  Now I will repeat some words, repeat, repeat, repeat.  And I will also include similar words sound like fan, van, van. and ban. Let's list numbers again. 13, 30, 50, 15, 151. Now I will lower my voice a little  as if the microphone is far away and then I'll raise my voice again to normal level.  Finally, I will add some small bosses between words, test segmentation. This is the end of the  stress test recording.",
+        "response": {
+            "answer": "The Wanda's hair remark had me wondering. Honestly, I was stuck in the workshop, tinkering with our instructor's old slide rule, trying to fix an arithmetic formula.",
+            "sources": []
+        }
+    },
+    "10": {
+        "character_id": "s1",
+        "timestamp": "Apr 16, 2026  01:00:57 PM",
+        "question": "Okay, so this is a stress test recording. I will speak at different speeds, include poses, and repeat some words and mix languages. So, hi, Kareem. How was your day in Mohandas Khayana? Did you study engineering subjects like mechanics, electricity, or irrigation, or did you just relax today? Now I will speak a bit faster to test how the system handles quick speech. Some people talk very quickly, and words may not be very clear. So this is important for testing performance under speed. Now I will repeat some words. Repeat, repeat, repeat. And I will also include similar words sound like fan, van, ban. ban. Let's test numbers again. 13, 30, 50, 15, 151. Now I will lower my voice a little as if the microphone is far away and then I'll raise my voice again to normal level. Finally, I will add some small poses between words to test segmentation. This is the end of the stress test recording.",
+        "response": {
+            "answer": "Man, I wish you were in my class today, the discussion on fluid dynamics was a real challenge, I'm still stuck on Bernoulli's equation.",
+            "sources": []
+        }
+    },
+    "11": {
+        "character_id": "s1",
+        "timestamp": "Apr 16, 2026  01:02:47 PM",
+        "question": "Okay, so this is a stress test recording. I will speak at different speeds, include poses, and repeat some words and mix languages. So, hi, Kareem. How was your day in Mohandas Khayana? Did you study engineering subjects like mechanics, electricity, or irrigation, or did you just relax today? Now I will speak a bit faster to test how the system handles quick speech. Some people talk very quickly, and words may not be very clear. So this is important for testing performance under speed. Now I will repeat some words. Repeat, repeat, repeat. And I will also include similar words sound like fan, van, ban. ban. Let's test numbers again. 13, 30, 50, 15, 151. Now I will lower my voice a little as if the microphone is far away and then I'll raise my voice again to normal level. Finally, I will add some small poses between words to test segmentation. This is the end of the stress test recording.",
+        "response": {
+            "answer": "The day's been a blur, honestly - lectures on statics and mechanics left my head spinning. Still, it's nice to take a short walk along the Nile, smell the scent of cardamom from the streets nearby.",
+            "sources": []
+        }
+    },
+    "12": {
+        "character_id": "s1",
+        "timestamp": "Apr 16, 2026  01:04:50 PM",
+        "question": "Okay, so this is a stress test recording. I will speak at different speeds, include poses, and repeat some words and mix languages. So, hi, Kareem. How was your day in Mohandas Khayana? Did you study engineering subjects like mechanics, electricity, or irrigation, or did you just relax today? Now I will speak a bit faster to test how the system handles quick speech. Some people talk very quickly, and words may not be very clear. So this is important for testing performance under speed. Now I will repeat some words. Repeat, repeat, repeat. And I will also include similar words sound like fan, van, ban. ban. Let's test numbers again. 13, 30, 50, 15, 151. Now I will lower my voice a little as if the microphone is far away and then I'll raise my voice again to normal level. Finally, I will add some small poses between words to test segmentation. This is the end of the stress test recording.",
+        "response": {
+            "answer": "I had a rough day, to be honest - we were in the physics workshop, setting up our experiments, and I knocked over a beaker of oil.",
+            "sources": []
+        }
+    },
+    "13": {
+        "character_id": "s1",
+        "timestamp": "Apr 16, 2026  01:05:10 PM",
+        "question": "Okay, so this is a stress test recording. I will speak at different speeds, include poses, and repeat some words and mix languages. So, hi, Kareem. How was your day in Mohandas Khayana? Did you study engineering subjects like mechanics, electricity, or irrigation, or did you just relax today? Now I will speak a bit faster to test how the system handles quick speech. Some people talk very quickly, and words may not be very clear. So this is important for testing performance under speed. Now I will repeat some words. Repeat, repeat, repeat. And I will also include similar words sound like fan, van, ban. ban. Let's test numbers again. 13, 30, 50, 15, 151. Now I will lower my voice a little as if the microphone is far away and then I'll raise my voice again to normal level. Finally, I will add some small poses between words to test segmentation. This is the end of the stress test recording.",
+        "response": {
+            "answer": "Your day in Mohandas Khayana sounds like chaos - I've been stuck in the library, trying to make sense of these mechanical drawings. Just now, a pigeon flew overhead in the courtyard, making me jump.",
+            "sources": []
+        }
+    },
+    "14": {
+        "character_id": "s1",
+        "timestamp": "Apr 16, 2026  01:09:21 PM",
+        "question": "Okay, so this is a stress test recording. I will speak at different speeds, include poses, and repeat some words and mixed languages. So, hi, Kareem. How was your day in Mohandas Khayana? Did you study engineering subjects like mechanics, electricity, or irrigation, or did you just relax today? speak a bit faster to test how the system handles quick speech. Some people talk very quickly and words may not be very clear. So this is the part is important for testing performance under speed. Now I will repeat some words. Repeat, repeat, repeat. And I will also include similar words sound like fan, van, ban, And ban. Let's test numbers again. 13, 30, 50, 15, 151. Now I will lower my voice a little, as if the microphone is far away. And then I'll raise my voice again to normal level. Finally, I will add some small voices. between words to test segmentation. This is the end of the stress test recording.",
+        "response": {
+            "answer": "The sun's burning bright outside, and I'm stuck inside trying to understand Farahat's lectures on steam engines - it's a real challenge today.",
+            "sources": []
+        }
+    },
+    "15": {
+        "character_id": "s1",
+        "timestamp": "Apr 16, 2026  01:09:58 PM",
+        "question": "Okay, so this is a stress test recording. I will speak at different speeds, include voices, and repeat some words and mix language. So, hi Kareem, how was your day in Mohandas Khayana? Did you study engineering subjects like mechanics, electricity, or irrigation? Or did you just relax today? will speak a bit faster to test how the system handles quick speech. Some people talk very quickly and words may not be very clear. So this is the part is important for testing performance under speed. Now I will repeat some words. Repeat, repeat, repeat. And I will also include similar words sound like fan, van, ban, Let's test numbers again. 13, 30, 50, 15, 151. lower my voice a little as if the microphone is far away, and then I'll raise my voice again to normal level. Finally, I will add some small voices, between words to test segmentation. This is the end of the stress test recording. Thank you.",
+        "response": {
+            "answer": "What a crazy test! To be honest, my day in Mohandeskhana was alright, I spent most of it scribbling notes by the dusty chalkboard, the smell of the old wooden chairs still lingering in my lungs.",
+            "sources": []
+        }
+    },
+    "16": {
+        "character_id": "s1",
+        "timestamp": "Apr 16, 2026  01:10:39 PM",
+        "question": "Hello, my name is Mariam. This is a test recording. Today I want to check the quality of the voice, the clarity of the words, and the background noise. I'm speaking normally, not too fast, and not too slowly. This audio should help me test speech recognition and the response generation. Hi, Kareem. What was your day in Mohandas Khayna? Tell me everything. What did you study today and who did you spend time with? Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are doing too. Was the day calm or was it full of work and surprises?",
+        "response": {
+            "answer": "Assalamu alaikum Mariam, I'm Kareem. Today was long, but I made it to the mathematics class, where we struggled with calculating beam stresses. The chalk squealed on the blackboard, and I could smell the worn-out book I used last night."
+        }
+    },
+    "17": {
+        "character_id": "s1",
+        "timestamp": "Apr 16, 2026  01:11:11 PM",
+        "question": "Hello, my name is Mariam. This is a test recording. Today I want to check the quality of the voice, the clarity of the words, and the background noise. I'm speaking normally, not too fast, and not too slowly. This audio should help me test speech recognition and the response generation. Hi, Kareem. What was your day in Mohandas Khayna? Tell me everything. What did you study today and who did you spend time with? Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are doing too. Was the day calm or was it full of work and surprises?",
+        "response": {
+            "answer": "Hello Mariam, *smirks* nice to chat with you, but I'm actually supposed to call it Al-Mohandeskhana. Today's lecture on steam engines dragged on, I'm still trying to grasp the concept of Watt's improvements.",
+            "sources": []
+        }
     }
 }

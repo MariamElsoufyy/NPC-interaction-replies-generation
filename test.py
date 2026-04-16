@@ -4,8 +4,8 @@ import json
 import websockets
 
 WS_URL = "ws://127.0.0.1:8000/ws/voice-chat"
-AUDIO_FILE = "test_18_secs.wav"
-CHUNK_SIZE = 262144  # bytes
+AUDIO_FILE = "test_38_secs.wav"
+CHUNK_SIZE = 131072  # bytes
 
 
 async def main():

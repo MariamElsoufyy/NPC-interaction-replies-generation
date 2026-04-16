@@ -93,14 +93,24 @@ class Pipeline:
         await self.preprocess_queue.put((session_id, audio_bytes, is_final))
 
     async def enqueue_finalize(self, session_id: str):
-        """Called when end_of_utterance lands exactly on a 5-chunk boundary — no remaining audio."""
-        await self.stt_queue.put((session_id, None, True))
+        """Called when end_of_utterance lands exactly on a 5-chunk boundary — no remaining audio.
+        Routes through preprocess_queue (not stt_queue directly) so it always arrives
+        AFTER all pending batches finish preprocessing — prevents the finalize signal
+        from racing ahead of still-running preprocess threads."""
+        await self.preprocess_queue.put((session_id, None, True))
 
     # --- Workers ---
 
     async def _preprocess_worker(self):
         while True:
             session_id, audio_bytes, is_final = await self.preprocess_queue.get()
+
+            # Finalize-only signal (no audio) — pass straight to stt_queue so it
+            # arrives after all previously queued preprocess jobs complete.
+            if audio_bytes is None:
+                await self.stt_queue.put((session_id, None, True))
+                continue
+
             t0 = time.perf_counter()
             try:
                 preprocessed = await asyncio.to_thread(self._run_preprocess, audio_bytes)
@@ -154,6 +164,11 @@ class Pipeline:
                 self._t(session_id)["llm"] = time.perf_counter() - t0
                 try:
                     parsed = json.loads(reply_raw)
+                    # json.loads can succeed but return a plain string if the model
+                    # wrapped its answer in JSON quotes (e.g. '"some text"').
+                    # Normalise anything that isn't a proper dict.
+                    if not isinstance(parsed, dict):
+                        parsed = {"answer": str(parsed), "sources": []}
                 except Exception:
                     parsed = {"answer": reply_raw, "sources": []}
 

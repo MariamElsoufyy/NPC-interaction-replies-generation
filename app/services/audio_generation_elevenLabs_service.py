@@ -5,18 +5,21 @@ from datetime import datetime
 import numpy as np
 import soundfile as sf
 
+from app.core import config
+
 
 class AudioGenerationElevenLabsService:
     def __init__(self, voice_id=None, client=None):
         self.client = client
         self.voice_id = voice_id
-
+        self.model_id = config.ELEVENLABS_MODEL_ID
         current_dir = os.path.dirname(os.path.abspath(__file__))
         app_dir = os.path.dirname(current_dir)
         project_root = os.path.dirname(app_dir)
 
         self.debug_output_dir = os.path.join(project_root, "data", "output_files")
         os.makedirs(self.debug_output_dir, exist_ok=True)
+        print(f"✅ [TTS] ElevenLabs ready (model={self.model_id}, voice={self.voice_id})")
 
     def _debug_path(self, filename: str) -> str:
         return os.path.join(self.debug_output_dir, filename)
@@ -27,7 +30,7 @@ class AudioGenerationElevenLabsService:
             audio_stream = self.client.text_to_speech.convert(
                 text=text,
                 voice_id=self.voice_id,
-                model_id="eleven_turbo_v2_5",
+                model_id=self.model_id,
                 output_format="mp3_44100_128",
             )
             with open(output_path, "wb") as f:
@@ -46,7 +49,7 @@ class AudioGenerationElevenLabsService:
         pcm_stream = self.client.text_to_speech.convert(
             text=text,
             voice_id=self.voice_id,
-            model_id="eleven_turbo_v2_5",
+            model_id=self.model_id,
             output_format="pcm_44100",
         )
         pcm_bytes = b"".join(chunk for chunk in pcm_stream if chunk)
@@ -63,7 +66,7 @@ class AudioGenerationElevenLabsService:
             audio_stream = self.client.text_to_speech.convert(
                 text=text,
                 voice_id=self.voice_id,
-                model_id="eleven_turbo_v2_5",
+                model_id=self.model_id,
                 output_format="mp3_44100_128",
             )
 

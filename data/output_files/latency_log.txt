@@ -64,3 +64,201 @@
   Total                  : 2.835s
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⏱  LATENCY REPORT  —  Apr 16, 2026  12:29:23 PM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Preprocess  (batch 1)  : 0.629s
+  Preprocess  (batch 2)  : 0.291s
+  STT         (batch 1)  : 1.565s
+  STT         (batch 2)  : 1.245s
+  LLM                    : 0.438s
+  TTS first chunk        : 2.890s
+  TTS total              : 3.668s
+  ─────────────────────────────────────
+  Time to first audio    : 4.820s
+  Total                  : 5.601s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⏱  LATENCY REPORT  —  Apr 16, 2026  12:42:35 PM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Preprocess  (batch 1)  : 0.916s
+  Preprocess  (batch 2)  : 0.552s
+  STT         (batch 1)  : 2.158s
+  STT         (batch 2)  : 1.002s
+  LLM                    : 0.437s
+  TTS first chunk        : 2.163s
+  TTS total              : 2.771s
+  ─────────────────────────────────────
+  Time to first audio    : 5.900s
+  Total                  : 6.508s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⏱  LATENCY REPORT  —  Apr 16, 2026  12:47:42 PM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Preprocess  (batch 1)  : 0.215s
+  Preprocess  (batch 2)  : 0.111s
+  Preprocess  (batch 3)  : 0.080s
+  STT         (batch 1)  : 0.900s
+  STT         (batch 2)  : 0.759s
+  STT         (batch 3)  : 0.697s
+  LLM                    : 0.737s
+  TTS first chunk        : 2.805s
+  TTS total              : 3.495s
+  ─────────────────────────────────────
+  Time to first audio    : 4.909s
+  Total                  : 5.607s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⏱  LATENCY REPORT  —  Apr 16, 2026  12:54:30 PM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Preprocess  (batch 1)  : 1.350s
+  Preprocess  (batch 2)  : 0.663s
+  STT         (batch 1)  : 3.027s
+  STT         (batch 2)  : 1.547s
+  LLM                    : 0.760s
+  TTS first chunk        : 3.103s
+  TTS total              : 4.428s
+  ─────────────────────────────────────
+  Time to first audio    : 9.003s
+  Total                  : 10.328s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⏱  LATENCY REPORT  —  Apr 16, 2026  01:01:00 PM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Preprocess  (batch 1)  : 0.963s
+  Preprocess  (batch 2)  : 0.288s
+  STT         (batch 1)  : 2.003s
+  STT         (batch 2)  : 0.810s
+  LLM                    : 0.350s
+  TTS first chunk        : 1.822s
+  TTS total              : 2.237s
+  ─────────────────────────────────────
+  Time to first audio    : 5.140s
+  Total                  : 5.558s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⏱  LATENCY REPORT  —  Apr 16, 2026  01:02:51 PM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Preprocess  (batch 1)  : 1.335s
+  Preprocess  (batch 2)  : 0.269s
+  STT         (batch 1)  : 1.267s
+  STT         (batch 2)  : 0.821s
+  LLM                    : 0.395s
+  TTS first chunk        : 2.855s
+  TTS total              : 3.806s
+  ─────────────────────────────────────
+  Time to first audio    : 5.919s
+  Total                  : 6.870s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⏱  LATENCY REPORT  —  Apr 16, 2026  01:04:52 PM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Preprocess  (batch 1)  : 0.777s
+  Preprocess  (batch 2)  : 0.265s
+  STT         (batch 1)  : 2.301s
+  STT         (batch 2)  : 0.714s
+  LLM                    : 0.235s
+  TTS first chunk        : 1.773s
+  TTS total              : 2.161s
+  ─────────────────────────────────────
+  Time to first audio    : 5.084s
+  Total                  : 5.475s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⏱  LATENCY REPORT  —  Apr 16, 2026  01:05:14 PM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Preprocess  (batch 1)  : 1.294s
+  Preprocess  (batch 2)  : 0.267s
+  STT         (batch 1)  : 1.440s
+  STT         (batch 2)  : 0.916s
+  LLM                    : 0.431s
+  TTS first chunk        : 3.164s
+  TTS total              : 4.103s
+  ─────────────────────────────────────
+  Time to first audio    : 6.451s
+  Total                  : 7.391s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⏱  LATENCY REPORT  —  Apr 16, 2026  01:09:23 PM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Preprocess  (batch 1)  : 0.529s
+  Preprocess  (batch 2)  : 0.411s
+  Preprocess  (batch 3)  : 0.208s
+  Preprocess  (batch 4)  : 0.087s
+  STT         (batch 1)  : 0.999s
+  STT         (batch 2)  : 0.605s
+  STT         (batch 3)  : 0.574s
+  STT         (batch 4)  : 0.357s
+  LLM                    : 0.734s
+  TTS first chunk        : 1.927s
+  TTS total              : 2.377s
+  ─────────────────────────────────────
+  Time to first audio    : 3.798s
+  Total                  : 4.248s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⏱  LATENCY REPORT  —  Apr 16, 2026  01:10:02 PM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Preprocess  (batch 1)  : 0.203s
+  Preprocess  (batch 2)  : 0.113s
+  Preprocess  (batch 3)  : 0.105s
+  Preprocess  (batch 4)  : 0.100s
+  Preprocess  (batch 5)  : 0.116s
+  Preprocess  (batch 6)  : 0.130s
+  Preprocess  (batch 7)  : 0.078s
+  Preprocess  (batch 8)  : 0.039s
+  STT         (batch 1)  : 0.786s
+  STT         (batch 2)  : 0.401s
+  STT         (batch 3)  : 0.432s
+  STT         (batch 4)  : 0.712s
+  STT         (batch 5)  : 0.408s
+  STT         (batch 6)  : 0.423s
+  STT         (batch 7)  : 0.343s
+  STT         (batch 8)  : 0.240s
+  LLM                    : 0.442s
+  TTS first chunk        : 3.139s
+  TTS total              : 3.776s
+  ─────────────────────────────────────
+  Time to first audio    : 4.029s
+  Total                  : 4.667s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⏱  LATENCY REPORT  —  Apr 16, 2026  01:10:43 PM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Preprocess  (batch 1)  : 0.517s
+  Preprocess  (batch 2)  : 0.439s
+  STT         (batch 1)  : 0.859s
+  STT         (batch 2)  : 0.717s
+  LLM                    : 0.424s
+  TTS first chunk        : 3.113s
+  TTS total              : 4.011s
+  ─────────────────────────────────────
+  Time to first audio    : 4.938s
+  Total                  : 5.837s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⏱  LATENCY REPORT  —  Apr 16, 2026  01:11:15 PM
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Preprocess  (batch 1)  : 0.421s
+  Preprocess  (batch 2)  : 0.190s
+  STT         (batch 1)  : 0.974s
+  STT         (batch 2)  : 0.563s
+  LLM                    : 0.686s
+  TTS first chunk        : 2.903s
+  TTS total              : 3.803s
+  ─────────────────────────────────────
+  Time to first audio    : 4.855s
+  Total                  : 5.756s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+

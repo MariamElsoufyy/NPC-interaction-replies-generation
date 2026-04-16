@@ -4,9 +4,11 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
 ELEVENLABS_VOICE_ID = os.getenv("HALE_VOICE_ID")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-whisper_model_size = "medium.en"  # "tiny.en", "base.en", "small.en", "medium.en", "large-v2"
-whisper_device = "cpu"
-whisper_compute_type = "int8"
+stt_provider = "groq"            # "local" → faster-whisper on device | "groq" → Groq hosted Whisper API
+whisper_model_size = "tiny.en"   # used only when stt_provider = "local"
+whisper_device = "cpu"           # used only when stt_provider = "local"
+whisper_compute_type = "int8"    # used only when stt_provider = "local"
+groq_whisper_model = "whisper-large-v3-turbo"  # used only when stt_provider = "groq"
 SST_language = "en"
 SST_vad_filter = True
 SST_beam_size = 2
@@ -15,7 +17,7 @@ openAI_model_name = "gpt-5-nano"
 openAI_max_completion_tokens = 3000
 groq_model_name = "llama-3.1-8b-instant"  # fastest, or use "llama3-70b-8192" for better quality
 groq_max_completion_tokens = 1024
-
+ELEVENLABS_MODEL_ID = "eleven_v3"  # or "eleven_v2" for older model, or "eleven_v3_pro" for higher quality (if you have access)
 
 def get_prompt_key_by_character_id(character_id):
     if character_id[0].lower() == "s":
