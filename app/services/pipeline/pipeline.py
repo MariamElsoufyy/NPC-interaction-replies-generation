@@ -223,6 +223,10 @@ class Pipeline:
                 audio, sr = librosa.load(io.BytesIO(mp3_bytes), sr=None, mono=True)
                 trimmed, _ = librosa.effects.trim(audio, top_db=35, frame_length=512, hop_length=128)
 
+                # Guard: if trim wiped everything (very short/quiet audio), keep original
+                if len(trimmed) == 0:
+                    trimmed = audio
+
                 wav_buf = io.BytesIO()
                 sf.write(wav_buf, trimmed, sr, format="WAV", subtype="PCM_16")
                 wav_buf.seek(0)
@@ -371,19 +375,27 @@ class Pipeline:
 
     def _save_wav(self, chunks: list[bytes]):
         path = self.elevenlabs_service._debug_path("output.wav")
+        print(f"[DEBUG] _save_wav called | sentences={len(chunks)}")
+        if not chunks:
+            print("[DEBUG] _save_wav: no chunks to save, skipping")
+            return
         try:
             # chunks are already trimmed WAV files (one per sentence) — concatenate their PCM data
             all_audio = []
             sr = None
-            for wav_bytes in chunks:
+            for i, wav_bytes in enumerate(chunks):
                 audio, file_sr = sf.read(io.BytesIO(wav_bytes), dtype="float32", always_2d=False)
+                print(f"[DEBUG] _save_wav: sentence {i+1} → {len(audio)} samples @ {file_sr}Hz")
                 if sr is None:
                     sr = file_sr
-                all_audio.append(audio)
+                if len(audio) > 0:
+                    all_audio.append(audio)
             if all_audio and sr:
                 combined = np.concatenate(all_audio)
                 sf.write(path, combined, sr)
                 print(f"[DEBUG] Saved {path} ({len(combined)} samples @ {sr}Hz)")
+            else:
+                print("[DEBUG] _save_wav: all sentences were empty after read, nothing saved")
         except Exception as e:
             print(f"[DEBUG] Failed to save output.wav: {e}")
 

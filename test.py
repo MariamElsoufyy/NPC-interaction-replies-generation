@@ -3,7 +3,7 @@ import base64
 import json
 import websockets
 
-WS_URL = "ws://127.0.0.1:8000/ws/voice-chat"
+WS_URL = "wss://immersa-voice-chat-api.up.railway.app/ws/voice-chat"
 AUDIO_FILE = "test_38_secs.wav"
 CHUNK_SIZE = 131072  # bytes
 
