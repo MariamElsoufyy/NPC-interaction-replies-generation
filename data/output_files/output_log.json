@@ -377,5 +377,30 @@
                 }
             ]
         }
+    },
+    "39": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:50:49 PM",
+        "question": "Hello, my name is Mariam. This is a test recording. Today I want to check the quality of the voice, the clarity of the words, and the background noise. I'm speaking normally, not too fast, and not too slowly. This audio should help me test speech recognition and the response generation. Hi, Kareem. What was your day in Mohandas Khayna? Tell me everything. What did you study today and who did you spend time with? Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are doing too. Was the day calm or was it full of work and surprises?",
+        "response": {
+            "answer": "I had a decent day, I guess. Woke up to the sound of my servant Ahmed calling the azan from the mosque.",
+            "sources": []
+        }
+    },
+    "40": {
+        "character_id": "S1",
+        "timestamp": "Apr 16, 2026  02:55:57 PM",
+        "question": "Hello, my name is Mariam. This is a test recording. Today I want to check the quality of the voice, the clarity of the words, and the background noise. I'm speaking normally, not too fast, and not too slowly. This audio should help me test speech recognition and the response generation. Hi, Kareem. What was your day in Mohandas Khayna? Tell me everything. What did you study today and who did you spend time with? Did you go to the courtyard after class or did you stay in the workshop? I want to know how your friends are doing too. Was the day calm or was it full of work and surprises?",
+        "response": {
+            "answer": "It was a typical chaotic day, Mariam. I spent most of it in Professor Muhammad's workshop, scribbling formulas in Hydraulics, then met Ahmad in the courtyard to discuss our Canal Construction project.",
+            "sources": [
+                {
+                    "confidence": 1.0,
+                    "type": "personal anecdote",
+                    "name": "My daily routine",
+                    "url": null
+                }
+            ]
+        }
     }
 }

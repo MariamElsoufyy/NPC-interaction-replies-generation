@@ -22,6 +22,23 @@ class AudioGenerationElevenLabsService:
 
         self.debug_output_dir = os.path.join(project_root, "data", "output_files")
         os.makedirs(self.debug_output_dir, exist_ok=True)
+        self._warmup()
+
+    def _warmup(self):
+        """Send a short dummy TTS request at startup to establish the HTTP connection
+        and eliminate the TCP/SSL cold-start penalty on the first real request."""
+        print(f"⏳ [TTS] Warming up ElevenLabs connection (model={self.model_id})...")
+        try:
+            stream = self.client.text_to_speech.convert(
+                text="Hello.",
+                voice_id=self.voice_id,
+                model_id=self.model_id,
+                output_format="mp3_44100_128",
+            )
+            for _ in stream:
+                break  # consume just the first chunk then stop — connection is warm
+        except Exception:
+            pass  # ignore errors (e.g. invalid voice_id in test env)
         print(f"✅ [TTS] ElevenLabs ready (model={self.model_id}, voice={self.voice_id})")
 
     def _debug_path(self, filename: str) -> str:
