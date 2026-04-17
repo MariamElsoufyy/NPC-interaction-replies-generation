@@ -5,10 +5,10 @@ from datetime import datetime
 import numpy as np
 import soundfile as sf
 
-
 from app.core import config
+from app.core.logger import get_logger
 
-
+logger = get_logger(__name__)
 
 
 class AudioGenerationElevenLabsService:
@@ -27,7 +27,7 @@ class AudioGenerationElevenLabsService:
     def _warmup(self):
         """Send a short dummy TTS request at startup to establish the HTTP connection
         and eliminate the TCP/SSL cold-start penalty on the first real request."""
-        print(f"⏳ [TTS] Warming up ElevenLabs connection (model={self.model_id})...")
+        logger.info(f"Warming up ElevenLabs connection (model={self.model_id})...")
         try:
             stream = self.client.text_to_speech.convert(
                 text="Hello.",
@@ -39,7 +39,7 @@ class AudioGenerationElevenLabsService:
                 break  # consume just the first chunk then stop — connection is warm
         except Exception:
             pass  # ignore errors (e.g. invalid voice_id in test env)
-        print(f"✅ [TTS] ElevenLabs ready (model={self.model_id}, voice={self.voice_id})")
+        logger.info(f"ElevenLabs ready (model={self.model_id}, voice={self.voice_id})")
 
     def _debug_path(self, filename: str) -> str:
         return os.path.join(self.debug_output_dir, filename)
@@ -58,10 +58,10 @@ class AudioGenerationElevenLabsService:
                 for chunk in audio_stream:
                     if chunk:
                         f.write(chunk)
-            print(f"[TTS] Saved to {output_path}")
+            logger.debug(f"TTS audio saved to {output_path}")
             return output_path
         except Exception as e:
-            print(f"[TTS ERROR] {repr(e)}")
+            logger.error(f"TTS generation failed: {repr(e)}", exc_info=True)
             return None
 
     def collect_and_save_wav(self, text: str, filename: str = "output.wav") -> str:
@@ -77,7 +77,7 @@ class AudioGenerationElevenLabsService:
         pcm_bytes = b"".join(chunk for chunk in pcm_stream if chunk)
         audio = np.frombuffer(pcm_bytes, dtype=np.int16).astype(np.float32) / 32768.0
         sf.write(output_path, audio, samplerate=44100)
-        print(f"[DEBUG TTS] Saved to {output_path} ({len(audio)} samples)")
+        logger.debug(f"TTS WAV saved to {output_path} ({len(audio)} samples)")
         return output_path
 
     def build_debug_output_path(self, session_id: str = "unknown") -> str:
@@ -109,5 +109,5 @@ class AudioGenerationElevenLabsService:
                     output_file.close()
 
         except Exception as e:
-            print(f"[TTS STREAM ERROR] {repr(e)}")
+            logger.error(f"TTS stream failed: {repr(e)}", exc_info=True)
             raise

@@ -1,6 +1,9 @@
 import numpy as np
 from faster_whisper import WhisperModel
 import app.core.config as config
+from app.core.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class STTWhisperService:
@@ -21,15 +24,14 @@ class STTWhisperService:
             beam_size=self.SST_beam_size,
         )
         list(segments)  # consume the generator to force full execution
-        print("✅ [STT] Whisper warmed up")
+        logger.info("Local Whisper warmed up and ready")
 
     def transcribe(self, audio, language="en", vad_filter=True, beam_size=2):
         segments, info = self.model.transcribe(
             audio,
             language=self.SST_language,
             vad_filter=self.SST_vad_filter,
-            beam_size=self.SST_beam_size
-
+            beam_size=self.SST_beam_size,
         )
 
         transcription = " ".join(segment.text for segment in segments)

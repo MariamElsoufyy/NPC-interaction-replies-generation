@@ -1,10 +1,13 @@
 import base64
 from dataclasses import dataclass, field
 from typing import Optional
-import time  
+import time
 
 import app.core.config as config
+from app.core.logger import get_logger
 from app.services.streaming.audio_buffer_service import AudioBufferService
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -26,7 +29,7 @@ class StreamSession:
     def append_partial_transcript(self, text: str) -> None:
         if text.strip():
             self.partial_transcripts.append(text.strip())
-            print(f"[STT PARTIAL] session_id={self.session_id} | partial={text[:60]}")
+            logger.debug(f"STT partial | session_id={self.session_id} | text={text[:60]}")
 
     def get_combined_transcript(self) -> str:
         return " ".join(self.partial_transcripts).strip()
@@ -46,53 +49,43 @@ class StreamSession:
         self.state = "LISTENING"
         self.touch()
 
-        print(
-            f"🚀 [SESSION STARTED] session_id={self.session_id} | "
+        logger.info(
+            f"Session started | session_id={self.session_id} | "
             f"character_id={self.character_id} | sample_rate={self.sample_rate} | "
-            f"audio_format={self.audio_format} | state={self.state}"
+            f"audio_format={self.audio_format}"
         )
 
     def add_audio_chunk(self, audio_chunk: str) -> None:
         self.audio_buffer.add_chunk(audio_chunk)
         self.dead_time_start = time.time()
         self.touch()
-
-        print(
-            f"🎧 [AUDIO CHUNK ADDED] session_id={self.session_id} | "
+        logger.debug(
+            f"Audio chunk added | session_id={self.session_id} | "
             f"total_chunks={self.audio_buffer.get_chunk_count()}"
         )
-        
 
-    
-    
     def set_final_transcript(self, text: str) -> None:
         self.final_transcript = text
         self.state = "FINALIZING_TRANSCRIPT"
         self.touch()
-
-        print(
-            f"📝 [FINAL TRANSCRIPT SET] session_id={self.session_id} | "
-            f"state={self.state} | text={self.final_transcript}"
+        logger.info(
+            f"Final transcript set | session_id={self.session_id} | text={self.final_transcript}"
         )
 
     def set_reply_text(self, text: str) -> None:
         self.reply_text = text["answer"]
         self.state = "GENERATING_REPLY"
         self.touch()
-
-        print(
-            f"🤖 [REPLY TEXT SET] session_id={self.session_id} | "
-            f"state={self.state} | text={self.reply_text}"
+        logger.info(
+            f"Reply text set | session_id={self.session_id} | text={self.reply_text}"
         )
 
     def set_state(self, new_state: str) -> None:
         old_state = self.state
         self.state = new_state
         self.touch()
-
-        print(
-            f"🔄 [STATE CHANGED] session_id={self.session_id} | "
-            f"from={old_state} | to={new_state}"
+        logger.debug(
+            f"State changed | session_id={self.session_id} | {old_state} → {new_state}"
         )
 
     def get_audio_chunk_count(self) -> int:
@@ -105,10 +98,8 @@ class StreamSession:
         chunks_before_clear = self.audio_buffer.get_chunk_count()
         self.audio_buffer.clear()
         self.touch()
-
-        print(
-            f"🧹 [AUDIO BUFFER CLEARED] session_id={self.session_id} | "
-            f"cleared_chunks={chunks_before_clear}"
+        logger.debug(
+            f"Audio buffer cleared | session_id={self.session_id} | cleared_chunks={chunks_before_clear}"
         )
 
     def reset_for_next_utterance(self) -> None:
@@ -124,18 +115,15 @@ class StreamSession:
         self.dead_time_end = None
         self.touch()
 
-        print(
-            f"♻️ [SESSION RESET FOR NEXT UTTERANCE] session_id={self.session_id} | "
-            f"cleared_chunks={chunks_before_reset} | state={self.state}"
+        logger.info(
+            f"Session reset for next utterance | session_id={self.session_id} | "
+            f"cleared_chunks={chunks_before_reset}"
         )
 
     def close(self) -> None:
         self.state = "CLOSED"
         self.touch()
-
-        print(
-            f"🔒 [SESSION CLOSED] session_id={self.session_id} | state={self.state}"
-        )
+        logger.info(f"Session closed | session_id={self.session_id}")
 
     def to_dict(self) -> dict:
         return {
@@ -151,4 +139,4 @@ class StreamSession:
             "updated_at": self.updated_at,
             "dead_time_start": self.dead_time_start,
             "dead_time_end": self.dead_time_end,
-        }   
+        }

@@ -1,10 +1,13 @@
-import os
 from openai import OpenAI
 import app.core.config as config
+from app.core.logger import get_logger
+
+logger = get_logger(__name__)
+
 
 class LLMOpenAIService:
     def __init__(self, client=None):
-        self.client = client 
+        self.client = client
         self.model_name = config.openAI_model_name
         self.max_completion_tokens = config.openAI_max_completion_tokens
 
@@ -18,6 +21,7 @@ class LLMOpenAIService:
                 model=self.model_name,
                 messages=messages,
                 max_completion_tokens=self.max_completion_tokens,
+                response_format={"type": "json_object"},
                 stream=True,
             )
             tokens = []
@@ -27,5 +31,5 @@ class LLMOpenAIService:
                     tokens.append(delta)
             return "".join(tokens).strip()
         except Exception as e:
-            print(f"[LLM ERROR] {e}")
+            logger.error(f"LLM generation failed: {e}", exc_info=True)
             return ""

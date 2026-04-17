@@ -4,6 +4,9 @@ import wave
 import numpy as np
 
 import app.core.config as config
+from app.core.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class STTGroqWhisperService:
@@ -23,13 +26,13 @@ class STTGroqWhisperService:
         """Send a silent audio request to Groq at startup to establish the
         HTTP connection and warm the API endpoint, eliminating the ~1-2s
         cold-start penalty on the first real transcription."""
-        print(f"⏳ [STT] Warming up Groq Whisper (model={self.model})...")
+        logger.info(f"Warming up Groq Whisper (model={self.model})...")
         silent = np.zeros(config.audio_preprocessing_sample_rate, dtype=np.float32)  # 1s silence
         try:
             self.transcribe(silent)
         except Exception:
             pass  # ignore any API error during warmup (e.g. empty audio rejection)
-        print(f"✅ [STT] Groq Whisper ready (model={self.model})")
+        logger.info(f"Groq Whisper ready (model={self.model})")
 
     def _audio_array_to_wav_bytes(self, audio: np.ndarray) -> bytes:
         """Convert a float32 numpy array (16kHz mono) to raw WAV bytes for the API."""

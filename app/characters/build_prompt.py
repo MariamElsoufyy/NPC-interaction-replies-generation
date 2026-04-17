@@ -1,5 +1,7 @@
-
 from app.characters import characters_info, prompts_for_character_replies
+from app.core.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def load_prompt(prompt_type=None, prompt_key=None):
@@ -11,30 +13,30 @@ def load_prompt(prompt_type=None, prompt_key=None):
 
 def generate_prompt(prompt_type=None, prompt_key=None, character_id=None, question=None):
     """Replace placeholders in the prompt with actual values."""
-     
+
     if prompt_key is None:
-        print("Prompt key is None")
+        logger.warning("generate_prompt called with prompt_key=None")
         return None
 
     if prompt_type is None:
-        print(f"Prompt type is None for key: {prompt_key}")
+        logger.warning(f"generate_prompt called with prompt_type=None | key={prompt_key}")
         return None
 
     if prompt_type == "user" and character_id is None:
-        print(f"Character ID is None for user prompt key: {prompt_key}")
+        logger.warning(f"generate_prompt: character_id is None | key={prompt_key}")
         return None
 
     prompt = load_prompt(prompt_type, prompt_key=prompt_key)
 
     if prompt is None:
-        print(f"Prompt not found for type: {prompt_type}, key: {prompt_key}")
+        logger.warning(f"Prompt not found | type={prompt_type} | key={prompt_key}")
         return None
 
     if prompt_type == "system":
         return prompt
 
     if question is None:
-        print(f"Question is None for user prompt key: {prompt_key} and character ID: {character_id}")
+        logger.warning(f"generate_prompt: question is None | key={prompt_key} | character_id={character_id}")
         return None
 
     prompt = prompt.replace("{first_name}", characters_info.first_name.get(character_id, ""))

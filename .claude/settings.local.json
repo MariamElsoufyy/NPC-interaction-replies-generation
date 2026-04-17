@@ -1,7 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(xargs grep:*)"
+      "Bash(ls D:/Projects/IMMERSA-Voice-Chat-API/*.py D:/Projects/IMMERSA-Voice-Chat-API/*.cfg D:/Projects/IMMERSA-Voice-Chat-API/*.ini D:/Projects/IMMERSA-Voice-Chat-API/*.toml D:/Projects/IMMERSA-Voice-Chat-API/*.yaml D:/Projects/IMMERSA-Voice-Chat-API/*.yml)"
     ]
   }
 }

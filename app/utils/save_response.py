@@ -2,9 +2,9 @@ import json
 import os
 from datetime import datetime
 
-import os
-import json
-from datetime import datetime
+from app.core.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def save_response(question, response, file_path=None, character_id="unknown"):
@@ -19,14 +19,14 @@ def save_response(question, response, file_path=None, character_id="unknown"):
         file_path = os.path.join(data_dir, "output_files", "output_log.json")
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
-    print(f"💾 [SAVE RESPONSE] Saving output to: {file_path}")
+    logger.debug(f"Saving response to: {file_path}")
 
     if os.path.exists(file_path):
         with open(file_path, "r", encoding="utf-8") as f:
             try:
                 data = json.load(f)
             except json.JSONDecodeError:
-                print("⚠️ [SAVE RESPONSE] Existing JSON invalid, starting fresh")
+                logger.warning("Existing output_log.json is invalid JSON — starting fresh")
                 data = {}
     else:
         data = {}
@@ -43,4 +43,4 @@ def save_response(question, response, file_path=None, character_id="unknown"):
     with open(file_path, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 
-    print(f"✅ [SAVE RESPONSE] Saved successfully | entry_id={new_id}")
+    logger.info(f"Response saved | entry_id={new_id} | character_id={character_id}")
