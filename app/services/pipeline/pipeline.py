@@ -13,9 +13,6 @@ import librosa
 import soundfile as sf
 
 import app.core.config as config
-from app.core.logger import get_logger
-
-logger = get_logger(__name__)
 from app.characters.build_prompt import build_prompts
 from app.services.streaming.event_protocol_service import (
     build_error_event,
@@ -50,7 +47,7 @@ class Pipeline:
         asyncio.create_task(self._llm_worker())
         asyncio.create_task(self._tts_worker())
         asyncio.create_task(self._send_worker())
-        logger.info("All 5 pipeline workers started")
+        print("✅ [PIPELINE] All 5 workers started")
 
     def _t(self, session_id: str) -> dict:
         """Return (or create) the timings dict for a session."""
@@ -93,7 +90,7 @@ class Pipeline:
             lines.append(f"  Total                  : {t['total']:.3f}s")
         lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         report = "\n".join(lines)
-        logger.info("Latency report:\n" + report)
+        print(report)
         self._save_latency_log(report)
 
     async def enqueue(self, session_id: str, audio_bytes: bytes, is_final: bool = False):
@@ -321,7 +318,7 @@ class Pipeline:
                         build_tts_audio_chunk_event(chunk_index=chunk_index, audio=encoded),
                     )
             except Exception as e:
-                logger.error(f"Send error | session_id={session_id} | {e}", exc_info=True)
+                print(f"[SEND ERROR] session_id={session_id} | {e}")
 
     # --- Helpers ---
 
@@ -374,13 +371,13 @@ class Pipeline:
             with open(path, "a", encoding="utf-8") as f:
                 f.write(report + "\n\n")
         except Exception as e:
-            logger.warning(f"Failed to save latency log: {e}")
+            print(f"[DEBUG] Failed to save latency log: {e}")
 
     def _save_wav(self, chunks: list[bytes]):
         path = self.elevenlabs_service._debug_path("output.wav")
-        logger.debug(f"_save_wav called | sentences={len(chunks)}")
+        print(f"[DEBUG] _save_wav called | sentences={len(chunks)}")
         if not chunks:
-            logger.debug("_save_wav: no chunks to save, skipping")
+            print("[DEBUG] _save_wav: no chunks to save, skipping")
             return
         try:
             # chunks are already trimmed WAV files (one per sentence) — concatenate their PCM data
@@ -388,7 +385,7 @@ class Pipeline:
             sr = None
             for i, wav_bytes in enumerate(chunks):
                 audio, file_sr = sf.read(io.BytesIO(wav_bytes), dtype="float32", always_2d=False)
-                logger.debug(f"_save_wav: sentence {i+1} → {len(audio)} samples @ {file_sr}Hz")
+                print(f"[DEBUG] _save_wav: sentence {i+1} → {len(audio)} samples @ {file_sr}Hz")
                 if sr is None:
                     sr = file_sr
                 if len(audio) > 0:
@@ -396,14 +393,14 @@ class Pipeline:
             if all_audio and sr:
                 combined = np.concatenate(all_audio)
                 sf.write(path, combined, sr)
-                logger.debug(f"Saved {path} ({len(combined)} samples @ {sr}Hz)")
+                print(f"[DEBUG] Saved {path} ({len(combined)} samples @ {sr}Hz)")
             else:
-                logger.debug("_save_wav: all sentences were empty after read, nothing saved")
+                print("[DEBUG] _save_wav: all sentences were empty after read, nothing saved")
         except Exception as e:
-            logger.warning(f"Failed to save output.wav: {e}")
+            print(f"[DEBUG] Failed to save output.wav: {e}")
 
     async def _send_error(self, session_id: str, message: str):
-        logger.error(f"Pipeline error | session_id={session_id} | {message}")
+        print(f"[PIPELINE ERROR] session_id={session_id} | {message}")
         await self.connection_manager.send_json(session_id, build_error_event(message))
         session = self.connection_manager.get_session(session_id)
         if session:

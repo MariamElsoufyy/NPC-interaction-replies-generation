@@ -1,9 +1,5 @@
+
 import json
-
-from app.core.logger import get_logger
-
-logger = get_logger(__name__)
-
 
 def parse_printable_data(data):
     try:
@@ -15,7 +11,8 @@ def parse_printable_data(data):
             else:
                 printable[key] = value
 
-        logger.debug("Printable data:\n" + json.dumps(printable, indent=2, ensure_ascii=False))
+        print("🧩 [PRINTABLE DATA]")
+        print(json.dumps(printable, indent=2, ensure_ascii=False))
 
     except Exception as e:
-        logger.error(f"parse_printable_data failed: {repr(e)}")
+        print(f"❌ [PARSE PRINT ERROR] {repr(e)}")

@@ -4,7 +4,6 @@ import uuid
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from app.core.logger import get_logger
 from app.services.streaming.event_protocol_service import (
     build_ack_event,
     build_connection_established_event,
@@ -12,7 +11,6 @@ from app.services.streaming.event_protocol_service import (
 )
 
 router = APIRouter()
-logger = get_logger(__name__)
 
 
 @router.websocket("/ws/voice-chat")
@@ -24,7 +22,7 @@ async def websocket_voice_chat(websocket: WebSocket):
     await websocket.accept()
     await manager.connect(session_id, websocket)
     await manager.send_json(session_id, build_connection_established_event(session_id))
-    logger.info(f"WebSocket connected | session_id={session_id}")
+    print(f"[WS CONNECTED] session_id={session_id}")
 
     try:
         while True:
@@ -123,13 +121,13 @@ async def websocket_voice_chat(websocket: WebSocket):
                 await manager.send_json(session_id, build_error_event(f"Unknown message type: {msg_type}"))
 
     except WebSocketDisconnect:
-        logger.info(f"WebSocket disconnected | session_id={session_id}")
+        print(f"[WS DISCONNECTED] session_id={session_id}")
     except Exception as e:
-        logger.error(f"WebSocket error | session_id={session_id} | {e}", exc_info=True)
+        print(f"[WS ERROR] session_id={session_id} | {e}")
         try:
             await manager.send_json(session_id, build_error_event(str(e)))
         except Exception:
             pass
     finally:
         manager.disconnect(session_id)
-        logger.info(f"WebSocket closed | session_id={session_id}")
+        print(f"[WS CLOSED] session_id={session_id}")

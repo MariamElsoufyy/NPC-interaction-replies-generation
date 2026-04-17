@@ -1,9 +1,5 @@
 from typing import List, Optional
 
-from app.core.logger import get_logger
-
-logger = get_logger(__name__)
-
 
 class AudioBufferService:
     def __init__(self):
@@ -11,7 +7,7 @@ class AudioBufferService:
 
     def add_chunk(self, audio_chunk: str) -> None:
         self.chunks.append(audio_chunk)
-        logger.debug(f"Buffer chunk added | total_chunks={len(self.chunks)}")
+        print(f"🎧 [BUFFER ADD CHUNK] chunk_added=True | total_chunks={len(self.chunks)}")
 
     def get_chunk_count(self) -> int:
         return len(self.chunks)
@@ -34,17 +30,17 @@ class AudioBufferService:
 
     def merge_chunks(self, separator: str = "") -> str:
         merged_audio = separator.join(self.chunks)
-        logger.debug(f"Buffer merged | total_chunks={len(self.chunks)} | merged_length={len(merged_audio)}")
+        print(f"🧩 [BUFFER MERGE CHUNKS] total_chunks={len(self.chunks)} | merged_length={len(merged_audio)}")
         return merged_audio
 
     def clear(self) -> None:
         cleared_count = len(self.chunks)
         self.chunks.clear()
-        logger.debug(f"Buffer cleared | cleared_chunks={cleared_count}")
+        print(f"🧹 [BUFFER CLEARED] cleared_chunks={cleared_count}")
 
     def reset(self) -> None:
         self.clear()
-        logger.debug("Buffer reset complete")
+        print("♻️ [BUFFER RESET] Buffer reset completed")
 
     def to_dict(self) -> dict:
         return {
