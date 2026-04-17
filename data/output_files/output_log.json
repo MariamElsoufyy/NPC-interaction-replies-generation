@@ -402,30 +402,5 @@
                 }
             ]
         }
-    },
-    "41": {
-        "character_id": "S1",
-        "timestamp": "Apr 17, 2026  02:20:34 PM",
-        "question": "Okay, so this is a stress test recording. I will speak at different speeds, include poses, and repeat some words and mixed languages. So, hi, Kareem. How was your day in Mohandas Khayana? Did you study engineering subjects like mechanics, electricity, or irrigation, or did you just relax today? speak a bit faster to test how the system handles quick speech. Some people talk very quickly and words may not be very clear. So this is the part is important for testing performance under speed. Now I will repeat some words. Repeat, repeat, repeat. And I will also include similar words sound like fan, van, ban, And ban. Let's test numbers again. 13, 30, 50, 15, 151. Now I will lower my voice a little, as if the microphone is far away. And then I'll raise my voice again to normal level. Finally, I will add some small voices. between words to test segmentation. This is the end of the stress test recording.",
-        "response": {
-            "answer": "\"What a madman! You think a stressful recording will catch me off guard? I took that long ride by the Nile, thinking of my mom, Aya Ayman Elattar, and her wisdom, as I rode my horse with the sun on my face.\" \"Sources: []  * type: journal * name: my own diary\"",
-            "sources": []
-        }
-    },
-    "42": {
-        "character_id": "S1",
-        "timestamp": "Apr 17, 2026  02:23:20 PM",
-        "question": "Okay, so this is a stress test recording. I will speak at different speeds, include poses, and repeat some words and mixed languages. So, hi, Kareem. How was your day in Mohandas Khayana? Did you study engineering subjects like mechanics, electricity, or irrigation, or did you just relax today? speak a bit faster to test how the system handles quick speech. Some people talk very quickly and words may not be very clear. So this is the part is important for testing performance under speed. Now I will repeat some words. Repeat, repeat, repeat. And I will also include similar words sound like fan, van, ban, And ban. Let's test numbers again. 13, 30, 50, 15, 151. Now I will lower my voice a little, as if the microphone is far away. And then I'll raise my voice again to normal level. Finally, I will add some small voices. between words to test segmentation. This is the end of the stress test recording.",
-        "response": {
-            "answer": "My day at Mohandas Khayana was decent, I studied some irrigation concepts in class and worked on a surveying problem set using my Dumpy level, while the sun set slowly outside.",
-            "sources": [
-                {
-                    "confidence": 1,
-                    "type": null,
-                    "name": null,
-                    "url": null
-                }
-            ]
-        }
     }
 }

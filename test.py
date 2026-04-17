@@ -3,12 +3,11 @@ import base64
 import io
 import json
 
-import librosa
 import numpy as np
 import soundfile as sf
 import websockets
 
-WS_URL = "ws://127.0.0.1:8000/ws/voice-chat"  # adjust as needed
+WS_URL = "wss://immersa-voice-chat-api.up.railway.app/ws/voice-chat"
 AUDIO_FILE = "test_73_secs.wav"
 OUTPUT_FILE = "test_result.wav"
 CHUNK_SIZE = 131072  # bytes
@@ -87,13 +86,20 @@ async def main():
             print("Connection closed")
 
     # Save all received audio chunks to test_result.wav
-    # Chunks are raw MP3 bytes — join them all then decode with librosa
     if audio_chunks:
-        mp3_bytes = b"".join(audio_chunks)
-        audio, sr = librosa.load(io.BytesIO(mp3_bytes), sr=None, mono=True)
-        if len(audio) > 0:
-            sf.write(OUTPUT_FILE, audio, sr)
-            duration = len(audio) / sr
+        all_audio = []
+        sr = None
+        for chunk_bytes in audio_chunks:
+            audio, file_sr = sf.read(io.BytesIO(chunk_bytes), dtype="float32", always_2d=False)
+            if sr is None:
+                sr = file_sr
+            if len(audio) > 0:
+                all_audio.append(audio)
+
+        if all_audio and sr:
+            combined = np.concatenate(all_audio)
+            sf.write(OUTPUT_FILE, combined, sr)
+            duration = len(combined) / sr
             print(f"\n✅ Saved {OUTPUT_FILE} — {duration:.2f}s @ {sr}Hz ({len(audio_chunks)} chunks)")
         else:
             print("\n⚠️  Chunks received but audio was empty after decode")
