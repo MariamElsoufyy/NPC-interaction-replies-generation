@@ -17,8 +17,6 @@ env/
 gradproject/
 
 # Data / temp files
-data/temp_files/
-data/debug_output_audio/
 data/output_files/
 
 # IDE
