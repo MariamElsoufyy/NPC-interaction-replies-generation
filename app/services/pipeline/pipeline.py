@@ -7,11 +7,6 @@ import re
 import threading
 import time
 
-import numpy as np
-
-import librosa
-import soundfile as sf
-
 import app.core.config as config
 from app.characters.build_prompt import build_prompts
 from app.services.streaming.event_protocol_service import (
@@ -203,35 +198,16 @@ class Pipeline:
 
     def _start_sentence_tts(self, sentence: str) -> thread_queue.Queue:
         """Kick off ElevenLabs for one sentence in a background thread.
-        Collects the full sentence audio, trims trailing silence, then puts
-        a single clean WAV chunk in the queue followed by a None sentinel."""
+        Puts each MP3 chunk into the queue as it arrives so the first chunk
+        reaches the client immediately — no waiting for the full sentence to
+        finish generating."""
         q: thread_queue.Queue = thread_queue.Queue()
 
         def run():
             try:
-                # Collect all MP3 chunks for this sentence
-                mp3_chunks = []
                 for chunk in self.elevenlabs_service.stream_audio(sentence):
                     if chunk:
-                        mp3_chunks.append(chunk)
-
-                if not mp3_chunks:
-                    return
-
-                # Decode → trim trailing silence → re-encode as WAV
-                mp3_bytes = b"".join(mp3_chunks)
-                audio, sr = librosa.load(io.BytesIO(mp3_bytes), sr=None, mono=True)
-                trimmed, _ = librosa.effects.trim(audio, top_db=35, frame_length=512, hop_length=128)
-
-                # Guard: if trim wiped everything (very short/quiet audio), keep original
-                if len(trimmed) == 0:
-                    trimmed = audio
-
-                wav_buf = io.BytesIO()
-                sf.write(wav_buf, trimmed, sr, format="WAV", subtype="PCM_16")
-                wav_buf.seek(0)
-                q.put(wav_buf.read())
-
+                        q.put(chunk)
             except Exception as e:
                 q.put(e)
             finally:
@@ -374,30 +350,15 @@ class Pipeline:
             print(f"[DEBUG] Failed to save latency log: {e}")
 
     def _save_wav(self, chunks: list[bytes]):
-        path = self.elevenlabs_service._debug_path("output.wav")
-        print(f"[DEBUG] _save_wav called | sentences={len(chunks)}")
-        if not chunks:
-            print("[DEBUG] _save_wav: no chunks to save, skipping")
-            return
+        """Save TTS output as MP3 (chunks are already MP3 — no decode needed)."""
+        path = self.elevenlabs_service._debug_path("output.mp3")
         try:
-            # chunks are already trimmed WAV files (one per sentence) — concatenate their PCM data
-            all_audio = []
-            sr = None
-            for i, wav_bytes in enumerate(chunks):
-                audio, file_sr = sf.read(io.BytesIO(wav_bytes), dtype="float32", always_2d=False)
-                print(f"[DEBUG] _save_wav: sentence {i+1} → {len(audio)} samples @ {file_sr}Hz")
-                if sr is None:
-                    sr = file_sr
-                if len(audio) > 0:
-                    all_audio.append(audio)
-            if all_audio and sr:
-                combined = np.concatenate(all_audio)
-                sf.write(path, combined, sr)
-                print(f"[DEBUG] Saved {path} ({len(combined)} samples @ {sr}Hz)")
-            else:
-                print("[DEBUG] _save_wav: all sentences were empty after read, nothing saved")
+            mp3_bytes = b"".join(chunks)
+            with open(path, "wb") as f:
+                f.write(mp3_bytes)
+            print(f"[DEBUG] Saved {path} ({len(mp3_bytes):,} bytes)")
         except Exception as e:
-            print(f"[DEBUG] Failed to save output.wav: {e}")
+            print(f"[DEBUG] Failed to save output.mp3: {e}")
 
     async def _send_error(self, session_id: str, message: str):
         print(f"[PIPELINE ERROR] session_id={session_id} | {message}")

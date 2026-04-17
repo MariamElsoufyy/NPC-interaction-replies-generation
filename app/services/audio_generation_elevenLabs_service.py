@@ -26,7 +26,9 @@ class AudioGenerationElevenLabsService:
 
     def _warmup(self):
         """Send a short dummy TTS request at startup to establish the HTTP connection
-        and eliminate the TCP/SSL cold-start penalty on the first real request."""
+        and eliminate the TCP/SSL cold-start penalty on the first real request.
+        IMPORTANT: must fully consume the stream — breaking mid-stream leaves the
+        connection in a broken state and makes the first real request slower."""
         print(f"⏳ [TTS] Warming up ElevenLabs connection (model={self.model_id})...")
         try:
             stream = self.client.text_to_speech.convert(
@@ -36,7 +38,7 @@ class AudioGenerationElevenLabsService:
                 output_format="mp3_44100_128",
             )
             for _ in stream:
-                break  # consume just the first chunk then stop — connection is warm
+                pass  # fully consume — properly closes the connection
         except Exception:
             pass  # ignore errors (e.g. invalid voice_id in test env)
         print(f"✅ [TTS] ElevenLabs ready (model={self.model_id}, voice={self.voice_id})")
