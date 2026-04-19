@@ -11,6 +11,7 @@ import websockets
 
 
 WS_URL = "wss://immersa-voice-chat-api.up.railway.app/ws/voice-chat"
+#WS_URL = "ws://127.0.0.1:8000/ws/voice-chat"
 
 CHARACTER_ID = "S1"
 SAMPLE_RATE = 16000
@@ -81,26 +82,32 @@ async def sender(websocket):
         callback=mic_callback
     )
 
-    with stream:
-        print("✅ Microphone stream ready")
+    try:
+        with stream:
+            print("✅ Microphone stream ready")
 
-        while not stop_recording.is_set() or not audio_queue.empty():
-            try:
-                chunk = audio_queue.get(timeout=0.1)
-            except queue.Empty:
-                await asyncio.sleep(0.01)
-                continue
+            while not stop_recording.is_set() or not audio_queue.empty():
+                try:
+                    chunk = audio_queue.get(timeout=0.1)
+                except queue.Empty:
+                    await asyncio.sleep(0.01)
+                    continue
 
-            await send_audio_chunk(websocket, chunk, chunk_index)
-            chunk_index += 1
-            await asyncio.sleep(0)
+                await send_audio_chunk(websocket, chunk, chunk_index)
+                chunk_index += 1
+                await asyncio.sleep(0)
 
-    print("🛑 Microphone stream stopped")
+        print("🛑 Microphone stream stopped")
 
-    await websocket.send(json.dumps({
-        "type": "end_of_utterance"
-    }))
-    print("SENT: end_of_utterance")
+        await websocket.send(json.dumps({
+            "type": "end_of_utterance"
+        }))
+        print("SENT: end_of_utterance")
+
+    except websockets.ConnectionClosed as e:
+        print(f"⚠️  Connection closed while sending (code={e.code}): {e.reason or 'no reason given'}")
+        stop_recording.set()
+        server_processing_done.set()
 
 
 async def receiver(websocket):

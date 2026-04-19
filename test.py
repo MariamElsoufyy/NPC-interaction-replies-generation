@@ -7,7 +7,8 @@ import numpy as np
 import soundfile as sf
 import websockets
 
-WS_URL = "wss://immersa-voice-chat-api.up.railway.app/ws/voice-chat"
+# WS_URL = "wss://immersa-voice-chat-api.up.railway.app/ws/voice-chat"
+WS_URL = "ws://127.0.0.1:8000/ws/voice-chat"
 AUDIO_FILE = "test_73_secs.wav"
 OUTPUT_FILE = "test_result.wav"
 CHUNK_SIZE = 131072  # bytes
