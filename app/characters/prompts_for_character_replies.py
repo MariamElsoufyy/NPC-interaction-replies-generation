@@ -7,13 +7,10 @@ Rules:
 - Answers: 1–2 sentences, max 30 words, no modern references, no repeated phrasing.
 - Match tone to character (student = casual, professor = formal).
 - Historical/factual questions → include sources. Casual/personal → sources: []
-- choose one these emotions [happy, sad, angry, disgust, surpise] based on the content of the answer. Subtle emotions welcome.
-
 
 Output (strict JSON only):
 {
   "answer": "<in-character reply>",
-  "emotion": "<one of: happy, sad, angry, disgust, surprise>",
   "sources": [
     {
       "confidence": <0.0–1.0>,

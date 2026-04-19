@@ -4,7 +4,7 @@ info:
   title: IMMERSA Voice Chat API
   version: "1.0.0"
   description: |
-    Real-time voice conversation API powered by Whisper (STT), GPT (LLM), and ElevenLabs (TTS).
+    Real-time voice conversation API powered by Whisper (STT), Groq LLaMA (LLM), and ElevenLabs (TTS).
 
     ## Typical flow
 
@@ -16,7 +16,6 @@ info:
       |<-- ack (start_session) ------------------|
       |-- audio_chunk (×N) -------------------->|
       |<-- ack (audio_chunk)  ×N  --------------|
-      |<-- partial_transcript (every 5 chunks) --|
       |-- end_of_utterance -------------------->|
       |<-- ack (end_of_utterance) --------------|
       |<-- final_transcript ---------------------|
@@ -52,7 +51,6 @@ channels:
         oneOf:
           - $ref: "#/components/messages/ConnectionEstablished"
           - $ref: "#/components/messages/Ack"
-          - $ref: "#/components/messages/PartialTranscript"
           - $ref: "#/components/messages/FinalTranscript"
           - $ref: "#/components/messages/ReplyTextDone"
           - $ref: "#/components/messages/TtsAudioChunk"
@@ -86,15 +84,15 @@ components:
             type: start_session
             character_id: s1
             sample_rate: 16000
-            audio_format: wav_base64_chunks
+            audio_format: wav
 
     AudioChunk:
       name: audio_chunk
       title: Audio Chunk
       summary: >
-        One chunk of base64-encoded WAV audio. Send as many chunks as needed
-        while the user is speaking. The server will emit partial_transcript
-        events every 5 chunks.
+        One chunk of base64-encoded audio. Send as many chunks as needed
+        while the user is speaking. The server runs rolling STT every 5 chunks
+        to accumulate the transcript internally.
       payload:
         $ref: "#/components/schemas/AudioChunkPayload"
       examples:
@@ -163,7 +161,7 @@ components:
             session_id: "3f4a1b2c-8d9e-4f5a-b6c7-d8e9f0a1b2c3"
             character_id: s1
             sample_rate: 16000
-            audio_format: wav_base64_chunks
+            audio_format: wav
             state: LISTENING
         - name: ack-audio-chunk
           payload:
@@ -182,22 +180,6 @@ components:
             type: ack
             event: close_session
             message: "Session closed successfully"
-
-    PartialTranscript:
-      name: partial_transcript
-      title: Partial Transcript
-      summary: >
-        Intermediate STT result emitted every 5 audio chunks while the user
-        is still speaking. Use this for live captions or early UI feedback.
-      payload:
-        $ref: "#/components/schemas/PartialTranscriptPayload"
-      examples:
-        - name: partial
-          payload:
-            type: partial_transcript
-            text: "What is hydraulic pressure"
-            chunk_index: 4
-            window_size: 5
 
     FinalTranscript:
       name: final_transcript
@@ -232,9 +214,10 @@ components:
       name: tts_audio_chunk
       title: TTS Audio Chunk
       summary: >
-        A streaming MP3 audio chunk (base64-encoded) from ElevenLabs.
-        Chunks arrive in order; buffer them and play sequentially.
-        Audio format: MP3, 44 100 Hz, 128 kbps.
+        A streaming WAV audio chunk (base64-encoded). ElevenLabs returns MP3
+        internally, which is decoded, silence-trimmed, and re-encoded as
+        WAV PCM_16 before being sent. Chunks arrive in order; buffer them
+        and play sequentially.
       payload:
         $ref: "#/components/schemas/TtsAudioChunkPayload"
       examples:
@@ -242,7 +225,7 @@ components:
           payload:
             type: tts_audio_chunk
             chunk_index: 0
-            audio: "//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8..."
+            audio: "UklGRiQAAABXQVZFZm10IBAAAA..."
 
     TtsDone:
       name: tts_done
@@ -305,9 +288,10 @@ components:
           example: 16000
         audio_format:
           type: string
-          default: wav_base64_chunks
+          default: wav
           description: Encoding format of the audio data.
-          example: wav_base64_chunks
+          enum: [wav, wav_base64_chunks, pcm16_base64_chunks]
+          example: wav
 
     AudioChunkPayload:
       type: object
@@ -404,24 +388,6 @@ components:
         total_chunks:
           type: integer
 
-    PartialTranscriptPayload:
-      type: object
-      required: [type, text]
-      properties:
-        type:
-          type: string
-          enum: [partial_transcript]
-        text:
-          type: string
-          description: Partial transcription text from the rolling STT window.
-        chunk_index:
-          type: integer
-          description: Index of the chunk that triggered this partial result.
-        window_size:
-          type: integer
-          description: Number of chunks in the rolling window (max 5).
-          maximum: 5
-
     FinalTranscriptPayload:
       type: object
       required: [type, text]
@@ -462,8 +428,9 @@ components:
           type: string
           format: byte
           description: |
-            Base64-encoded MP3 audio data.
-            Format: MP3, 44 100 Hz, 128 kbps (ElevenLabs mp3_44100_128).
+            Base64-encoded WAV audio data (PCM_16).
+            ElevenLabs delivers MP3 at 44 100 Hz, which the server decodes,
+            silence-trims, and re-encodes as WAV PCM_16 before sending.
 
     TtsDonePayload:
       type: object
