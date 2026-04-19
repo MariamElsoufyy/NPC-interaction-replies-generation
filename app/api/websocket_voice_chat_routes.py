@@ -1,5 +1,6 @@
 import base64
 import json
+import struct
 import uuid
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
@@ -11,6 +12,30 @@ from app.services.streaming.event_protocol_service import (
 )
 
 router = APIRouter()
+
+
+def _wrap_pcm16_as_wav(raw_bytes: bytes, sample_rate: int, channels: int = 1) -> bytes:
+    """Wrap raw PCM16 LE bytes in a valid WAV container so soundfile can read them."""
+    bits_per_sample = 16
+    byte_rate = sample_rate * channels * bits_per_sample // 8
+    block_align = channels * bits_per_sample // 8
+    header = struct.pack(
+        "<4sI4s4sIHHIIHH4sI",
+        b"RIFF",
+        36 + len(raw_bytes),
+        b"WAVE",
+        b"fmt ",
+        16,
+        1,  # PCM
+        channels,
+        sample_rate,
+        byte_rate,
+        block_align,
+        bits_per_sample,
+        b"data",
+        len(raw_bytes),
+    )
+    return header + raw_bytes
 
 
 @router.websocket("/ws/voice-chat")
@@ -64,8 +89,9 @@ async def websocket_voice_chat(websocket: WebSocket):
                 session.add_audio_chunk(audio_data)
                 total = session.get_audio_chunk_count()
 
-                # Store WAV header from the very first chunk (first 44 bytes)
-                if total == 1:
+                # For WAV format, cache the header from the first chunk so later
+                # headerless batches can be reassembled into valid WAV data.
+                if total == 1 and session.audio_format != "pcm16_base64_chunks":
                     session.wav_header = base64.b64decode(audio_data)[:44]
 
                 await manager.send_json(session_id, build_ack_event(
@@ -78,10 +104,13 @@ async def websocket_voice_chat(websocket: WebSocket):
                 # Trigger rolling STT every 5 chunks
                 if total % 5 == 0:
                     batch = session.audio_buffer.get_last_n_chunks(5)
-                    audio_bytes = b"".join(base64.b64decode(c) for c in batch)
-                    # Batches after the first don't have a WAV header — prepend it
-                    if total > 5:
-                        audio_bytes = session.wav_header + audio_bytes
+                    raw = b"".join(base64.b64decode(c) for c in batch)
+                    if session.audio_format == "pcm16_base64_chunks":
+                        audio_bytes = _wrap_pcm16_as_wav(raw, session.sample_rate)
+                    elif total > 5:
+                        audio_bytes = session.wav_header + raw
+                    else:
+                        audio_bytes = raw
                     session.processed_chunk_count = total
                     await pipeline.enqueue(session_id, audio_bytes, is_final=False)
 
@@ -97,10 +126,13 @@ async def websocket_voice_chat(websocket: WebSocket):
 
                 remaining = session.audio_buffer.get_all_chunks()[session.processed_chunk_count:]
                 if remaining:
-                    audio_bytes = b"".join(base64.b64decode(c) for c in remaining)
-                    # Remaining chunks also have no header if they're not from the start
-                    if session.processed_chunk_count > 0:
-                        audio_bytes = session.wav_header + audio_bytes
+                    raw = b"".join(base64.b64decode(c) for c in remaining)
+                    if session.audio_format == "pcm16_base64_chunks":
+                        audio_bytes = _wrap_pcm16_as_wav(raw, session.sample_rate)
+                    elif session.processed_chunk_count > 0:
+                        audio_bytes = session.wav_header + raw
+                    else:
+                        audio_bytes = raw
                     await pipeline.enqueue(session_id, audio_bytes, is_final=True)
                 else:
                     # Chunks count was exactly divisible by 5 — all already processed
