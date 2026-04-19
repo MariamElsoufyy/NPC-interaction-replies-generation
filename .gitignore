@@ -5,6 +5,7 @@
 __pycache__/
 *.py[cod]
 *.pyo
+*.pyc
 *.pyd
 .Python
 *.egg-info/
@@ -16,8 +17,6 @@ venv/
 env/
 gradproject/
 
-# Data / temp files
-data/output_files/
 
 # IDE
 .vscode/
