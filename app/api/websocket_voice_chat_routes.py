@@ -14,6 +14,21 @@ from app.services.streaming.event_protocol_service import (
 router = APIRouter()
 
 
+def _extract_wav_header(wav_bytes: bytes) -> bytes:
+    """Return the full WAV header (up to and including the 'data' size field).
+
+    Standard PCM WAV has a 44-byte header, but files with extra chunks (LIST,
+    JUNK, bext, etc.) push 'data' further in. Slicing to a fixed 44 bytes in
+    those cases truncates the header mid-chunk, producing bytes that soundfile
+    can't recognise as WAV (LibsndfileError 61).
+    """
+    idx = wav_bytes.find(b"data")
+    if idx == -1 or idx + 8 > len(wav_bytes):
+        # Fallback: no 'data' marker found — return whatever we have.
+        return wav_bytes
+    return wav_bytes[: idx + 8]  # 'data' (4 bytes) + data-chunk size (4 bytes)
+
+
 def _wrap_pcm16_as_wav(raw_bytes: bytes, sample_rate: int, channels: int = 1) -> bytes:
     """Wrap raw PCM16 LE bytes in a valid WAV container so soundfile can read them."""
     bits_per_sample = 16
@@ -92,7 +107,7 @@ async def websocket_voice_chat(websocket: WebSocket):
                 # For WAV format, cache the header from the first chunk so later
                 # headerless batches can be reassembled into valid WAV data.
                 if total == 1 and session.audio_format != "pcm16_base64_chunks":
-                    session.wav_header = base64.b64decode(audio_data)[:44]
+                    session.wav_header = _extract_wav_header(base64.b64decode(audio_data))
 
                 await manager.send_json(session_id, build_ack_event(
                     event="audio_chunk",

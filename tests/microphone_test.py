@@ -20,7 +20,6 @@ DTYPE = "int16"
 CHUNK_DURATION = 0.5  # seconds
 CHUNK_SAMPLES = int(SAMPLE_RATE * CHUNK_DURATION)
 
-# اختاري حسب الباك إند عندك
 AUDIO_FORMAT = "pcm16_base64_chunks"
 #AUDIO_FORMAT = "wav_base64_chunks"
 
