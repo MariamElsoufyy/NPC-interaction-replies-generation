@@ -214,10 +214,10 @@ components:
       name: tts_audio_chunk
       title: TTS Audio Chunk
       summary: >
-        A streaming WAV audio chunk (base64-encoded). ElevenLabs returns MP3
-        internally, which is decoded, silence-trimmed, and re-encoded as
-        WAV PCM_16 before being sent. Chunks arrive in order; buffer them
-        and play sequentially.
+        One complete WAV file (base64-encoded) per sentence of the reply.
+        ElevenLabs returns MP3 internally; the server decodes it, trims
+        trailing silence, and re-encodes each sentence as a self-contained
+        WAV PCM_16 file before sending. Play chunks in order as they arrive.
       payload:
         $ref: "#/components/schemas/TtsAudioChunkPayload"
       examples:
@@ -308,7 +308,10 @@ components:
         audio:
           type: string
           format: byte
-          description: Base64-encoded WAV audio data for this chunk.
+          description: >
+            Base64-encoded audio data for this chunk.
+            Format depends on audio_format: WAV bytes for `wav` /
+            `wav_base64_chunks`, raw PCM16-LE bytes for `pcm16_base64_chunks`.
 
     EndOfUtterancePayload:
       type: object
@@ -428,9 +431,10 @@ components:
           type: string
           format: byte
           description: |
-            Base64-encoded WAV audio data (PCM_16).
-            ElevenLabs delivers MP3 at 44 100 Hz, which the server decodes,
-            silence-trims, and re-encodes as WAV PCM_16 before sending.
+            Base64-encoded WAV file (PCM_16, 44 100 Hz, mono).
+            Each chunk is a complete, self-contained WAV for one sentence of
+            the reply. ElevenLabs delivers MP3 internally; the server decodes,
+            silence-trims, and re-encodes per sentence before sending.
 
     TtsDonePayload:
       type: object

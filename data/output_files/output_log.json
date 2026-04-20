@@ -402,5 +402,23 @@
                 }
             ]
         }
+    },
+    "41": {
+        "character_id": "S1",
+        "timestamp": "Apr 20, 2026  04:50:48 PM",
+        "question": "Test.",
+        "response": {
+            "answer": "Haven't taken my final exams yet, but I feel like I'm stuck in the mud",
+            "sources": []
+        }
+    },
+    "42": {
+        "character_id": "S1",
+        "timestamp": "Apr 20, 2026  04:52:07 PM",
+        "question": "Test.",
+        "response": {
+            "answer": "Just made it to class on time, barely – that tram was packed, by the way. Smells like freshly cut grass outside?",
+            "sources": []
+        }
     }
 }

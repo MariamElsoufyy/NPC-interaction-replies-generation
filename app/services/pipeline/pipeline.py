@@ -2,6 +2,7 @@ import asyncio
 import base64
 import io
 import json
+import os
 import queue as thread_queue
 import re
 import threading
@@ -11,6 +12,15 @@ import numpy as np
 
 import librosa
 import soundfile as sf
+
+# Path to the WAV file played when the pipeline errors or TTS is too slow.
+# Place your fallback audio at the project root: fallback.wav
+FALLBACK_AUDIO_PATH = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "fallback.wav"
+)
+
+# Maximum seconds allowed from TTS start until the first audio chunk arrives.
+
 
 import app.core.config as config
 from app.characters.build_prompt import build_prompts
@@ -182,6 +192,7 @@ class Pipeline:
             session_id, reply_text = await self.tts_queue.get()
             t0 = time.perf_counter()
             try:
+                #raise Exception("forced test error") # TESTING: force an error to verify fallback audio works
                 session = self.connection_manager.get_session(session_id)
                 if session:
                     session.set_state("STREAMING_TTS")
@@ -190,8 +201,18 @@ class Pipeline:
                 await self._stream_tts_live(session_id, reply_text, t0)
                 self._t(session_id)["tts_total"] = time.perf_counter() - t0
                 await self.send_queue.put((session_id, None, -1))  # signal TTS done
+
+            except asyncio.TimeoutError:
+                elapsed = time.perf_counter() - t0
+                print(
+                    f"[PIPELINE] TTS first-chunk timeout ({elapsed:.2f}s > {config.TTS_FIRST_CHUNK_TIMEOUT}s) "
+                    f"— streaming fallback for session {session_id}"
+                )
+                await self._send_fallback_audio(session_id)
+
             except Exception as e:
-                await self._send_error(session_id, f"TTS failed: {e}")
+                print(f"[PIPELINE ERROR] TTS failed for session {session_id}: {e}")
+                await self._send_fallback_audio(session_id)
 
     # --- TTS sentence helpers ---
 
@@ -278,7 +299,12 @@ class Pipeline:
         chunk_index = 0
         first_chunk = True
         while True:
-            item = await bridge.get()
+            if first_chunk:
+                # Enforce the first-chunk deadline; TimeoutError propagates to _tts_worker.
+                item = await asyncio.wait_for(bridge.get(), timeout=config.TTS_FIRST_CHUNK_TIMEOUT)
+            else:
+                item = await bridge.get()
+
             if item is None:
                 break
             if isinstance(item, Exception):
@@ -399,9 +425,32 @@ class Pipeline:
         except Exception as e:
             print(f"[DEBUG] Failed to save output.wav: {e}")
 
+    async def _send_fallback_audio(self, session_id: str):
+        """Stream fallback.wav to the client as a single TTS chunk, then signal done.
+
+        Called on pipeline errors and TTS first-chunk timeouts so the user always
+        hears something instead of silence.
+        """
+        try:
+            fallback_path = os.path.normpath(FALLBACK_AUDIO_PATH)
+            if not os.path.exists(fallback_path):
+                print(f"[PIPELINE] Fallback audio not found: {fallback_path}")
+                return
+
+            audio, sr = sf.read(fallback_path, dtype="float32", always_2d=False)
+            wav_buf = io.BytesIO()
+            sf.write(wav_buf, audio, sr, format="WAV", subtype="PCM_16")
+            await self.send_queue.put((session_id, wav_buf.getvalue(), 0))
+            print(f"[PIPELINE] Sent fallback audio to session {session_id}")
+        except Exception as e:
+            print(f"[PIPELINE] Could not load fallback audio: {e}")
+        finally:
+            # Always signal TTS done so the client and session state reset cleanly.
+            await self.send_queue.put((session_id, None, -1))
+
     async def _send_error(self, session_id: str, message: str):
         print(f"[PIPELINE ERROR] session_id={session_id} | {message}")
-        await self.connection_manager.send_json(session_id, build_error_event(message))
+        await self._send_fallback_audio(session_id)
         session = self.connection_manager.get_session(session_id)
         if session:
             session.set_state("LISTENING")

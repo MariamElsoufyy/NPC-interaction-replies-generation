@@ -3,6 +3,11 @@ from dotenv import load_dotenv
 from elevenlabs import VoiceSettings
 load_dotenv()
 
+
+
+
+
+
 #preprocessing
 audio_preprocessing_sample_rate = 16000
 
@@ -44,6 +49,7 @@ VOICE_SETTINGS = VoiceSettings(
     style=VOICE_STYLE,
     use_speaker_boost=USER_SPEAKER_BOOST,
 )
+TTS_FIRST_CHUNK_TIMEOUT = 7.0
 
 
 
