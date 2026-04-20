@@ -420,5 +420,57 @@
             "answer": "Just made it to class on time, barely – that tram was packed, by the way. Smells like freshly cut grass outside?",
             "sources": []
         }
+    },
+    "43": {
+        "character_id": "S2",
+        "timestamp": "Apr 20, 2026  05:32:59 PM",
+        "question": "What's your name?",
+        "response": {
+            "answer": "My name's Morad, by the way - nice to meet ya.",
+            "sources": null
+        }
+    },
+    "44": {
+        "character_id": "S1",
+        "timestamp": "Apr 20, 2026  05:34:51 PM",
+        "question": "What's your name?",
+        "response": {
+            "answer": "I'm Kareem Ali El-Attar, nice to meet you, by the way, can you tell me if the tea in the students' lounge is stronger today?",
+            "sources": []
+        }
+    },
+    "45": {
+        "character_id": "S1",
+        "timestamp": "Apr 20, 2026  05:37:26 PM",
+        "question": "What's your name?",
+        "response": {
+            "answer": "I'm Kareem Ali El-Attar, just call me Kareem, by the way, this Cairo air's thick with dust today.",
+            "sources": []
+        }
+    },
+    "46": {
+        "character_id": "S1",
+        "timestamp": "Apr 20, 2026  05:38:52 PM",
+        "question": "Test.",
+        "response": {
+            "answer": "Hmmm... I was expecting something more... substantial. Guess I failed this time, didn't I?",
+            "sources": [
+                {
+                    "confidence": 0.5,
+                    "type": "",
+                    "name": "",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "47": {
+        "character_id": "S1",
+        "timestamp": "Apr 20, 2026  05:44:15 PM",
+        "question": "What's your name?",
+        "response": {
+            "answer": "My name's Kareem Ali El-Attar, nice to meet you, by the way, what's that smell - is it the nearby spice market?",
+            "sources": []
+        }
     }
 }
