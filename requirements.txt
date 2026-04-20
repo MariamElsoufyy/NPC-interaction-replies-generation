@@ -13,3 +13,4 @@ noisereduce
 librosa
 groq
 python-dotenv
+pyttsx3

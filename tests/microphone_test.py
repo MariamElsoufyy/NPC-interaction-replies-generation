@@ -2,9 +2,12 @@ import asyncio
 import base64
 import io
 import json
+import os
 import queue
+import tempfile
 import threading
 
+import numpy as np
 import sounddevice as sd
 import soundfile as sf
 import websockets
@@ -12,6 +15,8 @@ import websockets
 
 WS_URL = "wss://immersa-voice-chat-api.up.railway.app/ws/voice-chat"
 #WS_URL = "ws://127.0.0.1:8000/ws/voice-chat"
+
+TEST_FILES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_files")
 
 CHARACTER_ID = "S1"
 SAMPLE_RATE = 16000
@@ -68,6 +73,100 @@ async def send_audio_chunk(websocket, chunk, chunk_index):
         "audio": chunk_b64
     }))
     print(f"SENT: audio_chunk {chunk_index}")
+
+
+def pick_test_file() -> str:
+    """List audio files in test_files/ and let the user choose one."""
+    os.makedirs(TEST_FILES_DIR, exist_ok=True)
+    files = sorted(
+        f for f in os.listdir(TEST_FILES_DIR)
+        if f.lower().endswith((".wav", ".mp3", ".flac", ".ogg"))
+    )
+    if not files:
+        raise FileNotFoundError(f"No audio files found in {TEST_FILES_DIR}")
+
+    print(f"\nAudio files in {TEST_FILES_DIR}:")
+    for i, name in enumerate(files, 1):
+        print(f"  [{i}] {name}")
+
+    while True:
+        choice = input("Select file number: ").strip()
+        if choice.isdigit() and 1 <= int(choice) <= len(files):
+            return os.path.join(TEST_FILES_DIR, files[int(choice) - 1])
+        print(f"Please enter a number between 1 and {len(files)}.")
+
+
+async def sender_file(websocket, file_path):
+    """Read an audio file, convert to PCM16 chunks, and stream to the server."""
+    audio, sr = sf.read(file_path, dtype="int16", always_2d=True)
+
+    if sr != SAMPLE_RATE:
+        import librosa
+        audio_float = audio[:, 0].astype(np.float32) / 32768.0
+        resampled = librosa.resample(audio_float, orig_sr=sr, target_sr=SAMPLE_RATE)
+        audio = (resampled * 32768).astype(np.int16).reshape(-1, 1)
+
+    total_chunks = (len(audio) + CHUNK_SAMPLES - 1) // CHUNK_SAMPLES
+    print(f"📁 Sending {total_chunks} chunk(s) from file…")
+
+    for i in range(0, len(audio), CHUNK_SAMPLES):
+        chunk = audio[i:i + CHUNK_SAMPLES]
+        if len(chunk) < CHUNK_SAMPLES:
+            pad = np.zeros((CHUNK_SAMPLES - len(chunk), CHANNELS), dtype=np.int16)
+            chunk = np.vstack([chunk, pad])
+        await send_audio_chunk(websocket, chunk, i // CHUNK_SAMPLES)
+
+    await websocket.send(json.dumps({"type": "end_of_utterance"}))
+    print("SENT: end_of_utterance")
+
+
+def text_to_chunks(text):
+    """Convert text to PCM16 audio chunks via pyttsx3."""
+    try:
+        import pyttsx3
+    except ImportError:
+        raise ImportError("pyttsx3 is required for text mode: pip install pyttsx3")
+
+    engine = pyttsx3.init()
+    engine.setProperty("rate", 150)
+
+    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+        tmp_path = f.name
+
+    try:
+        engine.save_to_file(text, tmp_path)
+        engine.runAndWait()
+
+        audio, sr = sf.read(tmp_path, dtype="int16", always_2d=True)
+    finally:
+        os.unlink(tmp_path)
+
+    if sr != SAMPLE_RATE:
+        import librosa
+        audio_float = audio[:, 0].astype(np.float32) / 32768.0
+        resampled = librosa.resample(audio_float, orig_sr=sr, target_sr=SAMPLE_RATE)
+        audio = (resampled * 32768).astype(np.int16).reshape(-1, 1)
+
+    chunks = []
+    for i in range(0, len(audio), CHUNK_SAMPLES):
+        chunk = audio[i:i + CHUNK_SAMPLES]
+        if len(chunk) < CHUNK_SAMPLES:
+            pad = np.zeros((CHUNK_SAMPLES - len(chunk), CHANNELS), dtype=np.int16)
+            chunk = np.vstack([chunk, pad])
+        chunks.append(chunk)
+
+    return chunks
+
+
+async def sender_text(websocket, text):
+    chunks = text_to_chunks(text)
+    print(f"📝 Converted text to {len(chunks)} audio chunk(s)")
+
+    for i, chunk in enumerate(chunks):
+        await send_audio_chunk(websocket, chunk, i)
+
+    await websocket.send(json.dumps({"type": "end_of_utterance"}))
+    print("SENT: end_of_utterance")
 
 
 async def sender(websocket):
@@ -214,28 +313,53 @@ async def main():
         msg = await websocket.recv()
         print("RECV:", msg)
 
-        # wait before starting recording
-        input("\n▶️ Press ENTER to start recording...\n")
-
-        # reset state
-        stop_recording.clear()
-        while not audio_queue.empty():
-            try:
-                audio_queue.get_nowait()
-            except queue.Empty:
+        # choose input mode
+        while True:
+            mode = input("\nInput mode — [m]icrophone / [t]ext / [f]ile: ").strip().lower()
+            if mode in ("m", "t", "f"):
                 break
+            print("Please enter 'm', 't', or 'f'.")
 
-        # second Enter stops recording
-        stopper_thread = threading.Thread(target=wait_for_enter_to_stop, daemon=True)
-        stopper_thread.start()
+        if mode == "t":
+            user_text = input("Enter your message: ").strip()
+            if not user_text:
+                print("❌ No text entered. Exiting.")
+                return
 
-        # sender + receiver together
-        sender_task = asyncio.create_task(sender(websocket))
-        receiver_task = asyncio.create_task(receiver(websocket))
+            receiver_task = asyncio.create_task(receiver(websocket))
+            await sender_text(websocket, user_text)
+            await server_processing_done.wait()
+            await receiver_task
 
-        await sender_task
-        await server_processing_done.wait()
-        await receiver_task
+        elif mode == "f":
+            file_path = pick_test_file()
+            print(f"\n▶️  Using: {file_path}\n")
+
+            receiver_task = asyncio.create_task(receiver(websocket))
+            await sender_file(websocket, file_path)
+            await server_processing_done.wait()
+            await receiver_task
+
+        else:
+            input("\n▶️ Press ENTER to start recording...\n")
+
+            # reset state
+            stop_recording.clear()
+            while not audio_queue.empty():
+                try:
+                    audio_queue.get_nowait()
+                except queue.Empty:
+                    break
+
+            stopper_thread = threading.Thread(target=wait_for_enter_to_stop, daemon=True)
+            stopper_thread.start()
+
+            sender_task = asyncio.create_task(sender(websocket))
+            receiver_task = asyncio.create_task(receiver(websocket))
+
+            await sender_task
+            await server_processing_done.wait()
+            await receiver_task
 
 
 if __name__ == "__main__":
