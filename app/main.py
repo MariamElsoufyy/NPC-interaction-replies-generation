@@ -12,7 +12,7 @@ from app.services.STT_groq_whisper_service import STTGroqWhisperService
 from app.services.LLM_grog_service import LLMGroqService
 from app.services.audio_generation_elevenLabs_service import AudioGenerationElevenLabsService
 from app.services.pipeline.pipeline import Pipeline
-
+from app.characters import characters_info
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -33,7 +33,7 @@ async def lifespan(app: FastAPI):
         llm_service=LLMGroqService(client=models["groq_client"]),
         elevenlabs_service=AudioGenerationElevenLabsService(
             client=models["elevenlabs_client"],
-            voice_id=config.ELEVENLABS_VOICE_ID,
+            voices_ids=characters_info.voices
         ),
     )
 

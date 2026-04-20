@@ -13,12 +13,6 @@ import numpy as np
 import librosa
 import soundfile as sf
 
-# Path to the WAV file played when the pipeline errors or TTS is too slow.
-# Place your fallback audio at the project root: fallback.wav
-FALLBACK_AUDIO_PATH = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "fallback.wav"
-)
-
 # Maximum seconds allowed from TTS start until the first audio chunk arrives.
 
 
@@ -194,11 +188,12 @@ class Pipeline:
             try:
                 #raise Exception("forced test error") # TESTING: force an error to verify fallback audio works
                 session = self.connection_manager.get_session(session_id)
+                character_id = session.character_id if session else None
                 if session:
                     session.set_state("STREAMING_TTS")
                     session.dead_time_end = time.time()
 
-                await self._stream_tts_live(session_id, reply_text, t0)
+                await self._stream_tts_live(session_id, reply_text, t0, character_id)
                 self._t(session_id)["tts_total"] = time.perf_counter() - t0
                 await self.send_queue.put((session_id, None, -1))  # signal TTS done
 
@@ -208,11 +203,11 @@ class Pipeline:
                     f"[PIPELINE] TTS first-chunk timeout ({elapsed:.2f}s > {config.TTS_FIRST_CHUNK_TIMEOUT}s) "
                     f"— streaming fallback for session {session_id}"
                 )
-                await self._send_fallback_audio(session_id)
+                await self._send_fallback_audio(session_id, character_id)
 
             except Exception as e:
                 print(f"[PIPELINE ERROR] TTS failed for session {session_id}: {e}")
-                await self._send_fallback_audio(session_id)
+                await self._send_fallback_audio(session_id, character_id)
 
     # --- TTS sentence helpers ---
 
@@ -222,7 +217,7 @@ class Pipeline:
         parts = re.split(r'(?<=[.!?؟،])\s+', text.strip())
         return [p.strip() for p in parts if p.strip()]
 
-    def _start_sentence_tts(self, sentence: str) -> thread_queue.Queue:
+    def _start_sentence_tts(self, sentence: str, character_id: str) -> thread_queue.Queue:
         """Kick off ElevenLabs for one sentence in a background thread.
         Collects the full sentence audio, trims trailing silence, then puts
         a single clean WAV chunk in the queue followed by a None sentinel."""
@@ -232,7 +227,7 @@ class Pipeline:
             try:
                 # Collect all MP3 chunks for this sentence
                 mp3_chunks = []
-                for chunk in self.elevenlabs_service.stream_audio(sentence):
+                for chunk in self.elevenlabs_service.stream_audio(sentence, character_id):
                     if chunk:
                         mp3_chunks.append(chunk)
 
@@ -261,7 +256,7 @@ class Pipeline:
         threading.Thread(target=run, daemon=True).start()
         return q
 
-    async def _stream_tts_live(self, session_id: str, text: str, t0: float):
+    async def _stream_tts_live(self, session_id: str, text: str, t0: float, character_id: str = None):
         bridge: asyncio.Queue = asyncio.Queue()
         loop = asyncio.get_running_loop()
         collected: list[bytes] = []
@@ -271,13 +266,13 @@ class Pipeline:
         def run_all():
             try:
                 # Start sentence 0 immediately; prefetch sentence N+1 while N plays.
-                queues = [self._start_sentence_tts(sentences[0])]
+                queues = [self._start_sentence_tts(sentences[0], character_id)]
                 next_idx = 1
 
                 for q in queues:
                     # Fire off the next sentence's TTS request before blocking on current.
                     if next_idx < len(sentences):
-                        queues.append(self._start_sentence_tts(sentences[next_idx]))
+                        queues.append(self._start_sentence_tts(sentences[next_idx], character_id))
                         next_idx += 1
 
                     while True:
@@ -425,14 +420,17 @@ class Pipeline:
         except Exception as e:
             print(f"[DEBUG] Failed to save output.wav: {e}")
 
-    async def _send_fallback_audio(self, session_id: str):
-        """Stream fallback.wav to the client as a single TTS chunk, then signal done.
+    async def _send_fallback_audio(self, session_id: str, character_id: str = None):
+        """Stream <character_id>_fallback.wav to the client as a single TTS chunk, then signal done.
 
         Called on pipeline errors and TTS first-chunk timeouts so the user always
         hears something instead of silence.
         """
         try:
-            fallback_path = os.path.normpath(FALLBACK_AUDIO_PATH)
+            filename = f"{character_id}_fallback.wav" if character_id else "fallback.wav"
+            fallback_path = os.path.normpath(os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "data", "fallback_audios", filename
+            ))
             if not os.path.exists(fallback_path):
                 print(f"[PIPELINE] Fallback audio not found: {fallback_path}")
                 return
@@ -441,7 +439,7 @@ class Pipeline:
             wav_buf = io.BytesIO()
             sf.write(wav_buf, audio, sr, format="WAV", subtype="PCM_16")
             await self.send_queue.put((session_id, wav_buf.getvalue(), 0))
-            print(f"[PIPELINE] Sent fallback audio to session {session_id}")
+            print(f"[PIPELINE] Sent fallback audio ({filename}) to session {session_id}")
         except Exception as e:
             print(f"[PIPELINE] Could not load fallback audio: {e}")
         finally:
@@ -450,7 +448,8 @@ class Pipeline:
 
     async def _send_error(self, session_id: str, message: str):
         print(f"[PIPELINE ERROR] session_id={session_id} | {message}")
-        await self._send_fallback_audio(session_id)
         session = self.connection_manager.get_session(session_id)
+        character_id = session.character_id if session else None
+        await self._send_fallback_audio(session_id, character_id)
         if session:
             session.set_state("LISTENING")

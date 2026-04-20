@@ -1,10 +1,15 @@
-import json 
+import json
+import os
+from dotenv import load_dotenv 
+load_dotenv()
 #-----  Basic info -----#
 first_name = {
     "S1":"Morad",
     "S2":"Kareem",
     "P1" :"Amin"
 }
+
+
 
 middle_name = {
     "S1":"Ali",
@@ -16,6 +21,10 @@ last_name = {
     "S2":"Shawky",
     "P1" :"El-Shazly"}
 
+
+voices = {
+    "S1": os.getenv("AHMAD_VOICE_ID")
+}
 
 department = {
     "S1":"Irrigation Engineering",

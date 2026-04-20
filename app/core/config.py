@@ -36,7 +36,6 @@ groq_max_completion_tokens = 1024
 
 #TTS 
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
-ELEVENLABS_VOICE_ID = os.getenv("AHMAD_VOICE_ID")
 ELEVENLABS_MODEL_ID = "eleven_v3"          # expressive model — sentence pipelining keeps latency low
 VOICE_STABILITY = 0.2                     # low = more emotional range
 VOICE_SIMILARITY_BOOST = 0.85             # high = closer to target voice, but less expressive
@@ -49,7 +48,7 @@ VOICE_SETTINGS = VoiceSettings(
     style=VOICE_STYLE,
     use_speaker_boost=USER_SPEAKER_BOOST,
 )
-TTS_FIRST_CHUNK_TIMEOUT = 7.0
+TTS_FIRST_CHUNK_TIMEOUT = 1.0
 
 
 
