@@ -1,8 +1,8 @@
 import json 
 #-----  Basic info -----#
 first_name = {
-    "S1":"Kareem",
-    "S2":"Morad",
+    "S1":"Morad",
+    "S2":"Kareem",
     "P1" :"Amin"
 }
 
@@ -13,8 +13,8 @@ middle_name = {
 
 last_name = {
     "S1":"El-Attar",
-    "S2":"El-Shazly",
-    "P1" :"Shawky"}
+    "S2":"Shawky",
+    "P1" :"El-Shazly"}
 
 
 department = {
