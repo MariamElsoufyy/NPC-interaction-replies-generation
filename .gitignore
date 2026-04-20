@@ -15,7 +15,7 @@ build/
 venv/
 .venv/
 env/
-gradproject/
+IMMERSA/
 
 
 # IDE
