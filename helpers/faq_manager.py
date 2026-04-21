@@ -428,6 +428,79 @@ async def action_delete(db):
     print("  ✅ Deleted." if deleted else "  ❌ Failed to delete.")
 
 
+async def action_fill_missing_audio(db):
+    header("🎵  FILL MISSING AUDIO")
+    faqs = await get_all_faqs(db)
+    missing = [f for f in faqs if not f.audio_url]
+
+    if not missing:
+        print("  ✅ All FAQs already have audio.")
+        return
+
+    print(f"  Found {len(missing)} FAQ(s) without audio:\n")
+    for i, faq in enumerate(missing, 1):
+        print(f"  [{i}/{len(missing)}] {faq.character_id} | {faq.question[:60]}")
+
+    if not confirm(f"\nGenerate and upload audio for all {len(missing)} FAQs?"):
+        print("  Cancelled.")
+        return
+
+    models = Models().get_all_models()
+    success, failed = 0, 0
+
+    for i, faq in enumerate(missing, 1):
+        print(f"\n  ── [{i}/{len(missing)}] {faq.question[:60]}")
+        audio_bytes = generate_audio_bytes(faq.answer, faq.character_id, models["elevenlabs_client"])
+        if not audio_bytes:
+            print(f"  ⚠️  Skipped — no voice configured for {faq.character_id}")
+            failed += 1
+            continue
+
+        audio_url = await upload_audio(audio_bytes, faq.character_id)
+        if audio_url:
+            await update_faq(db, faq.id, {"audio_url": audio_url})
+            success += 1
+        else:
+            failed += 1
+
+    divider()
+    print(f"\n  Done — ✅ {success} uploaded, ❌ {failed} failed.")
+
+
+async def action_fill_missing_embeddings(db):
+    header("🧠  FILL MISSING EMBEDDINGS")
+    faqs = await get_all_faqs(db)
+    missing = [f for f in faqs if f.embedding is None]
+
+    if not missing:
+        print("  ✅ All FAQs already have embeddings.")
+        return
+
+    print(f"  Found {len(missing)} FAQ(s) without embeddings:\n")
+    for i, faq in enumerate(missing, 1):
+        print(f"  [{i}/{len(missing)}] {faq.character_id} | {faq.question[:60]}")
+
+    if not confirm(f"\nGenerate embeddings for all {len(missing)} FAQs?"):
+        print("  Cancelled.")
+        return
+
+    success, failed = 0, 0
+
+    for i, faq in enumerate(missing, 1):
+        print(f"\n  ── [{i}/{len(missing)}] {faq.question[:60]}")
+        try:
+            embedding = generate_embedding(faq.question)
+            await update_faq(db, faq.id, {"embedding": embedding})
+            print(f"  ✅ Embedding saved ({len(embedding)} dims)")
+            success += 1
+        except Exception as e:
+            print(f"  ❌ Failed: {e}")
+            failed += 1
+
+    divider()
+    print(f"\n  Done — ✅ {success} generated, ❌ {failed} failed.")
+
+
 # ── Main loop ──────────────────────────────────────────────────────────────────
 
 async def main():
@@ -443,6 +516,8 @@ async def main():
             "View a FAQ",
             "Update a FAQ",
             "Delete a FAQ",
+            "Fill missing audio (batch)",
+            "Fill missing embeddings (batch)",
             "Exit",
         ])
 
@@ -457,6 +532,10 @@ async def main():
                 await action_update(db)
             elif action == "Delete a FAQ":
                 await action_delete(db)
+            elif action == "Fill missing audio (batch)":
+                await action_fill_missing_audio(db)
+            elif action == "Fill missing embeddings (batch)":
+                await action_fill_missing_embeddings(db)
             elif action == "Exit":
                 print("\n  Bye!\n")
                 break
