@@ -29,14 +29,19 @@ async def lifespan(app: FastAPI):
     else:
         stt_service = STTWhisperService(model=models["whisper_model"])
 
-    # Set up DB session factory and warm up connection pool
+    # Set up DB session factory and pre-warm ALL pool connections.
+    # The pool has pool_size=5 — fire 5 concurrent pings so every slot is
+    # established at startup instead of lazily on the first real query.
     db_engine = get_engine()
     db_session_factory = get_session_factory(db_engine)
     try:
         from sqlalchemy import text
-        async with db_session_factory() as db:
-            await db.execute(text("SELECT 1"))
-        print("✅ [DB] Connection pool warmed up")
+        async def _ping():
+            async with db_session_factory() as db:
+                await db.execute(text("SELECT 1"))
+
+        await asyncio.gather(*[_ping() for _ in range(5)], return_exceptions=True)
+        print("✅ [DB] Connection pool warmed up (5 connections)")
     except Exception as e:
         print(f"⚠️  [DB] Warm-up failed (non-fatal): {e}")
 

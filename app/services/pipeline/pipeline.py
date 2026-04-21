@@ -50,6 +50,10 @@ class Pipeline:
         # session_id → collected timings for this utterance
         self._timings: dict[str, dict] = {}
 
+        # In-memory FAQ cache: (normalized_transcript, character_id) → FAQ | None
+        # Skips embedding + DB entirely for repeated/identical questions
+        self._faq_cache: dict[tuple[str, str], object] = {}
+
     def start(self):
         asyncio.create_task(self._preprocess_worker())
         asyncio.create_task(self._stt_worker())
@@ -138,6 +142,9 @@ class Pipeline:
                 await self._send_error(session_id, f"Preprocessing failed: {e!r}")
 
     async def _stt_worker(self):
+        # session_id → background embedding task (speculative, started on first partial)
+        _speculative_embed: dict[str, asyncio.Task] = {}
+
         while True:
             session_id, preprocessed_audio, is_final = await self.stt_queue.get()
             t0 = time.perf_counter()
@@ -150,24 +157,38 @@ class Pipeline:
                     if session and transcript.strip():
                         session.append_partial_transcript(transcript)
 
+                        # Speculatively start embedding on the first partial transcript
+                        # so it runs in parallel with remaining STT batches.
+                        if self.db_session_factory and session_id not in _speculative_embed:
+                            partial = session.get_combined_transcript()
+                            _speculative_embed[session_id] = asyncio.create_task(
+                                asyncio.to_thread(generate_embedding, partial)
+                            )
+                            print(f"   ↳ speculative embedding started on partial transcript")
+
                 if not is_final:
                     continue
 
                 full_transcript = session.get_combined_transcript() if session else ""
                 if not full_transcript:
+                    _speculative_embed.pop(session_id, None)
                     await self._send_error(session_id, "Empty transcript")
                     continue
 
                 if session:
                     session.set_final_transcript(full_transcript)
                 await self.connection_manager.send_json(session_id, build_final_transcript_event(full_transcript))
-                await self.llm_queue.put((session_id, full_transcript))
+
+                # Pass along the speculative embedding task (may already be done)
+                spec_task = _speculative_embed.pop(session_id, None)
+                await self.llm_queue.put((session_id, full_transcript, spec_task))
             except Exception as e:
+                _speculative_embed.pop(session_id, None)
                 await self._send_error(session_id, f"STT failed: {e!r}")
 
     async def _llm_worker(self):
         while True:
-            session_id, transcript = await self.llm_queue.get()
+            session_id, transcript, spec_embed_task = await self.llm_queue.get()
             t0 = time.perf_counter()
             try:
                 session = self.connection_manager.get_session(session_id)
@@ -177,7 +198,7 @@ class Pipeline:
                 if self.db_session_factory:
                     print(f"🔍 [DB] Searching FAQs for: {transcript[:60]!r} (character: {character_id})")
                     t_faq = time.perf_counter()
-                    faq = await self._lookup_faq(transcript, character_id)
+                    faq = await self._lookup_faq(transcript, character_id, spec_embed_task)
                     self._t(session_id)["faq_lookup"] = time.perf_counter() - t_faq
                     if faq:
                         self._t(session_id)["faq_hit"] = True
@@ -459,18 +480,40 @@ class Pipeline:
         except Exception as e:
             print(f"[DEBUG] Failed to save output.wav: {e}")
 
-    async def _lookup_faq(self, transcript: str, character_id: str):
-        """Embed the transcript and search for a similar FAQ in the DB."""
+    async def _lookup_faq(self, transcript: str, character_id: str, spec_embed_task: asyncio.Task = None):
+        """Embed the transcript and search for a similar FAQ in the DB.
+
+        Two fast-paths:
+        1. In-memory cache hit → returns instantly (0ms embed, 0ms DB)
+        2. Speculative embedding already running → awaits it instead of starting fresh
+        """
+        cache_key = (transcript.strip().lower(), (character_id or "").lower())
+
+        if cache_key in self._faq_cache:
+            cached = self._faq_cache[cache_key]
+            print(f"   ↳ in-memory cache {'HIT ✅' if cached else 'miss (no match)'} — skipped embed + DB")
+            return cached
+
         try:
             t_embed = time.perf_counter()
-            embedding = await asyncio.to_thread(generate_embedding, transcript)
-            print(f"   ↳ embedding generated in {time.perf_counter() - t_embed:.3f}s")
+            if spec_embed_task is not None:
+                # Reuse the embedding that was started speculatively during STT
+                try:
+                    embedding = await spec_embed_task
+                    print(f"   ↳ speculative embedding reused in {time.perf_counter() - t_embed:.3f}s")
+                except Exception:
+                    embedding = await asyncio.to_thread(generate_embedding, transcript)
+                    print(f"   ↳ embedding (fallback) generated in {time.perf_counter() - t_embed:.3f}s")
+            else:
+                embedding = await asyncio.to_thread(generate_embedding, transcript)
+                print(f"   ↳ embedding generated in {time.perf_counter() - t_embed:.3f}s")
 
             t_db = time.perf_counter()
             async with self.db_session_factory() as db:
                 result = await search_similar_faq(db, embedding, character_id.lower() if character_id else character_id)
             print(f"   ↳ DB query completed in {time.perf_counter() - t_db:.3f}s")
 
+            self._faq_cache[cache_key] = result  # cache hit AND miss to avoid redundant lookups
             return result
         except Exception as e:
             print(f"[PIPELINE] FAQ lookup failed (non-fatal): {e}")

@@ -20,7 +20,13 @@ class Base(DeclarativeBase):
 
 
 def get_engine():
-    return create_async_engine(DATABASE_URL, echo=False, pool_size=5, max_overflow=10)
+    return create_async_engine(
+        DATABASE_URL,
+        echo=False,
+        pool_size=5,
+        max_overflow=10,
+        pool_pre_ping=True,   # verify connection is alive before handing it to a worker (prevents stale-connection errors)
+    )
 
 
 def get_session_factory(engine):

@@ -6,6 +6,7 @@ import os
 import queue
 import tempfile
 import threading
+import time
 
 import numpy as np
 import sounddevice as sd
@@ -13,8 +14,8 @@ import soundfile as sf
 import websockets
 
 
-WS_URL = "wss://immersa-voice-chat-api.up.railway.app/ws/voice-chat"
-#WS_URL = "ws://127.0.0.1:8000/ws/voice-chat"
+#WS_URL = "wss://immersa-voice-chat-api.up.railway.app/ws/voice-chat"
+WS_URL = "ws://127.0.0.1:8000/ws/voice-chat"
 
 TEST_FILES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_files")
 
@@ -31,6 +32,9 @@ AUDIO_FORMAT = "pcm16_base64_chunks"
 audio_queue = queue.Queue()
 stop_recording = threading.Event()
 server_processing_done = asyncio.Event()
+
+# Latency tracking: set when end_of_utterance is sent, read on first tts_audio_chunk
+timing = {"end_of_utterance_sent_at": None, "first_chunk_received_at": None}
 
 
 def mic_callback(indata, frames, time, status):
@@ -116,6 +120,7 @@ async def sender_file(websocket, file_path):
             chunk = np.vstack([chunk, pad])
         await send_audio_chunk(websocket, chunk, i // CHUNK_SAMPLES)
 
+    timing["end_of_utterance_sent_at"] = time.perf_counter()
     await websocket.send(json.dumps({"type": "end_of_utterance"}))
     print("SENT: end_of_utterance")
 
@@ -165,6 +170,7 @@ async def sender_text(websocket, text):
     for i, chunk in enumerate(chunks):
         await send_audio_chunk(websocket, chunk, i)
 
+    timing["end_of_utterance_sent_at"] = time.perf_counter()
     await websocket.send(json.dumps({"type": "end_of_utterance"}))
     print("SENT: end_of_utterance")
 
@@ -197,6 +203,7 @@ async def sender(websocket):
 
         print("🛑 Microphone stream stopped")
 
+        timing["end_of_utterance_sent_at"] = time.perf_counter()
         await websocket.send(json.dumps({
             "type": "end_of_utterance"
         }))
@@ -243,6 +250,12 @@ async def receiver(websocket):
                     continue
 
                 channels = audio.shape[1]
+
+                # Measure latency from end_of_utterance → first audio chunk
+                if timing["first_chunk_received_at"] is None and timing["end_of_utterance_sent_at"] is not None:
+                    timing["first_chunk_received_at"] = time.perf_counter()
+                    latency = timing["first_chunk_received_at"] - timing["end_of_utterance_sent_at"]
+                    print(f"\n⏱  End-of-utterance → first audio chunk: {latency:.3f}s\n")
 
                 print(
                     f"RECV: tts_audio_chunk index={data.get('chunk_index')} "
@@ -312,6 +325,10 @@ async def main():
         # first server response
         msg = await websocket.recv()
         print("RECV:", msg)
+
+        # reset latency tracking for this run
+        timing["end_of_utterance_sent_at"] = None
+        timing["first_chunk_received_at"] = None
 
         # choose input mode
         while True:
