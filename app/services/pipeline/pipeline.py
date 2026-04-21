@@ -479,7 +479,7 @@ class Pipeline:
         hears something instead of silence.
         """
         try:
-            filename = f"{character_id}_fallback.wav" if character_id else "fallback.wav"
+            filename = f"{str(character_id).lower()}_fallback.wav" if character_id else "fallback.wav"
             fallback_path = os.path.normpath(os.path.join(
                 os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "data", "fallback_audios", filename
             ))
