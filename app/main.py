@@ -15,12 +15,12 @@ from app.services.tts.elevenlabs_service import AudioGenerationElevenLabsService
 from app.services.pipeline.pipeline import Pipeline
 from app.characters import characters_info
 from app.db.database import get_engine, get_session_factory
-from app.services.embedding_service import get_model
+from app.services.embedding_service import generate_embedding
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("🚀 [STARTUP] Loading models...")
-    await asyncio.to_thread(get_model)  # warm up embedding model
+    await asyncio.to_thread(generate_embedding, "warmup")  # load model + run first inference to eliminate cold start
     models = AIClients().get_all_clients()
 
     # Pick STT service based on config
