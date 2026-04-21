@@ -53,6 +53,10 @@ TTS_FIRST_CHUNK_TIMEOUT = 7.0
 
 
 
+#db
+SIMILARITY_THRESHOLD = 0.85  
+
+
 #functions 
 def get_prompt_key_by_character_id(character_id):
     if character_id[0].lower() == "s":

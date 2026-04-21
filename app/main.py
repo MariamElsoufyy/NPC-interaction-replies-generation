@@ -13,6 +13,7 @@ from app.services.LLM_grog_service import LLMGroqService
 from app.services.audio_generation_elevenLabs_service import AudioGenerationElevenLabsService
 from app.services.pipeline.pipeline import Pipeline
 from app.characters import characters_info
+from app.db.database import get_engine, get_session_factory
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -25,6 +26,10 @@ async def lifespan(app: FastAPI):
     else:
         stt_service = STTWhisperService(model=models["whisper_model"])
 
+    # Set up DB session factory
+    db_engine = get_engine()
+    db_session_factory = get_session_factory(db_engine)
+
     connection_manager = ConnectionManager()
     pipeline = Pipeline(
         connection_manager=connection_manager,
@@ -35,6 +40,7 @@ async def lifespan(app: FastAPI):
             client=models["elevenlabs_client"],
             voices_ids=characters_info.voices
         ),
+        db_session_factory=db_session_factory,
     )
 
     app.state.connection_manager = connection_manager

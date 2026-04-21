@@ -14,3 +14,10 @@ librosa
 groq
 python-dotenv
 pyttsx3
+
+# Database
+sqlalchemy[asyncio]
+asyncpg
+alembic
+pgvector
+httpx

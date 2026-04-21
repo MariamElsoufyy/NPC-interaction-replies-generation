@@ -16,6 +16,8 @@ import soundfile as sf
 # Maximum seconds allowed from TTS start until the first audio chunk arrives.
 
 
+import httpx
+
 import app.core.config as config
 from app.characters.build_prompt import build_prompts
 from app.services.streaming.event_protocol_service import (
@@ -26,15 +28,18 @@ from app.services.streaming.event_protocol_service import (
     build_tts_done_event,
 )
 from app.utils.save_response import save_response
+from app.services.embedding_service import generate_embedding
+from app.db.faq_repository import search_similar_faq
 
 
 class Pipeline:
-    def __init__(self, connection_manager, audio_preprocessor, stt_service, llm_service, elevenlabs_service):
+    def __init__(self, connection_manager, audio_preprocessor, stt_service, llm_service, elevenlabs_service, db_session_factory=None):
         self.connection_manager = connection_manager
         self.audio_preprocessor = audio_preprocessor
         self.stt_service = stt_service
         self.llm_service = llm_service
         self.elevenlabs_service = elevenlabs_service
+        self.db_session_factory = db_session_factory  # async session factory for FAQ lookups
 
         self.preprocess_queue: asyncio.Queue = asyncio.Queue()
         self.stt_queue: asyncio.Queue = asyncio.Queue()
@@ -162,6 +167,27 @@ class Pipeline:
             try:
                 session = self.connection_manager.get_session(session_id)
                 character_id = session.character_id if session else None
+
+                # --- FAQ lookup (skip LLM if we have a cached answer) ---
+                if self.db_session_factory:
+                    faq = await self._lookup_faq(transcript, character_id)
+                    if faq:
+                        print(f"✅ [PIPELINE] FAQ hit for session {session_id}: {faq.question[:50]!r}")
+                        parsed = {"answer": faq.answer, "sources": []}
+                        save_response(question=transcript, response=parsed, character_id=character_id)
+                        if session:
+                            session.set_reply_text(parsed)
+                        await self.connection_manager.send_json(session_id, build_reply_text_done_event(faq.answer))
+
+                        if faq.audio_url:
+                            # Best case: cached audio — skip TTS entirely
+                            await self._stream_cached_audio(session_id, faq.audio_url)
+                        else:
+                            # Cached answer only — still need TTS
+                            await self.tts_queue.put((session_id, faq.answer))
+                        continue  # skip LLM
+
+                # --- No FAQ hit — proceed with LLM ---
                 prompt_key = config.get_prompt_key_by_character_id(character_id) if character_id else "mohandeskhana-student"
                 user_prompt, system_prompt = build_prompts(
                     character_id=character_id,
@@ -419,6 +445,32 @@ class Pipeline:
                 print("[DEBUG] _save_wav: all sentences were empty after read, nothing saved")
         except Exception as e:
             print(f"[DEBUG] Failed to save output.wav: {e}")
+
+    async def _lookup_faq(self, transcript: str, character_id: str):
+        """Embed the transcript and search for a similar FAQ in the DB."""
+        try:
+            embedding = await asyncio.to_thread(generate_embedding, transcript)
+            async with self.db_session_factory() as db:
+                return await search_similar_faq(db, embedding, character_id)
+        except Exception as e:
+            print(f"[PIPELINE] FAQ lookup failed (non-fatal): {e}")
+            return None
+
+    async def _stream_cached_audio(self, session_id: str, audio_url: str):
+        """Fetch pre-generated audio from storage URL and stream it to the client."""
+        try:
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.get(audio_url)
+                response.raise_for_status()
+                audio_bytes = response.content
+
+            await self.send_queue.put((session_id, audio_bytes, 0))
+            print(f"[PIPELINE] Sent cached audio to session {session_id}")
+        except Exception as e:
+            print(f"[PIPELINE] Failed to fetch cached audio: {e} — falling back to TTS")
+            # audio_url fetch failed — signal done so session resets cleanly
+        finally:
+            await self.send_queue.put((session_id, None, -1))  # TTS done signal
 
     async def _send_fallback_audio(self, session_id: str, character_id: str = None):
         """Stream <character_id>_fallback.wav to the client as a single TTS chunk, then signal done.
