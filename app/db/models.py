@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.database import Base
 
-EMBEDDING_DIM = 1536  # OpenAI text-embedding-3-small dimensions
+EMBEDDING_DIM = 384  # all-MiniLM-L6-v2 local model dimensions
 
 
 class FAQ(Base):
@@ -17,13 +17,13 @@ class FAQ(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    character_id: Mapped[str] = mapped_column(String(10), nullable=False, index=True)  # S1 / S2 / P1
+    character_id: Mapped[str] = mapped_column(String(10), nullable=False, index=True)  # s1 / s2 / p1 (always lowercase)
     question: Mapped[str] = mapped_column(Text, nullable=False)
     answer: Mapped[str] = mapped_column(Text, nullable=False)
     audio_url: Mapped[str | None] = mapped_column(Text, nullable=True)   # Supabase Storage URL
     tag: Mapped[str | None] = mapped_column(Text, nullable=True)
     language: Mapped[str] = mapped_column(String(10), nullable=False, default="en")  # 'en' or 'ar'
-    embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIM), nullable=True)
+    embedding: Mapped[list[float] | None] = mapped_column(Vector(384), nullable=True)
     tag = mapped_column(String(50), nullable=True)  # optional tag for categorization
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()

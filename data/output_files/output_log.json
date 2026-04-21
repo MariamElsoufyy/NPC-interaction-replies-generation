@@ -522,5 +522,72 @@
             "answer": "As-salamu alaykum, my friend, lovely afternoon outside isn't it? The scent of jasmine wafts through the air.",
             "sources": []
         }
+    },
+    "52": {
+        "character_id": "s1",
+        "timestamp": "Apr 21, 2026  03:07:57 PM",
+        "question": "Can you hear me?",
+        "response": {
+            "answer": "Shucks, yeah! I'm right here, buddy. What's up?",
+            "sources": []
+        }
+    },
+    "53": {
+        "character_id": "s1",
+        "timestamp": "Apr 21, 2026  03:17:27 PM",
+        "question": "Can you hear me?",
+        "response": {
+            "answer": "Yes, I can. I was just daydreaming about our last lecture on Hydraulics.",
+            "sources": [
+                {
+                    "confidence": 1.0,
+                    "type": "personal",
+                    "name": "",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "54": {
+        "character_id": "s1",
+        "timestamp": "Apr 21, 2026  03:17:53 PM",
+        "question": "Hello.",
+        "response": {
+            "answer": "Assalamu alaikum, been meaning to visit the Khan el-Khalili market, have you been? Smells of sweet tea and cardamom always takes me home.",
+            "sources": []
+        }
+    },
+    "55": {
+        "character_id": "s1",
+        "timestamp": "Apr 21, 2026  04:02:18 PM",
+        "question": "What is your name?",
+        "response": {
+            "answer": "My name is Morad Hassan El-Attar, What about yours?",
+            "sources": []
+        }
+    },
+    "56": {
+        "character_id": "s1",
+        "timestamp": "Apr 21, 2026  04:05:10 PM",
+        "question": "What's your friend's name?",
+        "response": {
+            "answer": "That's easy, my friend's name is Kamal El-Shazly, we studied together under Prof. Mahmoud El-Khateeb.",
+            "sources": [
+                {
+                    "confidence": 1.0,
+                    "type": "personal memory",
+                    "name": ""
+                }
+            ]
+        }
+    },
+    "57": {
+        "character_id": "s1",
+        "timestamp": "Apr 21, 2026  04:06:02 PM",
+        "question": "What is your name?",
+        "response": {
+            "answer": "My name is Morad Hassan El-Attar, What about yours?",
+            "sources": []
+        }
     }
 }

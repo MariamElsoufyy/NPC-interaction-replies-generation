@@ -462,9 +462,16 @@ class Pipeline:
     async def _lookup_faq(self, transcript: str, character_id: str):
         """Embed the transcript and search for a similar FAQ in the DB."""
         try:
+            t_embed = time.perf_counter()
             embedding = await asyncio.to_thread(generate_embedding, transcript)
+            print(f"   ↳ embedding generated in {time.perf_counter() - t_embed:.3f}s")
+
+            t_db = time.perf_counter()
             async with self.db_session_factory() as db:
-                return await search_similar_faq(db, embedding, character_id)
+                result = await search_similar_faq(db, embedding, character_id.lower() if character_id else character_id)
+            print(f"   ↳ DB query completed in {time.perf_counter() - t_db:.3f}s")
+
+            return result
         except Exception as e:
             print(f"[PIPELINE] FAQ lookup failed (non-fatal): {e}")
             return None

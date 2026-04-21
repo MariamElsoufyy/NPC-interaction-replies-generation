@@ -26,6 +26,7 @@ async def get_faqs_by_character(db: AsyncSession, character_id: str) -> list[FAQ
 
 
 async def create_faq(db: AsyncSession, faq_data: dict) -> FAQ:
+    faq_data = {**faq_data, "character_id": faq_data["character_id"].lower()}
     faq = FAQ(**faq_data)
     db.add(faq)
     await db.commit()
@@ -87,7 +88,10 @@ async def search_similar_faq(
         return None
 
     row = rows[0]
-    if row["similarity"] < threshold:
+    similarity = float(row["similarity"])
+    print(f"   ↳ best match similarity: {similarity:.4f} (threshold: {threshold})")
+    if similarity < threshold:
+        print(f"   ↳ below threshold — no FAQ match")
         return None
 
     return await get_faq_by_id(db, row["id"])

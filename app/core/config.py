@@ -59,7 +59,8 @@ SIMILARITY_THRESHOLD = 0.85
 
 #functions 
 def get_prompt_key_by_character_id(character_id):
-    if character_id[0].lower() == "s":
+    cid = character_id.lower()
+    if cid.startswith("s"):
         return "mohandeskhana-student"
-    elif character_id[0].lower() == "p":
-        return "mohandeskhana-professor" 
+    elif cid.startswith("p"):
+        return "mohandeskhana-professor"

@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
@@ -14,10 +15,12 @@ from app.services.audio_generation_elevenLabs_service import AudioGenerationElev
 from app.services.pipeline.pipeline import Pipeline
 from app.characters import characters_info
 from app.db.database import get_engine, get_session_factory
+from app.services.embedding_service import get_model
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     print("🚀 [STARTUP] Loading models...")
+    await asyncio.to_thread(get_model)  # warm up embedding model
     models = Models().get_all_models()
 
     # Pick STT service based on config
@@ -26,9 +29,16 @@ async def lifespan(app: FastAPI):
     else:
         stt_service = STTWhisperService(model=models["whisper_model"])
 
-    # Set up DB session factory
+    # Set up DB session factory and warm up connection pool
     db_engine = get_engine()
     db_session_factory = get_session_factory(db_engine)
+    try:
+        from sqlalchemy import text
+        async with db_session_factory() as db:
+            await db.execute(text("SELECT 1"))
+        print("✅ [DB] Connection pool warmed up")
+    except Exception as e:
+        print(f"⚠️  [DB] Warm-up failed (non-fatal): {e}")
 
     connection_manager = ConnectionManager()
     pipeline = Pipeline(
