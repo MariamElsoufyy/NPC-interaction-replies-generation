@@ -589,5 +589,21 @@
             "answer": "My name is Morad Hassan El-Attar, What about yours?",
             "sources": []
         }
+    },
+    "58": {
+        "character_id": "s1",
+        "timestamp": "Apr 21, 2026  07:32:14 PM",
+        "question": "What do you study?",
+        "response": {
+            "answer": "I'm trying to wrap my head around Hydraulics and Canal Construction, and trust me, those concepts are giving me a headache today!",
+            "sources": [
+                {
+                    "confidence": 1.0,
+                    "type": "Course Material",
+                    "name": "Notes from Professor B.S. de Chandelle",
+                    "url": null
+                }
+            ]
+        }
     }
 }
