@@ -1,2 +1,2 @@
 SELECT *
-FROM alembic_version;
+from frequently_asked_questions
