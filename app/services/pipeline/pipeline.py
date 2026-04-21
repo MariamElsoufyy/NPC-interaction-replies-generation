@@ -64,6 +64,8 @@ class Pipeline:
             self._timings[session_id] = {
                 "preprocess": [],
                 "stt": [],
+                "faq_lookup": None,
+                "faq_hit": False,
                 "llm": None,
                 "tts_first_chunk": None,
                 "tts_total": None,
@@ -86,6 +88,9 @@ class Pipeline:
             lines.append(f"  Preprocess  (batch {i+1})  : {d:.3f}s")
         for i, d in enumerate(t["stt"]):
             lines.append(f"  STT         (batch {i+1})  : {d:.3f}s")
+        if t["faq_lookup"] is not None:
+            hit_label = "HIT ✅" if t["faq_hit"] else "miss ❌"
+            lines.append(f"  FAQ lookup  ({hit_label})  : {t['faq_lookup']:.3f}s")
         if t["llm"] is not None:
             lines.append(f"  LLM                    : {t['llm']:.3f}s")
         if t["tts_first_chunk"] is not None:
@@ -170,9 +175,15 @@ class Pipeline:
 
                 # --- FAQ lookup (skip LLM if we have a cached answer) ---
                 if self.db_session_factory:
+                    print(f"🔍 [DB] Searching FAQs for: {transcript[:60]!r} (character: {character_id})")
+                    t_faq = time.perf_counter()
                     faq = await self._lookup_faq(transcript, character_id)
+                    self._t(session_id)["faq_lookup"] = time.perf_counter() - t_faq
                     if faq:
-                        print(f"✅ [PIPELINE] FAQ hit for session {session_id}: {faq.question[:50]!r}")
+                        self._t(session_id)["faq_hit"] = True
+                        print(f"✅ [DB] FAQ hit — question: {faq.question[:60]!r}")
+                        print(f"   ↳ answer: {faq.answer[:80]!r}")
+                        print(f"   ↳ audio_url: {faq.audio_url or 'none (will use TTS)'}")
                         parsed = {"answer": faq.answer, "sources": []}
                         save_response(question=transcript, response=parsed, character_id=character_id)
                         if session:
@@ -180,12 +191,14 @@ class Pipeline:
                         await self.connection_manager.send_json(session_id, build_reply_text_done_event(faq.answer))
 
                         if faq.audio_url:
-                            # Best case: cached audio — skip TTS entirely
+                            print(f"🎵 [DB] Streaming cached audio — skipping LLM + TTS")
                             await self._stream_cached_audio(session_id, faq.audio_url)
                         else:
-                            # Cached answer only — still need TTS
+                            print(f"🗣️  [DB] No cached audio — sending to TTS")
                             await self.tts_queue.put((session_id, faq.answer))
                         continue  # skip LLM
+                    else:
+                        print(f"❌ [DB] No FAQ match — falling through to LLM")
 
                 # --- No FAQ hit — proceed with LLM ---
                 prompt_key = config.get_prompt_key_by_character_id(character_id) if character_id else "mohandeskhana-student"

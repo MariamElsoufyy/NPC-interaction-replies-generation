@@ -472,5 +472,55 @@
             "answer": "My name's Kareem Ali El-Attar, nice to meet you, by the way, what's that smell - is it the nearby spice market?",
             "sources": []
         }
+    },
+    "48": {
+        "character_id": "s1",
+        "timestamp": "Apr 21, 2026  02:43:40 PM",
+        "question": "Can you hear me?",
+        "response": {
+            "answer": "Yeah, loud and clear! The din from the workshop makes it difficult sometimes, but I can hear you just fine.",
+            "sources": []
+        }
+    },
+    "49": {
+        "character_id": "s1",
+        "timestamp": "Apr 21, 2026  02:46:14 PM",
+        "question": "Hello.",
+        "response": {
+            "answer": "Salaam, nice day for a gallop, ain't it? Just came from a morning ride on my friend's farm.",
+            "sources": [
+                {
+                    "confidence": 0.95,
+                    "type": "personal",
+                    "name": "[Morad Ali El-Attar's Journal]",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "50": {
+        "character_id": "s1",
+        "timestamp": "Apr 21, 2026  02:49:13 PM",
+        "question": "Hello.",
+        "response": {
+            "answer": "As-salamu alaykum, how's your day going so far, mate? Just came from the library, feeling pretty overwhelmed already.",
+            "sources": [
+                {
+                    "confidence": 1.0,
+                    "type": "Personal reflection",
+                    "name": "My inner thoughts",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "51": {
+        "character_id": "s1",
+        "timestamp": "Apr 21, 2026  02:52:50 PM",
+        "question": "Hello.",
+        "response": {
+            "answer": "As-salamu alaykum, my friend, lovely afternoon outside isn't it? The scent of jasmine wafts through the air.",
+            "sources": []
+        }
     }
 }

@@ -21,6 +21,7 @@ class FAQ(Base):
     question: Mapped[str] = mapped_column(Text, nullable=False)
     answer: Mapped[str] = mapped_column(Text, nullable=False)
     audio_url: Mapped[str | None] = mapped_column(Text, nullable=True)   # Supabase Storage URL
+    tag: Mapped[str | None] = mapped_column(Text, nullable=True)
     language: Mapped[str] = mapped_column(String(10), nullable=False, default="en")  # 'en' or 'ar'
     embedding: Mapped[list[float] | None] = mapped_column(Vector(EMBEDDING_DIM), nullable=True)
     tag = mapped_column(String(50), nullable=True)  # optional tag for categorization

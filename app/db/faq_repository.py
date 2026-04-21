@@ -59,26 +59,35 @@ async def search_similar_faq(
 ) -> FAQ | None:
     """Find the most similar FAQ for a given character using cosine similarity.
 
-    The <=> operator is pgvector's cosine distance (0 = identical, 2 = opposite).
-    We convert to similarity: similarity = 1 - distance.
+    Uses raw SQL to avoid asyncpg/pgvector ORM serialization issues.
+    The <=> operator is cosine distance (0 = identical). similarity = 1 - distance.
     """
-    # Cast embedding to vector for the query
-    vector_col = FAQ.embedding.cast(Vector(1536))
+    from sqlalchemy import text
 
-    result = await db.execute(
-        select(FAQ, (1 - vector_col.op("<=>")(embedding)).label("similarity"))
-        .where(FAQ.character_id == character_id)
-        .where(FAQ.embedding.is_not(None))
-        .order_by(vector_col.op("<=>")(embedding))
-        .limit(limit)
-    )
-    rows = result.all()
+    embedding_str = "[" + ",".join(str(x) for x in embedding) + "]"
+
+    query = text("""
+        SELECT id,
+               1 - (embedding <=> CAST(:embedding AS vector)) AS similarity
+        FROM frequently_asked_questions
+        WHERE character_id = :character_id
+          AND embedding IS NOT NULL
+        ORDER BY embedding <=> CAST(:embedding AS vector)
+        LIMIT :limit
+    """)
+
+    result = await db.execute(query, {
+        "embedding": embedding_str,
+        "character_id": character_id,
+        "limit": limit,
+    })
+    rows = result.mappings().all()
 
     if not rows:
         return None
 
-    faq, similarity = rows[0]
-    if similarity >= threshold:
-        return faq
+    row = rows[0]
+    if row["similarity"] < threshold:
+        return None
 
-    return None
+    return await get_faq_by_id(db, row["id"])
