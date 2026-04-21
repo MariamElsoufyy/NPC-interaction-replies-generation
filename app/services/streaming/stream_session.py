@@ -1,10 +1,10 @@
 import base64
 from dataclasses import dataclass, field
 from typing import Optional
-import time  
+import time
 
 import app.core.config as config
-from app.services.streaming.audio_buffer_service import AudioBufferService
+from app.services.streaming.audio_buffer import AudioBufferService
 
 
 @dataclass
@@ -61,10 +61,7 @@ class StreamSession:
             f"🎧 [AUDIO CHUNK ADDED] session_id={self.session_id} | "
             f"total_chunks={self.audio_buffer.get_chunk_count()}"
         )
-        
 
-    
-    
     def set_final_transcript(self, text: str) -> None:
         self.final_transcript = text
         self.state = "FINALIZING_TRANSCRIPT"
@@ -151,4 +148,4 @@ class StreamSession:
             "updated_at": self.updated_at,
             "dead_time_start": self.dead_time_start,
             "dead_time_end": self.dead_time_end,
-        }   
+        }

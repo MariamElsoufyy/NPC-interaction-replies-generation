@@ -20,16 +20,16 @@ import httpx
 
 import app.core.config as config
 from app.characters.build_prompt import build_prompts
-from app.services.streaming.event_protocol_service import (
+from app.services.streaming.event_protocol import (
     build_error_event,
     build_final_transcript_event,
     build_reply_text_done_event,
     build_tts_audio_chunk_event,
     build_tts_done_event,
 )
-from app.utils.save_response import save_response
+from app.utils.response_logger import save_response
 from app.services.embedding_service import generate_embedding
-from app.db.faq_repository import search_similar_faq
+from app.db.repositories.faq_repository import search_similar_faq
 
 
 class Pipeline:

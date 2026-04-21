@@ -105,29 +105,3 @@ class AudioPreprocessor:
 
     def save_audio(self, audio_data, filename="recording.wav"):
         sf.write(filename, audio_data.astype(np.float32), self.sample_rate)
-        sf.write(filename, audio_data.astype(np.float32), self.sample_rate)
-
-    def test_preprocessing(self, audio_path: str):
-        audio = self.normalize_audio(
-            self.noise_reduction(
-                self.trim_silence(
-                    self.high_pass_filter(self.load_audio(audio_path))
-                )
-            )
-        )
-        self.save_audio(audio, filename="preprocessing_test.wav")
-
-
-if __name__ == "__main__":
-    # Example input file path
-    audio_path = "test_3_secs_harsh.wav"   # change this to your WAV file path
-
-    preprocessor = AudioPreprocessor()
-
-    try:
-        processed_audio = preprocessor.preprocess_audio(audio_path)
-        preprocessor.save_audio(processed_audio, filename="preprocessing_test.wav")
-        print("✅ Preprocessing completed successfully")
-        print("🎵 Output saved as: preprocessing_test.wav")
-    except Exception as e:
-        print(f"❌ Error during preprocessing: {e}")

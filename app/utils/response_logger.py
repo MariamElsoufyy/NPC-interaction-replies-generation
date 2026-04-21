@@ -2,10 +2,6 @@ import json
 import os
 from datetime import datetime
 
-import os
-import json
-from datetime import datetime
-
 
 def save_response(question, response, file_path=None, character_id="unknown"):
     current_dir = os.path.dirname(os.path.abspath(__file__))   # app/utils

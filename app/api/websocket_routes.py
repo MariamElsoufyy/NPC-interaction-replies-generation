@@ -5,7 +5,7 @@ import uuid
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
-from app.services.streaming.event_protocol_service import (
+from app.services.streaming.event_protocol import (
     build_ack_event,
     build_connection_established_event,
     build_error_event,

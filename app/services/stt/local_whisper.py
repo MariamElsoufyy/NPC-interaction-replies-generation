@@ -29,7 +29,6 @@ class STTWhisperService:
             language=self.SST_language,
             vad_filter=self.SST_vad_filter,
             beam_size=self.SST_beam_size
-
         )
 
         transcription = " ".join(segment.text for segment in segments)

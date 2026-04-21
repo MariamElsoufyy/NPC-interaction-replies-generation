@@ -1,13 +1,11 @@
-import os
-from groq import Groq
+from openai import OpenAI
 import app.core.config as config
 
-class LLMGroqService:
+class LLMOpenAIService:
     def __init__(self, client=None):
         self.client = client
-        self.model_name = config.groq_model_name
-        self.max_completion_tokens = config.groq_max_completion_tokens
-        print(f"✅ [LLM] Groq LLM ready (model={self.model_name})")
+        self.model_name = config.openAI_model_name
+        self.max_completion_tokens = config.openAI_max_completion_tokens
 
     def generate_reply(self, user_prompt, system_prompt):
         messages = [
@@ -27,7 +25,7 @@ class LLMGroqService:
                 delta = chunk.choices[0].delta.content
                 if delta:
                     tokens.append(delta)
-            return "".join(tokens).strip().replace("\n", " ")
+            return "".join(tokens).strip()
         except Exception as e:
             print(f"[LLM ERROR] {e}")
             return ""

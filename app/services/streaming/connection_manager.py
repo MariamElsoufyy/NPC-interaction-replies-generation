@@ -1,7 +1,7 @@
 from typing import Dict
 from fastapi import WebSocket
 
-from app.services.streaming.stream_session_service import StreamSession
+from app.services.streaming.stream_session import StreamSession
 
 
 class ConnectionManager:

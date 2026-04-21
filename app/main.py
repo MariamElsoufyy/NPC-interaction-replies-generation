@@ -2,16 +2,16 @@ import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
-from app.api.websocket_voice_chat_routes import router as websocket_router
-from app.core.models import Models
-from app.core.connection_manager import ConnectionManager
+from app.api.websocket_routes import router as websocket_router
+from app.core.clients import AIClients
+from app.services.streaming.connection_manager import ConnectionManager
 import app.core.config as config
-from app.services.audio_preprocessor_service import AudioPreprocessor
-from app.services.STT_whisper_service import STTWhisperService
-from app.services.LLM_openAI_service import LLMOpenAIService
-from app.services.STT_groq_whisper_service import STTGroqWhisperService
-from app.services.LLM_grog_service import LLMGroqService
-from app.services.audio_generation_elevenLabs_service import AudioGenerationElevenLabsService
+from app.services.audio.preprocessor import AudioPreprocessor
+from app.services.stt.local_whisper import STTWhisperService
+from app.services.llm.openai_service import LLMOpenAIService
+from app.services.stt.groq_whisper import STTGroqWhisperService
+from app.services.llm.groq_service import LLMGroqService
+from app.services.tts.elevenlabs_service import AudioGenerationElevenLabsService
 from app.services.pipeline.pipeline import Pipeline
 from app.characters import characters_info
 from app.db.database import get_engine, get_session_factory
@@ -21,7 +21,7 @@ from app.services.embedding_service import get_model
 async def lifespan(app: FastAPI):
     print("🚀 [STARTUP] Loading models...")
     await asyncio.to_thread(get_model)  # warm up embedding model
-    models = Models().get_all_models()
+    models = AIClients().get_all_clients()
 
     # Pick STT service based on config
     if config.stt_provider == "groq":

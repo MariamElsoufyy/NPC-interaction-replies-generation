@@ -2,7 +2,7 @@
 Interactive FAQ manager — seed, list, view, update, delete.
 
 Usage:
-    python -m helpers.faq_manager
+    python -m scripts.faq_manager
 """
 
 import asyncio
@@ -24,9 +24,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app.characters import characters_info
 from app.characters.build_prompt import build_prompts
 from app.core import config
-from app.core.models import Models
+from app.core.clients import AIClients
 from app.db.database import get_engine, get_session_factory
-from app.db.faq_repository import (
+from app.db.repositories.faq_repository import (
     create_faq,
     delete_faq,
     get_all_faqs,
@@ -34,7 +34,7 @@ from app.db.faq_repository import (
     update_faq,
 )
 from app.services.embedding_service import generate_embedding
-from app.services.LLM_grog_service import LLMGroqService
+from app.services.llm.groq_service import LLMGroqService
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
@@ -153,8 +153,8 @@ async def upload_audio(audio_bytes: bytes, character_id: str) -> str | None:
 
 def llm_generate_answer(question: str, character_id: str) -> str:
     print("\n  ⏳ Generating answer with LLM...")
-    models = Models().get_all_models()
-    llm = LLMGroqService(client=models["groq_client"])
+    clients = AIClients().get_all_clients()
+    llm = LLMGroqService(client=clients["groq_client"])
     prompt_key = config.get_prompt_key_by_character_id(character_id)
     user_prompt, system_prompt = build_prompts(
         character_id=character_id,
@@ -235,8 +235,8 @@ async def action_add(db):
     # Audio
     audio_url = None
     if confirm("Generate and upload audio?"):
-        models = Models().get_all_models()
-        audio_bytes = generate_audio_bytes(answer, character_id, models["elevenlabs_client"])
+        clients = AIClients().get_all_clients()
+        audio_bytes = generate_audio_bytes(answer, character_id, clients["elevenlabs_client"])
         if audio_bytes:
             audio_url = await upload_audio(audio_bytes, character_id)
 
@@ -321,12 +321,12 @@ async def action_update(db):
         return
 
     updates = {}
-    models_cache = {}
+    clients_cache = {}
 
-    def get_models():
-        if not models_cache:
-            models_cache["m"] = Models().get_all_models()
-        return models_cache["m"]
+    def get_clients():
+        if not clients_cache:
+            clients_cache["c"] = AIClients().get_all_clients()
+        return clients_cache["c"]
 
     if field == "Question":
         new_q = inp("New question", default=faq.question)
@@ -347,7 +347,7 @@ async def action_update(db):
             new_a = inp("New answer", default=faq.answer)
         updates["answer"] = new_a
         if confirm("Regenerate audio for new answer?"):
-            audio_bytes = generate_audio_bytes(new_a, faq.character_id, get_models()["elevenlabs_client"])
+            audio_bytes = generate_audio_bytes(new_a, faq.character_id, get_clients()["elevenlabs_client"])
             if audio_bytes:
                 audio_url = await upload_audio(audio_bytes, faq.character_id)
                 if audio_url:
@@ -365,7 +365,7 @@ async def action_update(db):
         print(f"  ✅ Done ({len(updates['embedding'])} dims)")
 
     elif field == "Regenerate audio":
-        audio_bytes = generate_audio_bytes(faq.answer, faq.character_id, get_models()["elevenlabs_client"])
+        audio_bytes = generate_audio_bytes(faq.answer, faq.character_id, get_clients()["elevenlabs_client"])
         if audio_bytes:
             audio_url = await upload_audio(audio_bytes, faq.character_id)
             if audio_url:
@@ -386,7 +386,7 @@ async def action_update(db):
         updates["embedding"] = generate_embedding(faq.question)
         print(f"  ✅ Embedding done")
 
-        audio_bytes = generate_audio_bytes(new_a, faq.character_id, get_models()["elevenlabs_client"])
+        audio_bytes = generate_audio_bytes(new_a, faq.character_id, get_clients()["elevenlabs_client"])
         if audio_bytes:
             audio_url = await upload_audio(audio_bytes, faq.character_id)
             if audio_url:
@@ -445,12 +445,12 @@ async def action_fill_missing_audio(db):
         print("  Cancelled.")
         return
 
-    models = Models().get_all_models()
+    clients = AIClients().get_all_clients()
     success, failed = 0, 0
 
     for i, faq in enumerate(missing, 1):
         print(f"\n  ── [{i}/{len(missing)}] {faq.question[:60]}")
-        audio_bytes = generate_audio_bytes(faq.answer, faq.character_id, models["elevenlabs_client"])
+        audio_bytes = generate_audio_bytes(faq.answer, faq.character_id, clients["elevenlabs_client"])
         if not audio_bytes:
             print(f"  ⚠️  Skipped — no voice configured for {faq.character_id}")
             failed += 1

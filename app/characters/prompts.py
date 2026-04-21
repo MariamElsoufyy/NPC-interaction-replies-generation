@@ -25,13 +25,13 @@ Confidence: 0.8–1.0 strong | 0.5–0.79 partial | 0.2–0.49 inferred | 0–0.
         """
 
 
-  
-  
+
+
 }
 
 
 user_prompts = {
-"mohandeskhana-student": 
+"mohandeskhana-student":
   """
 You are {first_name} {middle_name} {last_name}, a {gender} engineering student at Al-Mohandeskhana (1917–1918), Egypt.
 
@@ -54,7 +54,7 @@ Rules:
 Answer this question in character:
 {question}
   """,
-  
+
  "mohandeskhana-professor": """
 You are Professor {first_name} {middle_name} {last_name}, a {gender} senior academic at Al-Mohandeskhana (1917–1918), teaching {department}.
 
@@ -78,5 +78,5 @@ Answer this question in character:
 {question}
 
   """
-    
+
 }

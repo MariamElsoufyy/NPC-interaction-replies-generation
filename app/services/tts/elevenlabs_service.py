@@ -12,12 +12,12 @@ from app.core import config
 
 
 class AudioGenerationElevenLabsService:
-    def __init__(self,voices_ids = None, client=None):
+    def __init__(self, voices_ids=None, client=None):
         self.client = client
         self.voices_ids = voices_ids
         self.model_id = config.ELEVENLABS_MODEL_ID
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        app_dir = os.path.dirname(current_dir)
+        app_dir = os.path.dirname(os.path.dirname(current_dir))
         project_root = os.path.dirname(app_dir)
 
         self.debug_output_dir = os.path.join(project_root, "data", "output_files")
@@ -31,7 +31,7 @@ class AudioGenerationElevenLabsService:
         try:
             stream = self.client.text_to_speech.convert(
                 text="Hello.",
-                voice_id="wWWn96OtTHu1sn8SRGEr", #dummy voice Id just for warming up 
+                voice_id="wWWn96OtTHu1sn8SRGEr",  # dummy voice ID just for warming up
                 model_id=self.model_id,
                 output_format="mp3_44100_128",
             )
@@ -43,7 +43,6 @@ class AudioGenerationElevenLabsService:
 
     def _debug_path(self, filename: str) -> str:
         return os.path.join(self.debug_output_dir, filename)
-
 
     def collect_and_save_wav(self, text: str, filename: str = "output.wav") -> str:
         """Collects all TTS audio and saves as WAV. For debugging only — does not send to client."""
@@ -64,7 +63,7 @@ class AudioGenerationElevenLabsService:
     def build_debug_output_path(self, session_id: str = "unknown") -> str:
         return self._debug_path("output.mp3")
 
-    def stream_audio(self, text, character_id,debug_output_path=None):
+    def stream_audio(self, text, character_id, debug_output_path=None):
         try:
             audio_stream = self.client.text_to_speech.convert(
                 text=text,

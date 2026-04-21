@@ -1,12 +1,13 @@
 
-from app.characters import characters_info, prompts_for_character_replies
+from app.characters import characters_info
+from app.characters import prompts
 
 
 def load_prompt(prompt_type=None, prompt_key=None):
     """Retrieve a prompt from the prompts dictionary based on a given key."""
     if prompt_type == "system":
-        return prompts_for_character_replies.system_prompts.get(prompt_key)
-    return prompts_for_character_replies.user_prompts.get(prompt_key)
+        return prompts.system_prompts.get(prompt_key)
+    return prompts.user_prompts.get(prompt_key)
 
 
 def generate_prompt(prompt_type=None, prompt_key=None, character_id=None, question=None):
