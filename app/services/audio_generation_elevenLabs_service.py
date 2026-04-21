@@ -68,7 +68,7 @@ class AudioGenerationElevenLabsService:
         try:
             audio_stream = self.client.text_to_speech.convert(
                 text=text,
-                voice_id=self.voices_ids[character_id],
+                voice_id=self.voices_ids[(str(character_id).lower())],
                 model_id=self.model_id,
                 output_format="mp3_44100_128",
                 voice_settings=config.VOICE_SETTINGS,
