@@ -10,6 +10,7 @@ load_dotenv()
 
 #preprocessing
 audio_preprocessing_sample_rate = 16000
+audio_noise_reduction_enabled = False   # disable noisereduce to save 50–200ms per batch
 
 
 
@@ -36,7 +37,7 @@ groq_max_completion_tokens = 1024
 
 #TTS 
 ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY")
-ELEVENLABS_MODEL_ID = "eleven_v3"          # expressive model — sentence pipelining keeps latency low
+ELEVENLABS_MODEL_ID = "eleven_v3"  # lowest-latency model — sentence pipelining keeps quality high
 VOICE_STABILITY = 0.2                     # low = more emotional range
 VOICE_SIMILARITY_BOOST = 0.85             # high = closer to target voice, but less expressive
 VOICE_STYLE = 0.75                         # push expressiveness
@@ -53,8 +54,14 @@ TTS_FIRST_CHUNK_TIMEOUT = 7.0
 
 
 
+#storage
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
+RESPONSES_AUDIO_BUCKET = os.getenv("SUPABASE_RESPONSES_BUCKET", "response-audios")
+
 #db
-SIMILARITY_THRESHOLD = 0.85  
+SIMILARITY_THRESHOLD = 0.7
+FAQ_LOOKUP_TIMEOUT = 2.0   # seconds — if DB doesn't respond in time, skip FAQ and fall through to LLM
 
 
 #functions 

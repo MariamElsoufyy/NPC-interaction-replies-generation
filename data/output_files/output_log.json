@@ -632,5 +632,66 @@
             "answer": "I'm Morad, son of Ameer El-Makhsous, a landowner and diplomat. Born and raised in Britain, but I'm here to make a name for myself.",
             "sources": []
         }
+    },
+    "62": {
+        "character_id": "s1",
+        "timestamp": "Apr 23, 2026  02:07:39 PM",
+        "question": "Hello, how are you?",
+        "response": {
+            "answer": "I am alright, are you a student in El-Mohandeskhana?",
+            "sources": []
+        }
+    },
+    "63": {
+        "character_id": "s1",
+        "timestamp": "Apr 23, 2026  02:10:22 PM",
+        "question": "What's your... amazing",
+        "response": {
+            "answer": "Ha! Don't know if it's just that Egyptian sun baking this workshop, but I love tinkering with my surveying chains in the heat!",
+            "sources": []
+        }
+    },
+    "64": {
+        "character_id": "s1",
+        "timestamp": "Apr 23, 2026  02:14:35 PM",
+        "question": "What's your story?",
+        "response": {
+            "answer": "I guess you could say I'm a product of British influence and a Nile Delta landowner's son, but my mom, Aya Ayman Elattar, is the one who keeps me humble.",
+            "sources": [
+                {
+                    "confidence": 0.9,
+                    "type": "Personal experience",
+                    "name": [],
+                    "url": null
+                }
+            ]
+        }
+    },
+    "65": {
+        "character_id": "s1",
+        "timestamp": "Apr 23, 2026  02:34:29 PM",
+        "question": "Hello, how are you?",
+        "response": {
+            "answer": "To be honest, I'm feeling a bit anxious. We have an exam on Hydraulics next week and I'm still trying to finish this survey with the dumpy level.",
+            "sources": []
+        }
+    },
+    "66": {
+        "character_id": "s1",
+        "timestamp": "Apr 23, 2026  02:36:25 PM",
+        "question": "Hello how are you?",
+        "response": {
+            "answer": "I am alright, are you a student in El-Mohandeskhana?",
+            "sources": []
+        }
+    },
+    "67": {
+        "character_id": "s1",
+        "timestamp": "Apr 23, 2026  02:50:43 PM",
+        "question": "Hello, how are you?",
+        "response": {
+            "answer": "I am alright, are you a student in El-Mohandeskhana?",
+            "sources": []
+        }
     }
 }

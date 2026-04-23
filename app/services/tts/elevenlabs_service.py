@@ -66,6 +66,7 @@ class AudioGenerationElevenLabsService:
         return self._debug_path("output.mp3")
 
     def stream_audio(self, text, character_id, debug_output_path=None):
+        """Stream MP3 chunks. Used for debug/save paths."""
         try:
             audio_stream = self.client.text_to_speech.convert(
                 text=text,
@@ -76,8 +77,6 @@ class AudioGenerationElevenLabsService:
             )
 
             output_file = open(debug_output_path, "wb") if debug_output_path else None
-            chunk_index = 0
-
             try:
                 for chunk in audio_stream:
                     if not chunk:
@@ -85,11 +84,31 @@ class AudioGenerationElevenLabsService:
                     if output_file:
                         output_file.write(chunk)
                     yield chunk
-                    chunk_index += 1
             finally:
                 if output_file:
                     output_file.close()
 
+        except Exception as e:
+            print(f"[TTS STREAM ERROR] {repr(e)}")
+            raise
+
+    def stream_audio_pcm(self, text, character_id):
+        """Stream raw PCM16 chunks at 44100 Hz.
+
+        Yields each chunk immediately as ElevenLabs produces it — no buffering,
+        no MP3 decode/re-encode. This is the low-latency path used by the pipeline.
+        """
+        try:
+            audio_stream = self.client.text_to_speech.convert(
+                text=text,
+                voice_id=self.voices_ids[str(character_id).lower()],
+                model_id=self.model_id,
+                output_format="pcm_44100",   # raw signed 16-bit PCM, no container
+                voice_settings=config.VOICE_SETTINGS,
+            )
+            for chunk in audio_stream:
+                if chunk:
+                    yield chunk
         except Exception as e:
             print(f"[TTS STREAM ERROR] {repr(e)}")
             raise

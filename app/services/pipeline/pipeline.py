@@ -9,17 +9,14 @@ import threading
 import time
 
 import numpy as np
-
-import librosa
 import soundfile as sf
-
-# Maximum seconds allowed from TTS start until the first audio chunk arrives.
 
 
 import httpx
 
 import app.core.config as config
 from app.characters.build_prompt import build_prompts
+from app.db.repositories.past_questions_repository import create_past_question
 from app.services.streaming.event_protocol import (
     build_error_event,
     build_final_transcript_event,
@@ -70,6 +67,7 @@ class Pipeline:
                 "stt": [],
                 "faq_lookup": None,
                 "faq_hit": False,
+                "faq_audio_url": None,
                 "llm": None,
                 "tts_first_chunk": None,
                 "tts_total": None,
@@ -198,10 +196,18 @@ class Pipeline:
                 if self.db_session_factory:
                     print(f"🔍 [DB] Searching FAQs for: {transcript[:60]!r} (character: {character_id})")
                     t_faq = time.perf_counter()
-                    faq = await self._lookup_faq(transcript, character_id, spec_embed_task)
+                    try:
+                        faq = await asyncio.wait_for(
+                            self._lookup_faq(transcript, character_id, spec_embed_task),
+                            timeout=config.FAQ_LOOKUP_TIMEOUT,
+                        )
+                    except asyncio.TimeoutError:
+                        print(f"⏱ [DB] FAQ lookup timed out after {config.FAQ_LOOKUP_TIMEOUT}s — falling through to LLM")
+                        faq = None
                     self._t(session_id)["faq_lookup"] = time.perf_counter() - t_faq
                     if faq:
                         self._t(session_id)["faq_hit"] = True
+                        self._t(session_id)["faq_audio_url"] = faq.audio_url
                         print(f"✅ [DB] FAQ hit — question: {faq.question[:60]!r}")
                         print(f"   ↳ answer: {faq.answer[:80]!r}")
                         print(f"   ↳ audio_url: {faq.audio_url or 'none (will use TTS)'}")
@@ -277,15 +283,31 @@ class Pipeline:
         parts = re.split(r'(?<=[.!?؟،])\s+', text.strip())
         return [p.strip() for p in parts if p.strip()]
 
+    @staticmethod
+    def _pcm_chunk_to_wav(pcm_bytes: bytes, sample_rate: int = 44100, channels: int = 1) -> bytes:
+        """Wrap a raw PCM16 chunk in a minimal WAV header so the client can decode it."""
+        import struct
+        bits = 16
+        data_len = len(pcm_bytes)
+        header = struct.pack(
+            "<4sI4s4sIHHIIHH4sI",
+            b"RIFF", 36 + data_len, b"WAVE",
+            b"fmt ", 16, 1, channels, sample_rate,
+            sample_rate * channels * bits // 8,
+            channels * bits // 8, bits,
+            b"data", data_len,
+        )
+        return header + pcm_bytes
+
     def _start_sentence_tts(self, sentence: str, character_id: str) -> thread_queue.Queue:
         """Kick off ElevenLabs for one sentence in a background thread.
-        Collects the full sentence audio, trims trailing silence, then puts
-        a single clean WAV chunk in the queue followed by a None sentinel."""
+        Collects the full sentence MP3, decodes it, then puts a single WAV chunk
+        in the queue followed by a None sentinel."""
         q: thread_queue.Queue = thread_queue.Queue()
 
         def run():
             try:
-                # Collect all MP3 chunks for this sentence
+                import librosa
                 mp3_chunks = []
                 for chunk in self.elevenlabs_service.stream_audio(sentence, character_id):
                     if chunk:
@@ -294,12 +316,9 @@ class Pipeline:
                 if not mp3_chunks:
                     return
 
-                # Decode → trim trailing silence → re-encode as WAV
                 mp3_bytes = b"".join(mp3_chunks)
                 audio, sr = librosa.load(io.BytesIO(mp3_bytes), sr=None, mono=True)
                 trimmed, _ = librosa.effects.trim(audio, top_db=35, frame_length=512, hop_length=128)
-
-                # Guard: if trim wiped everything (very short/quiet audio), keep original
                 if len(trimmed) == 0:
                     trimmed = audio
 
@@ -311,7 +330,7 @@ class Pipeline:
             except Exception as e:
                 q.put(e)
             finally:
-                q.put(None)  # sentinel
+                q.put(None)
 
         threading.Thread(target=run, daemon=True).start()
         return q
@@ -319,7 +338,6 @@ class Pipeline:
     async def _stream_tts_live(self, session_id: str, text: str, t0: float, character_id: str = None):
         bridge: asyncio.Queue = asyncio.Queue()
         loop = asyncio.get_running_loop()
-        collected: list[bytes] = []
 
         sentences = self._split_sentences(text) or [text]
 
@@ -341,7 +359,6 @@ class Pipeline:
                             break
                         if isinstance(item, Exception):
                             raise item
-                        collected.append(item)
                         loop.call_soon_threadsafe(bridge.put_nowait, item)
 
             except Exception as e:
@@ -370,10 +387,9 @@ class Pipeline:
             await self.send_queue.put((session_id, item, chunk_index))
             chunk_index += 1
 
-        threading.Thread(target=self._save_wav, args=(collected,), daemon=True).start()
-
     async def _send_worker(self):
         first_chunk_sent: dict[str, bool] = {}
+        collected_audio: dict[str, list[bytes]] = {}   # session_id → WAV chunks to upload
         while True:
             session_id, audio_chunk, chunk_index = await self.send_queue.get()
             try:
@@ -386,13 +402,23 @@ class Pipeline:
                             self._t(session_id)["total"] = time.time() - session.dead_time_start
                         session.audio_buffer.clear()
                         session.set_state("LISTENING")
+
+                    # Snapshot timings + audio before _print_report pops them, then save in background
+                    t = self._timings.get(session_id, {}).copy()
+                    chunks = collected_audio.pop(session_id, [])
                     self._print_report(session_id)
+                    if self.db_session_factory and session:
+                        asyncio.create_task(self._save_past_question(session, t, chunks))
                 else:
                     if not first_chunk_sent.get(session_id):
                         session = self.connection_manager.get_session(session_id)
                         if session and session.dead_time_start:
                             self._t(session_id)["time_to_first_audio"] = time.time() - session.dead_time_start
                         first_chunk_sent[session_id] = True
+
+                    # Collect chunk for background upload
+                    collected_audio.setdefault(session_id, []).append(audio_chunk)
+
                     encoded = base64.b64encode(audio_chunk).decode("utf-8")
                     await self.connection_manager.send_json(
                         session_id,
@@ -454,31 +480,6 @@ class Pipeline:
         except Exception as e:
             print(f"[DEBUG] Failed to save latency log: {e}")
 
-    def _save_wav(self, chunks: list[bytes]):
-        path = self.elevenlabs_service._debug_path("output.wav")
-        print(f"[DEBUG] _save_wav called | sentences={len(chunks)}")
-        if not chunks:
-            print("[DEBUG] _save_wav: no chunks to save, skipping")
-            return
-        try:
-            # chunks are already trimmed WAV files (one per sentence) — concatenate their PCM data
-            all_audio = []
-            sr = None
-            for i, wav_bytes in enumerate(chunks):
-                audio, file_sr = sf.read(io.BytesIO(wav_bytes), dtype="float32", always_2d=False)
-                print(f"[DEBUG] _save_wav: sentence {i+1} → {len(audio)} samples @ {file_sr}Hz")
-                if sr is None:
-                    sr = file_sr
-                if len(audio) > 0:
-                    all_audio.append(audio)
-            if all_audio and sr:
-                combined = np.concatenate(all_audio)
-                sf.write(path, combined, sr)
-                print(f"[DEBUG] Saved {path} ({len(combined)} samples @ {sr}Hz)")
-            else:
-                print("[DEBUG] _save_wav: all sentences were empty after read, nothing saved")
-        except Exception as e:
-            print(f"[DEBUG] Failed to save output.wav: {e}")
 
     async def _lookup_faq(self, transcript: str, character_id: str, spec_embed_task: asyncio.Task = None):
         """Embed the transcript and search for a similar FAQ in the DB.
@@ -560,6 +561,87 @@ class Pipeline:
         finally:
             # Always signal TTS done so the client and session state reset cleanly.
             await self.send_queue.put((session_id, None, -1))
+
+    async def _combine_and_upload_audio(self, wav_chunks: list[bytes], character_id: str) -> str | None:
+        """Combine WAV chunks into one file and upload to Supabase Storage."""
+        if not wav_chunks or not config.SUPABASE_URL or not config.SUPABASE_SERVICE_KEY:
+            return None
+        try:
+            # Combine all WAV chunks into one PCM array
+            all_audio = []
+            sr = None
+            for chunk in wav_chunks:
+                audio, file_sr = sf.read(io.BytesIO(chunk), dtype="float32", always_2d=False)
+                if len(audio) > 0:
+                    all_audio.append(audio)
+                    sr = sr or file_sr
+
+            if not all_audio or sr is None:
+                return None
+
+            combined = np.concatenate(all_audio)
+            buf = io.BytesIO()
+            sf.write(buf, combined, sr, format="WAV", subtype="PCM_16")
+            audio_bytes = buf.getvalue()
+
+            # Upload to Supabase Storage
+            import uuid as _uuid
+            filename = f"{character_id.lower()}_{_uuid.uuid4().hex[:8]}.wav"
+            url = f"{config.SUPABASE_URL}/storage/v1/object/{config.RESPONSES_AUDIO_BUCKET}/{filename}"
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    url,
+                    content=audio_bytes,
+                    headers={
+                        "Authorization": f"Bearer {config.SUPABASE_SERVICE_KEY}",
+                        "Content-Type": "audio/wav",
+                    },
+                )
+            if response.status_code in (200, 201):
+                public_url = f"{config.SUPABASE_URL}/storage/v1/object/public/{config.RESPONSES_AUDIO_BUCKET}/{filename}"
+                print(f"   ↳ response audio uploaded → {public_url}")
+                return public_url
+            else:
+                print(f"   ↳ audio upload failed: {response.status_code} — {response.text}")
+                return None
+        except Exception as e:
+            print(f"   ↳ audio combine/upload error: {e}")
+            return None
+
+    async def _save_past_question(self, session, timings: dict, wav_chunks: list[bytes]):
+        """Fire-and-forget: combine audio, upload to storage, save interaction to past_questions.
+        Runs as a background task so it never blocks the pipeline."""
+        try:
+            character_id = (session.character_id or "").lower()
+
+            # Use FAQ cached audio URL if already available, otherwise upload the streamed audio
+            audio_url = timings.get("faq_audio_url")
+            if not audio_url and wav_chunks:
+                print(f"💾 [DB] Uploading response audio ({len(wav_chunks)} chunks)...")
+                audio_url = await self._combine_and_upload_audio(wav_chunks, character_id)
+
+            preprocess = sum(timings.get("preprocess", []) or [])
+            stt = sum(timings.get("stt", []) or [])
+            async with self.db_session_factory() as db:
+                await create_past_question(db, {
+                    "character_id": character_id,
+                    "question": session.final_transcript or "",
+                    "answer": session.reply_text or "",
+                    "audio_url": audio_url,
+                    "source": "faq" if timings.get("faq_hit") else "llm",
+                    "faq_hit": bool(timings.get("faq_hit")),
+                    "preprocess_s": round(preprocess, 4) if preprocess else None,
+                    "stt_s": round(stt, 4) if stt else None,
+                    "faq_lookup_s": round(timings["faq_lookup"], 4) if timings.get("faq_lookup") else None,
+                    "llm_s": round(timings["llm"], 4) if timings.get("llm") else None,
+                    "tts_first_chunk_s": round(timings["tts_first_chunk"], 4) if timings.get("tts_first_chunk") else None,
+                    "tts_total_s": round(timings["tts_total"], 4) if timings.get("tts_total") else None,
+                    "time_to_first_audio_s": round(timings["time_to_first_audio"], 4) if timings.get("time_to_first_audio") else None,
+                    "total_s": round(timings["total"], 4) if timings.get("total") else None,
+                })
+            print(f"💾 [DB] Past question saved (source={'faq' if timings.get('faq_hit') else 'llm'}, audio={'✅' if audio_url else '❌'})")
+        except Exception as e:
+            print(f"⚠️  [DB] Failed to save past question (non-fatal): {e}")
 
     async def _send_error(self, session_id: str, message: str):
         print(f"[PIPELINE ERROR] session_id={session_id} | {message}")

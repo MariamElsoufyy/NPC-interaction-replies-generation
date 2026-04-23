@@ -34,16 +34,18 @@ async def lifespan(app: FastAPI):
     # established at startup instead of lazily on the first real query.
     db_engine = get_engine()
     db_session_factory = get_session_factory(db_engine)
-    try:
-        from sqlalchemy import text
-        async def _ping():
-            async with db_session_factory() as db:
-                await db.execute(text("SELECT 1"))
+    from sqlalchemy import text
 
-        await asyncio.gather(*[_ping() for _ in range(5)], return_exceptions=True)
-        print("✅ [DB] Connection pool warmed up (5 connections)")
-    except Exception as e:
-        print(f"⚠️  [DB] Warm-up failed (non-fatal): {e}")
+    async def _ping():
+        async with db_session_factory() as db:
+            await db.execute(text("SELECT 1"))
+
+    results = await asyncio.gather(*[_ping() for _ in range(5)], return_exceptions=True)
+    failures = [r for r in results if isinstance(r, Exception)]
+    if failures:
+        print(f"⚠️  [DB] Warm-up partial — {5 - len(failures)}/5 connections established. First error: {failures[0]}")
+    else:
+        print("✅ [DB] Connection pool warmed up (5/5 connections)")
 
     connection_manager = ConnectionManager()
     pipeline = Pipeline(

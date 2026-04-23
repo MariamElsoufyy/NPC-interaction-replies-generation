@@ -92,13 +92,11 @@ class AudioPreprocessor:
 
     def process_audio(self, audio: np.ndarray) -> np.ndarray:
         """Run the full pipeline on an in-memory numpy array."""
-        return self.normalize_audio(
-            self.noise_reduction(
-                self.trim_silence(
-                    self.high_pass_filter(audio)
-                )
-            )
-        )
+        audio = self.high_pass_filter(audio)
+        audio = self.trim_silence(audio)
+        if config.audio_noise_reduction_enabled:
+            audio = self.noise_reduction(audio)
+        return self.normalize_audio(audio)
 
     def preprocess_audio(self, audio_path: str) -> np.ndarray:
         return self.process_audio(self.load_audio(audio_path))
