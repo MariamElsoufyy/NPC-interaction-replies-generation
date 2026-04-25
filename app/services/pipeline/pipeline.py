@@ -81,10 +81,12 @@ class Pipeline:
         t = self._timings.pop(session_id, None)
         if not t:
             return
-        from datetime import datetime
+        from datetime import datetime, timezone, timedelta
+        cairo = timezone(timedelta(hours=2))  # Africa/Cairo — UTC+2 year-round (no DST)
+        now_cairo = datetime.now(tz=cairo)
         lines = [
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
-            f"  ⏱  LATENCY REPORT  —  {datetime.now().strftime('%b %d, %Y  %I:%M:%S %p')}",
+            f"  ⏱  LATENCY REPORT  —  {now_cairo.strftime('%b %d, %Y  %I:%M:%S %p')} (Cairo)",
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
         ]
         for i, d in enumerate(t["preprocess"]):
@@ -632,6 +634,9 @@ class Pipeline:
                 print(f"💾 [DB] Uploading response audio ({len(wav_chunks)} chunks)...")
                 audio_url = await self._combine_and_upload_audio(wav_chunks, character_id)
 
+            from datetime import datetime, timezone, timedelta
+            cairo = timezone(timedelta(hours=2))  # Africa/Cairo — UTC+2 year-round
+
             preprocess = sum(timings.get("preprocess", []) or [])
             stt = sum(timings.get("stt", []) or [])
             async with self.db_session_factory() as db:
@@ -650,6 +655,7 @@ class Pipeline:
                     "tts_total_s": round(timings["tts_total"], 4) if timings.get("tts_total") else None,
                     "time_to_first_audio_s": round(timings["time_to_first_audio"], 4) if timings.get("time_to_first_audio") else None,
                     "total_s": round(timings["total"], 4) if timings.get("total") else None,
+                    "created_at": datetime.now(tz=cairo),
                 })
             print(f"💾 [DB] Past question saved (source={'faq' if timings.get('faq_hit') else 'llm'}, audio={'✅' if audio_url else '❌'})")
         except Exception as e:

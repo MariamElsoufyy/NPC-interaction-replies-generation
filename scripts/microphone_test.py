@@ -14,8 +14,8 @@ import soundfile as sf
 import websockets
 
 
-#WS_URL = "ws://34.147.147.165:8000/ws/voice-chat"
-WS_URL = "ws://127.0.0.1:8000/ws/voice-chat"
+WS_URL = "ws://34.147.147.165:8000/ws/voice-chat"
+#WS_URL = "ws://127.0.0.1:8000/ws/voice-chat"
 
 TEST_FILES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_files")
 
@@ -308,7 +308,7 @@ async def receiver(websocket):
 
 
 async def main():
-    async with websockets.connect(WS_URL, max_size=None) as websocket:
+    async with websockets.connect(WS_URL, max_size=None, ping_interval=None, ping_timeout=None) as websocket:
         # 1) connection_established
         msg = await websocket.recv()
         print("RECV:", msg)
