@@ -16,6 +16,7 @@ from app.services.pipeline.pipeline import Pipeline
 from app.characters import characters_info
 from app.db.database import get_engine, get_session_factory
 from app.services.embedding_service import generate_embedding
+from app.services.faq_memory_cache import FAQMemoryCache
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -47,6 +48,14 @@ async def lifespan(app: FastAPI):
     else:
         print("✅ [DB] Connection pool warmed up (5/5 connections)")
 
+    # Load all FAQ embeddings into memory — searches become numpy dot products (< 1ms, no DB hit)
+    faq_memory_cache = FAQMemoryCache()
+    try:
+        async with db_session_factory() as db:
+            await faq_memory_cache.load(db)
+    except Exception as e:
+        print(f"⚠️  [FAQ CACHE] Failed to load (non-fatal — will fall back to DB search): {e}")
+
     connection_manager = ConnectionManager()
     pipeline = Pipeline(
         connection_manager=connection_manager,
@@ -58,6 +67,7 @@ async def lifespan(app: FastAPI):
             voices_ids=characters_info.voices
         ),
         db_session_factory=db_session_factory,
+        faq_memory_cache=faq_memory_cache,
     )
 
     app.state.connection_manager = connection_manager

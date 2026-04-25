@@ -30,13 +30,14 @@ from app.db.repositories.faq_repository import search_similar_faq
 
 
 class Pipeline:
-    def __init__(self, connection_manager, audio_preprocessor, stt_service, llm_service, elevenlabs_service, db_session_factory=None):
+    def __init__(self, connection_manager, audio_preprocessor, stt_service, llm_service, elevenlabs_service, db_session_factory=None, faq_memory_cache=None):
         self.connection_manager = connection_manager
         self.audio_preprocessor = audio_preprocessor
         self.stt_service = stt_service
         self.llm_service = llm_service
         self.elevenlabs_service = elevenlabs_service
-        self.db_session_factory = db_session_factory  # async session factory for FAQ lookups
+        self.db_session_factory = db_session_factory  # async session factory for past_questions writes
+        self.faq_memory_cache = faq_memory_cache       # in-memory FAQ index (no DB hit for lookups)
 
         self.preprocess_queue: asyncio.Queue = asyncio.Queue()
         self.stt_queue: asyncio.Queue = asyncio.Queue()
@@ -192,9 +193,9 @@ class Pipeline:
                 session = self.connection_manager.get_session(session_id)
                 character_id = session.character_id if session else None
 
-                # --- FAQ lookup (skip LLM if we have a cached answer) ---
-                if self.db_session_factory:
-                    print(f"🔍 [DB] Searching FAQs for: {transcript[:60]!r} (character: {character_id})")
+                # --- FAQ lookup (skip LLM if we have a matching answer) ---
+                if self.faq_memory_cache or self.db_session_factory:
+                    print(f"🔍 [FAQ] Searching for: {transcript[:60]!r} (character: {character_id})")
                     t_faq = time.perf_counter()
                     try:
                         faq = await asyncio.wait_for(
@@ -202,13 +203,13 @@ class Pipeline:
                             timeout=config.FAQ_LOOKUP_TIMEOUT,
                         )
                     except asyncio.TimeoutError:
-                        print(f"⏱ [DB] FAQ lookup timed out after {config.FAQ_LOOKUP_TIMEOUT}s — falling through to LLM")
+                        print(f"⏱ [FAQ] Lookup timed out after {config.FAQ_LOOKUP_TIMEOUT}s — falling through to LLM")
                         faq = None
                     self._t(session_id)["faq_lookup"] = time.perf_counter() - t_faq
                     if faq:
                         self._t(session_id)["faq_hit"] = True
                         self._t(session_id)["faq_audio_url"] = faq.audio_url
-                        print(f"✅ [DB] FAQ hit — question: {faq.question[:60]!r}")
+                        print(f"✅ [FAQ] Hit — question: {faq.question[:60]!r}")
                         print(f"   ↳ answer: {faq.answer[:80]!r}")
                         print(f"   ↳ audio_url: {faq.audio_url or 'none (will use TTS)'}")
                         parsed = {"answer": faq.answer, "sources": []}
@@ -218,14 +219,14 @@ class Pipeline:
                         await self.connection_manager.send_json(session_id, build_reply_text_done_event(faq.answer))
 
                         if faq.audio_url:
-                            print(f"🎵 [DB] Streaming cached audio — skipping LLM + TTS")
+                            print(f"🎵 [FAQ] Streaming cached audio — skipping LLM + TTS")
                             await self._stream_cached_audio(session_id, faq.audio_url)
                         else:
-                            print(f"🗣️  [DB] No cached audio — sending to TTS")
+                            print(f"🗣️  [FAQ] No cached audio — sending to TTS")
                             await self.tts_queue.put((session_id, faq.answer))
                         continue  # skip LLM
                     else:
-                        print(f"❌ [DB] No FAQ match — falling through to LLM")
+                        print(f"❌ [FAQ] No match — falling through to LLM")
 
                 # --- No FAQ hit — proceed with LLM ---
                 prompt_key = config.get_prompt_key_by_character_id(character_id) if character_id else "mohandeskhana-student"
@@ -482,23 +483,24 @@ class Pipeline:
 
 
     async def _lookup_faq(self, transcript: str, character_id: str, spec_embed_task: asyncio.Task = None):
-        """Embed the transcript and search for a similar FAQ in the DB.
+        """Embed the transcript and find the best-matching FAQ.
 
-        Two fast-paths:
-        1. In-memory cache hit → returns instantly (0ms embed, 0ms DB)
-        2. Speculative embedding already running → awaits it instead of starting fresh
+        Fast-path priority:
+        1. Exact-match transcript cache → 0ms (skips embed + search entirely)
+        2. In-memory vector index (faq_memory_cache) → embed only, then numpy dot product (<1ms)
+        3. DB pgvector search (fallback if memory cache not loaded) → embed + network round trip
         """
         cache_key = (transcript.strip().lower(), (character_id or "").lower())
 
         if cache_key in self._faq_cache:
             cached = self._faq_cache[cache_key]
-            print(f"   ↳ in-memory cache {'HIT ✅' if cached else 'miss (no match)'} — skipped embed + DB")
+            print(f"   ↳ exact-match cache {'HIT ✅' if cached else 'miss (no match)'} — skipped embed + search")
             return cached
 
         try:
+            # Generate (or reuse speculative) embedding
             t_embed = time.perf_counter()
             if spec_embed_task is not None:
-                # Reuse the embedding that was started speculatively during STT
                 try:
                     embedding = await spec_embed_task
                     print(f"   ↳ speculative embedding reused in {time.perf_counter() - t_embed:.3f}s")
@@ -509,12 +511,22 @@ class Pipeline:
                 embedding = await asyncio.to_thread(generate_embedding, transcript)
                 print(f"   ↳ embedding generated in {time.perf_counter() - t_embed:.3f}s")
 
-            t_db = time.perf_counter()
-            async with self.db_session_factory() as db:
-                result = await search_similar_faq(db, embedding, character_id.lower() if character_id else character_id)
-            print(f"   ↳ DB query completed in {time.perf_counter() - t_db:.3f}s")
+            # Search: memory index first, DB fallback
+            if self.faq_memory_cache and self.faq_memory_cache.is_loaded:
+                t_search = time.perf_counter()
+                result = await asyncio.to_thread(
+                    self.faq_memory_cache.search, embedding, character_id
+                )
+                print(f"   ↳ in-memory search: {time.perf_counter() - t_search:.4f}s")
+            elif self.db_session_factory:
+                t_db = time.perf_counter()
+                async with self.db_session_factory() as db:
+                    result = await search_similar_faq(db, embedding, character_id.lower() if character_id else character_id)
+                print(f"   ↳ DB query completed in {time.perf_counter() - t_db:.3f}s")
+            else:
+                result = None
 
-            self._faq_cache[cache_key] = result  # cache hit AND miss to avoid redundant lookups
+            self._faq_cache[cache_key] = result  # cache both hits and misses
             return result
         except Exception as e:
             print(f"[PIPELINE] FAQ lookup failed (non-fatal): {e}")
