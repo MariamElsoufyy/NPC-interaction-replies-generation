@@ -82,7 +82,7 @@ class Pipeline:
         if not t:
             return
         from datetime import datetime, timezone, timedelta
-        cairo = timezone(timedelta(hours=1))  # Africa/Cairo — UTC+1 
+        cairo = timezone(timedelta(hours=3))  # Africa/Cairo — UTC+3
         now_cairo = datetime.now(tz=cairo)
         lines = [
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
@@ -635,7 +635,7 @@ class Pipeline:
                 audio_url = await self._combine_and_upload_audio(wav_chunks, character_id)
 
             from datetime import datetime, timezone, timedelta
-            cairo = timezone(timedelta(hours=1))  # Africa/Cairo — UTC+1 
+            cairo = timezone(timedelta(hours=3))  # Africa/Cairo — UTC+3
 
             preprocess = sum(timings.get("preprocess", []) or [])
             stt = sum(timings.get("stt", []) or [])
