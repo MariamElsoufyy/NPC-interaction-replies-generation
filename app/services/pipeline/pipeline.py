@@ -82,12 +82,12 @@ class Pipeline:
         if not t:
             return
         from datetime import datetime, timezone, timedelta
-        cairo = timezone(timedelta(hours=2))  # Africa/Cairo — UTC+2 year-round (no DST)
+        cairo = timezone(timedelta(hours=1))  # Africa/Cairo — UTC+1 
         now_cairo = datetime.now(tz=cairo)
         lines = [
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
             f"  ⏱  LATENCY REPORT  —  {now_cairo.strftime('%b %d, %Y  %I:%M:%S %p')} (Cairo)",
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━",
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══",
         ]
         for i, d in enumerate(t["preprocess"]):
             lines.append(f"  Preprocess  (batch {i+1})  : {d:.3f}s")
@@ -635,7 +635,7 @@ class Pipeline:
                 audio_url = await self._combine_and_upload_audio(wav_chunks, character_id)
 
             from datetime import datetime, timezone, timedelta
-            cairo = timezone(timedelta(hours=2))  # Africa/Cairo — UTC+2 year-round
+            cairo = timezone(timedelta(hours=1))  # Africa/Cairo — UTC+1 
 
             preprocess = sum(timings.get("preprocess", []) or [])
             stt = sum(timings.get("stt", []) or [])
