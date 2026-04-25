@@ -60,7 +60,7 @@ SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 RESPONSES_AUDIO_BUCKET = os.getenv("SUPABASE_RESPONSES_BUCKET", "response-audios")
 
 #db
-SIMILARITY_THRESHOLD = 0.7
+SIMILARITY_THRESHOLD = 0.65
 FAQ_LOOKUP_TIMEOUT = 2.0   # seconds — if DB doesn't respond in time, skip FAQ and fall through to LLM
 
 

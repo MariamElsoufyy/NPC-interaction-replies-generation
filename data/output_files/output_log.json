@@ -693,5 +693,46 @@
             "answer": "I am alright, are you a student in El-Mohandeskhana?",
             "sources": []
         }
+    },
+    "68": {
+        "character_id": "s1",
+        "timestamp": "Apr 25, 2026  08:38:39 PM",
+        "question": "�חנו出 slightly",
+        "response": {
+            "answer": "I'm not as confident with hydraulics as I'd like to be, to be honest. Still trying to grasp the flow of water in the canal simulations we're running.",
+            "sources": [
+                {
+                    "confidence": 0.8,
+                    "type": "",
+                    "name": [],
+                    "url": null
+                }
+            ]
+        }
+    },
+    "69": {
+        "character_id": "s1",
+        "timestamp": "Apr 25, 2026  08:39:10 PM",
+        "question": "What's name?",
+        "response": {
+            "answer": "I'm Morad Ali El-Attar, nice to meet you, my name's often mentioned in the lecture halls here.",
+            "sources": [
+                {
+                    "confidence": 1.0,
+                    "type": "personal",
+                    "name": "Myself",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "70": {
+        "character_id": "s1",
+        "timestamp": "Apr 25, 2026  08:42:08 PM",
+        "question": "What is name?",
+        "response": {
+            "answer": "Morad Ali El-Attar, nice to meet you! By the way, have you seen the new surveying chains in the workshop, they're quite handy.",
+            "sources": []
+        }
     }
 }

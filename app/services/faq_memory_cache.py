@@ -9,6 +9,7 @@ Typical numbers:
 
 Thread-safety: reads are lock-free (numpy arrays are immutable after build).
 """
+import json
 import numpy as np
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -47,8 +48,14 @@ class FAQMemoryCache:
                 skipped += 1
                 continue
 
-            # pgvector returns a list/array — normalise to unit vector so
-            # cosine similarity == dot product (faster, no division per query)
+            # Raw SQL returns pgvector as a string '[-0.09, 0.03, ...]' — parse it.
+            # The ORM mapper would handle this automatically, but we use raw SQL
+            # here to avoid loading the full ORM model (faster, no session binding).
+            if isinstance(raw, str):
+                raw = json.loads(raw)
+
+            # Normalise to a unit vector so cosine similarity == dot product
+            # (avoids a division on every search call)
             emb = np.array(raw, dtype=np.float32)
             norm = float(np.linalg.norm(emb))
             if norm == 0:
