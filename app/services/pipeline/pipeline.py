@@ -397,7 +397,6 @@ class Pipeline:
             session_id, audio_chunk, chunk_index = await self.send_queue.get()
             try:
                 if audio_chunk is None:
-                    await self.connection_manager.send_json(session_id, build_tts_done_event())
                     first_chunk_sent.pop(session_id, None)
                     session = self.connection_manager.get_session(session_id)
                     if session:
@@ -412,6 +411,7 @@ class Pipeline:
                     self._print_report(session_id)
                     if self.db_session_factory and session:
                         asyncio.create_task(self._save_past_question(session, t, chunks))
+                    await self.connection_manager.send_json(session_id, build_tts_done_event())
                 else:
                     if not first_chunk_sent.get(session_id):
                         session = self.connection_manager.get_session(session_id)
