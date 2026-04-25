@@ -734,5 +734,14 @@
             "answer": "Morad Ali El-Attar, nice to meet you! By the way, have you seen the new surveying chains in the workshop, they're quite handy.",
             "sources": []
         }
+    },
+    "71": {
+        "character_id": "s1",
+        "timestamp": "Apr 26, 2026  12:05:38 AM",
+        "question": "Can you hear me?",
+        "response": {
+            "answer": "loud and clear, my friend. how is your day going?",
+            "sources": []
+        }
     }
 }
