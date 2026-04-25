@@ -32,9 +32,9 @@ info:
 
 servers:
   production:
-    url: wss://immersa-voice-chat-api.up.railway.app
+    url: wss://immersa-api-voice-chat.run.place
     protocol: wss
-    description: Production server (Railway)
+    description: Production server (GCP)
   local:
     url: ws://127.0.0.1:8000
     protocol: ws
