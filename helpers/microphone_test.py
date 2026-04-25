@@ -14,12 +14,12 @@ import soundfile as sf
 import websockets
 
 
-#WS_URL = "ws://34.147.147.165:8000/ws/voice-chat"
-WS_URL = "ws://127.0.0.1:8000/ws/voice-chat"
+WS_URL = "ws://34.147.147.165:8000/ws/voice-chat"
+#WS_URL = "ws://127.0.0.1:8000/ws/voice-chat"
 
 TEST_FILES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "test_files")
 
-CHARACTER_ID = "S1"
+CHARACTER_ID = "p1"
 SAMPLE_RATE = 16000
 CHANNELS = 1
 DTYPE = "int16"
