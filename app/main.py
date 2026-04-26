@@ -69,6 +69,7 @@ async def lifespan(app: FastAPI):
         ),
         db_session_factory=db_session_factory,
         faq_memory_cache=faq_memory_cache,
+        openai_client=models["openai_client"],
     )
 
     app.state.connection_manager = connection_manager

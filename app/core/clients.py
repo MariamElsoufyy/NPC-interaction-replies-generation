@@ -16,7 +16,9 @@ class AIClients:
         self.elevenlabs_client = ElevenLabs(api_key=config.ELEVENLABS_API_KEY)
         print("✅ [CLIENTS] ElevenLabs client ready")
 
+        print("⏳ [CLIENTS] Connecting to OpenAI...")
         self.openai_client = OpenAI(api_key=config.OPENAI_API_KEY)
+        print("✅ [CLIENTS] OpenAI client ready")
 
         if config.stt_provider == "local":
             from faster_whisper import WhisperModel

@@ -803,5 +803,120 @@
             "sources": [],
             "emotion": "angry"
         }
+    },
+    "78": {
+        "character_id": "p1",
+        "timestamp": "Apr 26, 2026  05:12:54 PM",
+        "question": "Tell me more about this college.",
+        "response": {
+            "answer": "I am proud of Al-Mohandeskhana, our esteemed institution.",
+            "emotion": "happy",
+            "sources": [
+                {
+                    "confidence": 0.9,
+                    "type": "personal experience",
+                    "name": "Al-Mohandeskhana archives",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "79": {
+        "character_id": "p1",
+        "timestamp": "Apr 26, 2026  05:16:55 PM",
+        "question": "Tell me more about this college.",
+        "response": {
+            "answer": "Al-Mohandeskhana, our esteemed institution.",
+            "emotion": "neutral",
+            "sources": [
+                {
+                    "confidence": 1.0,
+                    "type": "personal experience",
+                    "name": "Memory of first lecture",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "80": {
+        "character_id": "p1",
+        "timestamp": "Apr 26, 2026  05:19:06 PM",
+        "question": "Tell me more about this colleague.",
+        "response": {
+            "answer": "A fine educator, like myself.",
+            "emotion": "neutral",
+            "sources": [
+                {
+                    "confidence": 0.8,
+                    "type": "personal experience",
+                    "name": "Colleague interactions",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "81": {
+        "character_id": "p1",
+        "timestamp": "Apr 26, 2026  05:21:49 PM",
+        "question": "Can you hear me? Can you tell me more about this call?",
+        "response": {
+            "answer": "yes,I think you need to speed run to the lecture hall as we're so behind with our curriculum",
+            "sources": [],
+            "emotion": "angry"
+        }
+    },
+    "82": {
+        "character_id": "p1",
+        "timestamp": "Apr 26, 2026  05:22:05 PM",
+        "question": "this",
+        "response": {
+            "answer": "",
+            "sources": [],
+            "emotion": null
+        }
+    },
+    "83": {
+        "character_id": "p1",
+        "timestamp": "Apr 26, 2026  05:37:39 PM",
+        "question": "that's the best us",
+        "response": {
+            "answer": "Indeed, your work is most encouraging, with a thorough grasp of steam engine principles, if I may add.",
+            "emotion": "happy",
+            "sources": [
+                {
+                    "confidence": 1.0,
+                    "type": "oral",
+                    "name": "Professor Amin Saleh El-Shazly's personal assessment",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "84": {
+        "character_id": "p1",
+        "timestamp": "Apr 26, 2026  09:03:53 PM",
+        "question": "Test, test, test.",
+        "response": {
+            "answer": "Please, gentlemen, permit me to test the operation of our thermodynamics apparatus. Let us ensure it functions within acceptable parameters.",
+            "emotion": "neutral",
+            "sources": [
+                {
+                    "confidence": 0.9,
+                    "type": "Personal",
+                    "name": "Professor Amin Saleh El-Shazly's personal account",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "85": {
+        "character_id": "p1",
+        "timestamp": "Apr 26, 2026  09:05:16 PM",
+        "question": "Can you hear me?",
+        "response": {
+            "answer": "yes,I think you need to speed run to the lecture hall as we're so behind with our curriculum",
+            "sources": [],
+            "emotion": "angry"
+        }
     }
 }

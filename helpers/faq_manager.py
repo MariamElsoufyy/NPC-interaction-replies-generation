@@ -22,7 +22,7 @@ load_dotenv()
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.characters import characters_info
-from app.characters.build_prompt import build_prompts
+from app.characters.build_prompt import build_narrator_prompts
 from app.core import config
 from app.core.clients import AIClients
 from app.db.database import get_engine, get_session_factory
@@ -162,7 +162,7 @@ def llm_generate_answer(question: str, character_id: str) -> dict:
     clients = AIClients().get_all_clients()
     llm = LLMGroqService(client=clients["groq_client"])
     prompt_key = config.get_prompt_key_by_character_id(character_id)
-    user_prompt, system_prompt = build_prompts(
+    user_prompt, system_prompt = build_narrator_prompts(
         character_id=character_id,
         question=question,
         prompt_key=prompt_key,

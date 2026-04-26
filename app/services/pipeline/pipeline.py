@@ -15,7 +15,7 @@ import soundfile as sf
 import httpx
 
 import app.core.config as config
-from app.characters.build_prompt import build_prompts
+from app.characters.build_prompt import build_narrator_prompts, build_verifier_prompts
 from app.db.repositories.past_questions_repository import create_past_question
 from app.services.streaming.event_protocol import (
     build_error_event,
@@ -30,7 +30,7 @@ from app.db.repositories.faq_repository import search_similar_faq
 
 
 class Pipeline:
-    def __init__(self, connection_manager, audio_preprocessor, stt_service, llm_service, elevenlabs_service, db_session_factory=None, faq_memory_cache=None):
+    def __init__(self, connection_manager, audio_preprocessor, stt_service, llm_service, elevenlabs_service, db_session_factory=None, faq_memory_cache=None, openai_client=None):
         self.connection_manager = connection_manager
         self.audio_preprocessor = audio_preprocessor
         self.stt_service = stt_service
@@ -38,6 +38,7 @@ class Pipeline:
         self.elevenlabs_service = elevenlabs_service
         self.db_session_factory = db_session_factory  # async session factory for past_questions writes
         self.faq_memory_cache = faq_memory_cache       # in-memory FAQ index (no DB hit for lookups)
+        self.openai_client = openai_client             # OpenAI client for parallel response verification
 
         self.preprocess_queue: asyncio.Queue = asyncio.Queue()
         self.stt_queue: asyncio.Queue = asyncio.Queue()
@@ -236,7 +237,7 @@ class Pipeline:
 
                 # --- No FAQ hit — proceed with LLM ---
                 prompt_key = config.get_prompt_key_by_character_id(character_id) if character_id else "mohandeskhana-student"
-                user_prompt, system_prompt = build_prompts(
+                user_prompt, system_prompt = build_narrator_prompts(
                     character_id=character_id,
                     question=transcript,
                     prompt_key=prompt_key,
@@ -257,8 +258,55 @@ class Pipeline:
 
                 await self.connection_manager.send_json(session_id, build_reply_text_done_event(parsed["answer"], emotion=emotion))
                 await self.tts_queue.put((session_id, parsed["answer"]))
+                asyncio.create_task(self._verify_response(transcript, parsed["answer"], character_id))
             except Exception as e:
                 await self._send_error(session_id, f"LLM failed: {e}")
+
+    async def _verify_response(self, transcript: str, answer: str, character_id: str | None):
+        """Call OpenAI in parallel to verify the LLM response. Prints results only."""
+        if not self.openai_client:
+            return
+        try:
+            user_prompt, system_prompt = build_verifier_prompts(
+                character_id=character_id,
+                question=transcript,
+                answer=answer,
+            )
+            if not user_prompt or not system_prompt:
+                print(f"⚠️  [VERIFIER] Failed to build prompts for character={character_id}")
+                return
+
+            def _call_openai():
+                stream = self.openai_client.chat.completions.create(
+                    model=config.openai_verifier_model_name,
+                    messages=[
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    max_completion_tokens=512,
+                    response_format={"type": "json_object"},
+                    stream=True,
+                )
+                tokens = []
+                for chunk in stream:
+                    delta = chunk.choices[0].delta.content
+                    if delta:
+                        tokens.append(delta)
+                return "".join(tokens).strip()
+
+            raw = await asyncio.to_thread(_call_openai)
+            if not raw:
+                print(f"⚠️  [VERIFIER] Empty response from OpenAI (model={config.openai_verifier_model_name})")
+                return
+            result = json.loads(raw)
+            overall = result.get("overall_pass", "?")
+            print(f"🔎 [VERIFIER] character={character_id} | overall_pass={overall}")
+            print(f"   ↳ historical_accuracy : {result.get('historical_accuracy')}")
+            print(f"   ↳ appropriateness     : {result.get('appropriateness')}")
+            print(f"   ↳ modern_references   : {result.get('modern_references')}")
+            print(f"   ↳ in_character        : {result.get('in_character')}")
+        except Exception as e:
+            print(f"⚠️  [VERIFIER] Verification failed: {e}")
 
     async def _tts_worker(self):
         while True:

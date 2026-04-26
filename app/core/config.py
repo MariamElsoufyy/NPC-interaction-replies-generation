@@ -31,7 +31,8 @@ OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 openAI_model_name = "gpt-5-nano"
 openAI_max_completion_tokens = 3000
-groq_model_name = "llama-3.3-70b-versatile"
+openai_verifier_model_name = "gpt-4.1-nano"
+groq_model_name = "llama-3.1-8b-instant"  
 groq_max_completion_tokens = 1024
 
 

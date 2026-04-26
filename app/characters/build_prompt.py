@@ -10,7 +10,7 @@ def load_prompt(prompt_type=None, prompt_key=None):
     return prompts.user_prompts.get(prompt_key)
 
 
-def generate_prompt(prompt_type=None, prompt_key=None, character_id=None, question=None):
+def generate_prompt(prompt_type=None, prompt_key=None, character_id=None, question=None, answer=None):
     """Replace placeholders in the prompt with actual values."""
      
     if prompt_key is None:
@@ -56,11 +56,12 @@ def generate_prompt(prompt_type=None, prompt_key=None, character_id=None, questi
     prompt = prompt.replace("{internal_conflicts}", ", ".join(characters_info.internal_conflicts.get(character_id, [])))
     prompt = prompt.replace("{hobbies}", ", ".join(characters_info.hobbies.get(character_id, [])))
     prompt = prompt.replace("{question}", question)
+    prompt = prompt.replace("{answer}", answer or "")
 
     return prompt
 
 
-def build_prompts(character_id, question, prompt_key):
+def build_narrator_prompts(character_id, question, prompt_key):
     user_prompt = generate_prompt(
         prompt_type="user",
         prompt_key=prompt_key,
@@ -71,6 +72,23 @@ def build_prompts(character_id, question, prompt_key):
     system_prompt = generate_prompt(
         prompt_type="system",
         prompt_key="mohandeskhana-historical-narrator"
+    )
+
+    return user_prompt, system_prompt
+
+
+def build_verifier_prompts(character_id, question, answer):
+    user_prompt = generate_prompt(
+        prompt_type="user",
+        prompt_key="mohandeskhana-user-verifier",
+        character_id=character_id,
+        question=question,
+        answer=answer,
+    )
+
+    system_prompt = generate_prompt(
+        prompt_type="system",
+        prompt_key="mohandeskhana-verifier",
     )
 
     return user_prompt, system_prompt
