@@ -4,6 +4,8 @@ from openai import OpenAI
 import app.core.config as config
 
 
+
+
 class AIClients:
     def __init__(self):
         print("⏳ [CLIENTS] Connecting to Groq...")
