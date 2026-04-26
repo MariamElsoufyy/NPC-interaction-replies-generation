@@ -240,7 +240,7 @@ async def receiver(websocket):
                 print(token, end="", flush=True)
 
             elif msg_type == "reply_text_done":
-                print("\nRECV: reply_text_done")
+                print(f"\nRECV: reply_text_done | emotion={data.get('emotion')}")
 
             elif msg_type == "tts_audio_chunk":
                 raw = base64.b64decode(data["audio"])

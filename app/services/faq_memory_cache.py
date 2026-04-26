@@ -33,7 +33,7 @@ class FAQMemoryCache:
 
         result = await db.execute(text("""
             SELECT id, character_id, question, answer, audio_url, tag, language,
-                   created_at, updated_at, embedding
+                   emotion, created_at, updated_at, embedding
             FROM frequently_asked_questions
             WHERE embedding IS NOT NULL
         """))
@@ -74,6 +74,7 @@ class FAQMemoryCache:
                 audio_url=row["audio_url"],
                 tag=row["tag"],
                 language=row["language"],
+                emotion=row["emotion"],
             )
             data.setdefault(cid, []).append((faq, emb))
 
@@ -149,9 +150,9 @@ class FAQMemoryCache:
 
 class _FAQResult:
     """Plain data container that mirrors the FAQ ORM fields the pipeline reads."""
-    __slots__ = ("id", "character_id", "question", "answer", "audio_url", "tag", "language")
+    __slots__ = ("id", "character_id", "question", "answer", "audio_url", "tag", "language", "emotion")
 
-    def __init__(self, *, id, character_id, question, answer, audio_url, tag, language):
+    def __init__(self, *, id, character_id, question, answer, audio_url, tag, language, emotion=None):
         self.id = id
         self.character_id = character_id
         self.question = question
@@ -159,6 +160,7 @@ class _FAQResult:
         self.audio_url = audio_url
         self.tag = tag
         self.language = language
+        self.emotion = emotion
 
     def __repr__(self) -> str:
         return f"<FAQResult character={self.character_id} question={self.question[:40]!r}>"

@@ -51,6 +51,12 @@ async def delete_faq(db: AsyncSession, faq_id: uuid.UUID) -> bool:
     return result.rowcount > 0
 
 
+async def delete_all_faqs(db: AsyncSession) -> int:
+    result = await db.execute(delete(FAQ))
+    await db.commit()
+    return result.rowcount
+
+
 async def search_similar_faq(
     db: AsyncSession,
     embedding: list[float],
@@ -70,7 +76,7 @@ async def search_similar_faq(
     # Fetch all columns in one query — avoids a second get_faq_by_id round trip.
     query = text("""
         SELECT id, character_id, question, answer, audio_url, tag, language,
-               created_at, updated_at,
+               emotion, created_at, updated_at,
                1 - (embedding <=> CAST(:embedding AS vector)) AS similarity
         FROM frequently_asked_questions
         WHERE character_id = :character_id
@@ -98,6 +104,6 @@ async def search_similar_faq(
 
     # Reconstruct FAQ ORM object directly from the row — no second query needed
     faq = FAQ()
-    for col in ("id", "character_id", "question", "answer", "audio_url", "tag", "language", "created_at", "updated_at"):
+    for col in ("id", "character_id", "question", "answer", "audio_url", "tag", "language", "emotion", "created_at", "updated_at"):
         setattr(faq, col, row[col])
     return faq

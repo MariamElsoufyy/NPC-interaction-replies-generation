@@ -25,6 +25,7 @@ class FAQ(Base):
     language: Mapped[str] = mapped_column(String(10), nullable=False, default="en")  # 'en' or 'ar'
     embedding: Mapped[list[float] | None] = mapped_column(Vector(384), nullable=True)
     tag = mapped_column(String(50), nullable=True)  # optional tag for categorization
+    emotion: Mapped[str | None] = mapped_column(String(50), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
@@ -48,6 +49,7 @@ class PastQuestion(Base):
     audio_url: Mapped[str | None] = mapped_column(Text, nullable=True)   # FAQ cached audio URL if applicable
     source: Mapped[str] = mapped_column(String(10), nullable=False, default="llm")  # 'faq' or 'llm'
     faq_hit: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    emotion: Mapped[str | None] = mapped_column(String(50), nullable=True)
 
     # Timing in seconds (nullable — may be absent if stage was skipped)
     preprocess_s: Mapped[float | None] = mapped_column(Float, nullable=True)

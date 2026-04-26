@@ -74,6 +74,7 @@ class Pipeline:
                 "tts_total": None,
                 "time_to_first_audio": None,
                 "total": None,
+                "emotion": None,
             }
         return self._timings[session_id]
 
@@ -211,14 +212,17 @@ class Pipeline:
                     if faq:
                         self._t(session_id)["faq_hit"] = True
                         self._t(session_id)["faq_audio_url"] = faq.audio_url
+                        faq_emotion = getattr(faq, "emotion", None)
+                        self._t(session_id)["emotion"] = faq_emotion
                         print(f"✅ [FAQ] Hit — question: {faq.question[:60]!r}")
-                        print(f"   ↳ answer: {faq.answer[:80]!r}")
+                        print(f"   ↳ answer: {faq.answer}")
+                        print(f"   ↳ emotion: {faq_emotion}")
                         print(f"   ↳ audio_url: {faq.audio_url or 'none (will use TTS)'}")
-                        parsed = {"answer": faq.answer, "sources": []}
+                        parsed = {"answer": faq.answer, "sources": [], "emotion": faq_emotion}
                         save_response(question=transcript, response=parsed, character_id=character_id)
                         if session:
                             session.set_reply_text(parsed)
-                        await self.connection_manager.send_json(session_id, build_reply_text_done_event(faq.answer))
+                        await self.connection_manager.send_json(session_id, build_reply_text_done_event(faq.answer, emotion=faq_emotion))
 
                         if faq.audio_url:
                             print(f"🎵 [FAQ] Streaming cached audio — skipping LLM + TTS")
@@ -240,12 +244,18 @@ class Pipeline:
                 reply_raw = await asyncio.to_thread(self.llm_service.generate_reply, user_prompt, system_prompt)
                 self._t(session_id)["llm"] = time.perf_counter() - t0
                 parsed = self._parse_llm_reply(reply_raw)
+                emotion = parsed.get("emotion")
+                self._t(session_id)["emotion"] = emotion
+
+                print(f"🤖 [LLM] Raw response: {reply_raw}")
+                print(f"   ↳ answer: {parsed['answer']}")
+                print(f"   ↳ emotion: {emotion}")
 
                 save_response(question=transcript, response=parsed, character_id=character_id)
                 if session:
                     session.set_reply_text(parsed)
 
-                await self.connection_manager.send_json(session_id, build_reply_text_done_event(parsed["answer"]))
+                await self.connection_manager.send_json(session_id, build_reply_text_done_event(parsed["answer"], emotion=emotion))
                 await self.tts_queue.put((session_id, parsed["answer"]))
             except Exception as e:
                 await self._send_error(session_id, f"LLM failed: {e}")
@@ -434,7 +444,7 @@ class Pipeline:
 
     @staticmethod
     def _parse_llm_reply(reply_raw: str) -> dict:
-        """Robustly extract {answer, sources} from whatever the LLM returned.
+        """Robustly extract {answer, emotion, sources} from whatever the LLM returned.
 
         Handles three cases the model sometimes produces:
           1. Clean JSON object  → parse directly
@@ -447,7 +457,7 @@ class Pipeline:
             if isinstance(parsed, dict) and "answer" in parsed:
                 return parsed
             # Parsed but not the right shape (e.g. a bare string in quotes)
-            return {"answer": str(parsed), "sources": []}
+            return {"answer": str(parsed), "sources": [], "emotion": None}
         except Exception:
             pass
 
@@ -464,7 +474,7 @@ class Pipeline:
         # 3. Fall back: use the raw string but strip any trailing JSON blob
         # so TTS doesn't read out the JSON syntax
         clean = re.sub(r'\s*\{[\s\S]*\}\s*$', '', reply_raw).strip()
-        return {"answer": clean or reply_raw, "sources": []}
+        return {"answer": clean or reply_raw, "sources": [], "emotion": None}
 
     def _run_preprocess(self, audio_bytes: bytes):
         # Rebuild a proper WAV in memory (correct header sizes) and process.
@@ -647,6 +657,7 @@ class Pipeline:
                     "audio_url": audio_url,
                     "source": "faq" if timings.get("faq_hit") else "llm",
                     "faq_hit": bool(timings.get("faq_hit")),
+                    "emotion": timings.get("emotion"),
                     "preprocess_s": round(preprocess, 4) if preprocess else None,
                     "stt_s": round(stt, 4) if stt else None,
                     "faq_lookup_s": round(timings["faq_lookup"], 4) if timings.get("faq_lookup") else None,
