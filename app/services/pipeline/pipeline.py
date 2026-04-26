@@ -670,7 +670,9 @@ class Pipeline:
                 })
             print(f"💾 [DB] Past question saved (source={'faq' if timings.get('faq_hit') else 'llm'}, audio={'✅' if audio_url else '❌'})")
         except Exception as e:
-            print(f"⚠️  [DB] Failed to save past question (non-fatal): {e}")
+            import traceback
+            print(f"⚠️  [DB] Failed to save past question: {e}")
+            traceback.print_exc()
 
     async def _send_error(self, session_id: str, message: str):
         print(f"[PIPELINE ERROR] session_id={session_id} | {message}")
