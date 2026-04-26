@@ -28,6 +28,7 @@ from app.core.clients import AIClients
 from app.db.database import get_engine, get_session_factory
 from app.db.repositories.faq_repository import (
     create_faq,
+    delete_all_faqs,
     delete_faq,
     get_all_faqs,
     get_faq_by_id,
@@ -76,12 +77,16 @@ def divider():
 
 # ── Display ────────────────────────────────────────────────────────────────────
 
+VALID_EMOTIONS = ["happy", "sad", "angry", "disgust", "surprise", "neutral"]
+
+
 def print_faq(faq, index: int = None):
     prefix = f"[{index}] " if index is not None else ""
     print(f"\n  {prefix}ID        : {faq.id}")
     print(f"     Character : {faq.character_id}")
     print(f"     Language  : {faq.language}")
     print(f"     Tag       : {faq.tag or '—'}")
+    print(f"     Emotion   : {faq.emotion or '—'}")
     print(f"     Question  : {faq.question}")
     print(f"     Answer    : {faq.answer[:80]}{'...' if len(faq.answer) > 80 else ''}")
     print(f"     Audio     : {'✅' if faq.audio_url else '❌ none'}")
@@ -151,7 +156,8 @@ async def upload_audio(audio_bytes: bytes, character_id: str) -> str | None:
 
 # ── LLM helper ─────────────────────────────────────────────────────────────────
 
-def llm_generate_answer(question: str, character_id: str) -> str:
+def llm_generate_answer(question: str, character_id: str) -> dict:
+    """Returns {"answer": str, "emotion": str | None}."""
     print("\n  ⏳ Generating answer with LLM...")
     clients = AIClients().get_all_clients()
     llm = LLMGroqService(client=clients["groq_client"])
@@ -164,15 +170,16 @@ def llm_generate_answer(question: str, character_id: str) -> str:
     raw = llm.generate_reply(user_prompt, system_prompt)
     try:
         parsed = json.loads(raw)
-        return parsed.get("answer", raw)
+        return {"answer": parsed.get("answer", raw), "emotion": parsed.get("emotion")}
     except Exception:
         match = re.search(r'\{[\s\S]*\}', raw)
         if match:
             try:
-                return json.loads(match.group()).get("answer", raw)
+                parsed = json.loads(match.group())
+                return {"answer": parsed.get("answer", raw), "emotion": parsed.get("emotion")}
             except Exception:
                 pass
-    return raw
+    return {"answer": raw, "emotion": None}
 
 
 # ── Resolve FAQ from list ──────────────────────────────────────────────────────
@@ -219,18 +226,28 @@ async def action_add(db):
     tag = inp("Tag (optional, e.g. 'academics', 'personal')")
 
     # Answer
+    emotion = None
     source = choose("Answer source:", ["Generate with LLM", "Type manually"])
     if source == "Generate with LLM":
-        answer = llm_generate_answer(question, character_id)
-        print(f"\n  💬 LLM answer:\n  {answer}\n")
+        result = llm_generate_answer(question, character_id)
+        answer = result["answer"]
+        emotion = result["emotion"]
+        print(f"\n  💬 LLM answer:\n  {answer}")
+        print(f"  🎭 Emotion: {emotion or '—'}\n")
         if not confirm("Use this answer?"):
             answer = inp("Enter your answer")
+            emotion = None
     else:
         answer = inp("Answer")
 
     if not answer:
         print("  Answer cannot be empty.")
         return
+
+    # Emotion (allow override or manual set)
+    emotion = choose("Emotion:", VALID_EMOTIONS + ["none"]) if emotion is None else emotion
+    if emotion == "none":
+        emotion = None
 
     # Audio
     audio_url = None
@@ -253,6 +270,7 @@ async def action_add(db):
         "answer": answer,
         "language": language,
         "tag": tag or None,
+        "emotion": emotion,
         "audio_url": audio_url,
         "embedding": embedding,
     })
@@ -309,6 +327,7 @@ async def action_update(db):
     field = choose("What do you want to update?", [
         "Question",
         "Answer",
+        "Emotion",
         "Language",
         "Tag",
         "Regenerate embedding",
@@ -339,10 +358,14 @@ async def action_update(db):
     elif field == "Answer":
         source = choose("Answer source:", ["Generate with LLM", "Type manually"])
         if source == "Generate with LLM":
-            new_a = llm_generate_answer(faq.question, faq.character_id)
-            print(f"\n  💬 LLM answer:\n  {new_a}\n")
+            result = llm_generate_answer(faq.question, faq.character_id)
+            new_a = result["answer"]
+            print(f"\n  💬 LLM answer:\n  {new_a}")
+            print(f"  🎭 Emotion: {result['emotion'] or '—'}\n")
             if not confirm("Use this answer?"):
                 new_a = inp("Enter your answer")
+            elif result["emotion"]:
+                updates["emotion"] = result["emotion"]
         else:
             new_a = inp("New answer", default=faq.answer)
         updates["answer"] = new_a
@@ -352,6 +375,12 @@ async def action_update(db):
                 audio_url = await upload_audio(audio_bytes, faq.character_id)
                 if audio_url:
                     updates["audio_url"] = audio_url
+
+    elif field == "Emotion":
+        current = faq.emotion or "none"
+        print(f"  Current emotion: {current}")
+        new_emotion = choose("New emotion:", VALID_EMOTIONS + ["none"])
+        updates["emotion"] = None if new_emotion == "none" else new_emotion
 
     elif field == "Language":
         updates["language"] = choose("Language:", ["en", "ar"])
@@ -374,10 +403,14 @@ async def action_update(db):
     elif field == "Update answer + regenerate embedding + regenerate audio":
         source = choose("Answer source:", ["Generate with LLM", "Type manually"])
         if source == "Generate with LLM":
-            new_a = llm_generate_answer(faq.question, faq.character_id)
-            print(f"\n  💬 LLM answer:\n  {new_a}\n")
+            result = llm_generate_answer(faq.question, faq.character_id)
+            new_a = result["answer"]
+            print(f"\n  💬 LLM answer:\n  {new_a}")
+            print(f"  🎭 Emotion: {result['emotion'] or '—'}\n")
             if not confirm("Use this answer?"):
                 new_a = inp("Enter your answer")
+            elif result["emotion"]:
+                updates["emotion"] = result["emotion"]
         else:
             new_a = inp("New answer", default=faq.answer)
         updates["answer"] = new_a
@@ -426,6 +459,80 @@ async def action_delete(db):
 
     deleted = await delete_faq(db, faq_id)
     print("  ✅ Deleted." if deleted else "  ❌ Failed to delete.")
+
+
+async def action_delete_all(db):
+    header("🗑️   DELETE ALL FAQs")
+    faqs = await get_all_faqs(db)
+    if not faqs:
+        print("  No FAQs in database.")
+        return
+    print(f"  This will permanently delete all {len(faqs)} FAQ(s).")
+    if not confirm("Are you sure? This cannot be undone"):
+        print("  Cancelled.")
+        return
+    if not confirm("Really sure?"):
+        print("  Cancelled.")
+        return
+    count = await delete_all_faqs(db)
+    print(f"  ✅ Deleted {count} FAQ(s).")
+
+
+async def action_fill_missing_emotions(db):
+    header("🎭  FILL MISSING EMOTIONS")
+    faqs = await get_all_faqs(db)
+    missing = [f for f in faqs if not f.emotion]
+
+    if not missing:
+        print("  ✅ All FAQs already have an emotion.")
+        return
+
+    print(f"  Found {len(missing)} FAQ(s) without emotion:\n")
+    for i, faq in enumerate(missing, 1):
+        print(f"  [{i}/{len(missing)}] {faq.character_id} | {faq.question[:60]}")
+
+    source = choose("\nHow to assign emotions?", ["Generate with LLM (auto)", "Choose manually for each"])
+
+    success, failed = 0, 0
+
+    for i, faq in enumerate(missing, 1):
+        print(f"\n  ── [{i}/{len(missing)}] {faq.question[:60]}")
+        print(f"     Answer: {faq.answer[:80]}{'...' if len(faq.answer) > 80 else ''}")
+
+        if source == "Generate with LLM (auto)":
+            try:
+                result = llm_generate_answer(faq.question, faq.character_id)
+                emotion = result["emotion"]
+                if emotion and emotion.lower() in VALID_EMOTIONS:
+                    emotion = emotion.lower()
+                    print(f"  🎭 LLM suggested: {emotion}")
+                    if confirm("Save this emotion?"):
+                        await update_faq(db, faq.id, {"emotion": emotion})
+                        print(f"  ✅ Saved")
+                        success += 1
+                    else:
+                        emotion = choose("  Pick emotion:", VALID_EMOTIONS + ["skip"])
+                        if emotion != "skip":
+                            await update_faq(db, faq.id, {"emotion": emotion})
+                            success += 1
+                else:
+                    print(f"  ⚠️  LLM returned no valid emotion — pick manually")
+                    emotion = choose("  Pick emotion:", VALID_EMOTIONS + ["skip"])
+                    if emotion != "skip":
+                        await update_faq(db, faq.id, {"emotion": emotion})
+                        success += 1
+            except Exception as e:
+                print(f"  ❌ LLM failed: {e}")
+                failed += 1
+        else:
+            emotion = choose("  Pick emotion:", VALID_EMOTIONS + ["skip"])
+            if emotion != "skip":
+                await update_faq(db, faq.id, {"emotion": emotion})
+                print(f"  ✅ Saved")
+                success += 1
+
+    divider()
+    print(f"\n  Done — ✅ {success} set, ❌ {failed} failed.")
 
 
 async def action_fill_missing_audio(db):
@@ -516,8 +623,10 @@ async def main():
             "View a FAQ",
             "Update a FAQ",
             "Delete a FAQ",
+            "Delete ALL FAQs",
             "Fill missing audio (batch)",
             "Fill missing embeddings (batch)",
+            "Fill missing emotions (batch)",
             "Exit",
         ])
 
@@ -532,10 +641,14 @@ async def main():
                 await action_update(db)
             elif action == "Delete a FAQ":
                 await action_delete(db)
+            elif action == "Delete ALL FAQs":
+                await action_delete_all(db)
             elif action == "Fill missing audio (batch)":
                 await action_fill_missing_audio(db)
             elif action == "Fill missing embeddings (batch)":
                 await action_fill_missing_embeddings(db)
+            elif action == "Fill missing emotions (batch)":
+                await action_fill_missing_emotions(db)
             elif action == "Exit":
                 print("\n  Bye!\n")
                 break

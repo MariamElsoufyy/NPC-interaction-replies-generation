@@ -743,5 +743,65 @@
             "answer": "loud and clear, my friend. how is your day going?",
             "sources": []
         }
+    },
+    "72": {
+        "character_id": "p1",
+        "timestamp": "Apr 26, 2026  03:41:33 PM",
+        "question": "Can you hear me?",
+        "response": {
+            "answer": "yes,I think you need to speed run to the lecture hall as we're so behind with our curriculum",
+            "sources": [],
+            "emotion": null
+        }
+    },
+    "73": {
+        "character_id": "p1",
+        "timestamp": "Apr 26, 2026  03:42:08 PM",
+        "question": "Can you hear me? Can you hear me?",
+        "response": {
+            "answer": "yes,I think you need to speed run to the lecture hall as we're so behind with our curriculum",
+            "sources": [],
+            "emotion": null
+        }
+    },
+    "74": {
+        "character_id": "p1",
+        "timestamp": "Apr 26, 2026  03:53:36 PM",
+        "question": "Can you hear me?",
+        "response": {
+            "answer": "yes,I think you need to speed run to the lecture hall as we're so behind with our curriculum",
+            "sources": [],
+            "emotion": null
+        }
+    },
+    "75": {
+        "character_id": "p1",
+        "timestamp": "Apr 26, 2026  03:55:07 PM",
+        "question": "Can you hear me?",
+        "response": {
+            "answer": "yes,I think you need to speed run to the lecture hall as we're so behind with our curriculum",
+            "sources": [],
+            "emotion": null
+        }
+    },
+    "76": {
+        "character_id": "p1",
+        "timestamp": "Apr 26, 2026  03:59:55 PM",
+        "question": "Can you hear me?",
+        "response": {
+            "answer": "yes,I think you need to speed run to the lecture hall as we're so behind with our curriculum",
+            "sources": [],
+            "emotion": "angry"
+        }
+    },
+    "77": {
+        "character_id": "p1",
+        "timestamp": "Apr 26, 2026  04:03:48 PM",
+        "question": "Can you hear me?",
+        "response": {
+            "answer": "yes,I think you need to speed run to the lecture hall as we're so behind with our curriculum",
+            "sources": [],
+            "emotion": "angry"
+        }
     }
 }

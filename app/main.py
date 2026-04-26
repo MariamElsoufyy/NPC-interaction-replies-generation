@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.api.websocket_routes import router as websocket_router
+from app.api.faq_routes import router as faq_router
 from app.core.clients import AIClients
 from app.services.streaming.connection_manager import ConnectionManager
 import app.core.config as config
@@ -82,6 +83,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Mohandeskhana Voice Chat WebSocket API", lifespan=lifespan)
 app.include_router(websocket_router)
+app.include_router(faq_router)
 
 
 @app.get("/")

@@ -32,7 +32,7 @@ SERVER → CLIENT
     { "type": "final_transcript", "text": str }
 
   reply_text_done               (full LLM reply text)
-    { "type": "reply_text_done", "text": str, "length": int }
+    { "type": "reply_text_done", "text": str, "length": int, "emotion": str | null }
 
   tts_audio_chunk               (streamed audio, one per chunk)
     { "type": "tts_audio_chunk", "chunk_index": int, "audio": str }   # audio = base64 MP3
@@ -64,8 +64,8 @@ def build_final_transcript_event(text: str) -> dict:
     return {"type": "final_transcript", "text": text}
 
 
-def build_reply_text_done_event(text: str) -> dict:
-    return {"type": "reply_text_done", "text": text, "length": len(text) if text else 0}
+def build_reply_text_done_event(text: str, emotion: str | None = None) -> dict:
+    return {"type": "reply_text_done", "text": text, "length": len(text) if text else 0, "emotion": emotion}
 
 
 def build_tts_audio_chunk_event(chunk_index: int, audio: str) -> dict:

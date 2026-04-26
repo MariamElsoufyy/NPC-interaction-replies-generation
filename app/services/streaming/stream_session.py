@@ -19,6 +19,7 @@ class StreamSession:
     audio_buffer: AudioBufferService = field(default_factory=AudioBufferService)
     final_transcript: str = ""
     reply_text: str = ""
+    emotion: str = ""
     partial_transcripts: list = field(default_factory=list)
     processed_chunk_count: int = 0
     wav_header: bytes = field(default_factory=bytes)
@@ -72,14 +73,16 @@ class StreamSession:
             f"state={self.state} | text={self.final_transcript}"
         )
 
-    def set_reply_text(self, text: str) -> None:
-        self.reply_text = text["answer"]
+    def set_reply_text(self, parsed: dict) -> None:
+        self.reply_text = parsed["answer"]
+        emotion_val = parsed.get("emotion")
+        self.emotion = emotion_val.lower() if emotion_val else None
         self.state = "GENERATING_REPLY"
         self.touch()
 
         print(
             f"🤖 [REPLY TEXT SET] session_id={self.session_id} | "
-            f"state={self.state} | text={self.reply_text}"
+            f"state={self.state} | emotion={self.emotion} | text={self.reply_text}"
         )
 
     def set_state(self, new_state: str) -> None:
@@ -114,6 +117,7 @@ class StreamSession:
         self.audio_buffer.reset()
         self.final_transcript = ""
         self.reply_text = ""
+        self.emotion = None
         self.partial_transcripts = []
         self.processed_chunk_count = 0
         self.state = "LISTENING"
