@@ -49,6 +49,9 @@ class Pipeline:
         # session_id → collected timings for this utterance
         self._timings: dict[str, dict] = {}
 
+        # Sessions where the verifier flagged the response — TTS should stop and fall back
+        self._tts_abort: set[str] = set()
+
         # In-memory FAQ cache: (normalized_transcript, character_id) → FAQ | None
         # Skips embedding + DB entirely for repeated/identical questions
         self._faq_cache: dict[tuple[str, str], object] = {}
@@ -258,12 +261,17 @@ class Pipeline:
 
                 await self.connection_manager.send_json(session_id, build_reply_text_done_event(parsed["answer"], emotion=emotion))
                 await self.tts_queue.put((session_id, parsed["answer"]))
-                asyncio.create_task(self._verify_response(transcript, parsed["answer"], character_id))
+                asyncio.create_task(self._verify_response(session_id, transcript, parsed["answer"], character_id))
             except Exception as e:
                 await self._send_error(session_id, f"LLM failed: {e}")
 
-    async def _verify_response(self, transcript: str, answer: str, character_id: str | None):
-        """Call OpenAI in parallel to verify the LLM response. Prints results only."""
+    async def _verify_response(self, session_id: str, transcript: str, answer: str, character_id: str | None):
+        """
+        Verify the LLM response via OpenAI in parallel with TTS.
+        If verification fails, sets the abort flag so _stream_tts_live cuts off
+        whatever audio is still left and _tts_worker fires fallback audio.
+        Errors and timeouts are fail-open (audio continues uninterrupted).
+        """
         if not self.openai_client:
             return
         try:
@@ -273,7 +281,7 @@ class Pipeline:
                 answer=answer,
             )
             if not user_prompt or not system_prompt:
-                print(f"⚠️  [VERIFIER] Failed to build prompts for character={character_id}")
+                print(f"⚠️  [VERIFIER] Failed to build prompts for character={character_id} — passing through")
                 return
 
             def _call_openai():
@@ -294,19 +302,30 @@ class Pipeline:
                         tokens.append(delta)
                 return "".join(tokens).strip()
 
-            raw = await asyncio.to_thread(_call_openai)
+            raw = await asyncio.wait_for(
+                asyncio.to_thread(_call_openai),
+                timeout=config.VERIFIER_TIMEOUT,
+            )
             if not raw:
-                print(f"⚠️  [VERIFIER] Empty response from OpenAI (model={config.openai_verifier_model_name})")
+                print(f"⚠️  [VERIFIER] Empty response from OpenAI (model={config.openai_verifier_model_name}) — passing through")
                 return
+
             result = json.loads(raw)
-            overall = result.get("overall_pass", "?")
+            overall = False  # ← hardcoded False for testing
             print(f"🔎 [VERIFIER] character={character_id} | overall_pass={overall}")
             print(f"   ↳ historical_accuracy : {result.get('historical_accuracy')}")
             print(f"   ↳ appropriateness     : {result.get('appropriateness')}")
             print(f"   ↳ modern_references   : {result.get('modern_references')}")
             print(f"   ↳ in_character        : {result.get('in_character')}")
+
+            if not overall:
+                print(f"🚫 [VERIFIER] Response failed — aborting TTS for session {session_id}")
+                self._tts_abort.add(session_id)
+
+        except asyncio.TimeoutError:
+            print(f"⏱ [VERIFIER] Timed out after {config.VERIFIER_TIMEOUT}s — passing through")
         except Exception as e:
-            print(f"⚠️  [VERIFIER] Verification failed: {e}")
+            print(f"⚠️  [VERIFIER] Error: {e} — passing through")
 
     async def _tts_worker(self):
         while True:
@@ -320,9 +339,14 @@ class Pipeline:
                     session.set_state("STREAMING_TTS")
                     session.dead_time_end = time.time()
 
-                await self._stream_tts_live(session_id, reply_text, t0, character_id)
-                self._t(session_id)["tts_total"] = time.perf_counter() - t0
-                await self.send_queue.put((session_id, None, -1))  # signal TTS done
+                completed = await self._stream_tts_live(session_id, reply_text, t0, character_id)
+                if completed:
+                    self._t(session_id)["tts_total"] = time.perf_counter() - t0
+                    await self.send_queue.put((session_id, None, -1))  # signal TTS done
+                else:
+                    # Verifier aborted the stream — discard flag and send fallback
+                    self._tts_abort.discard(session_id)
+                    await self._send_fallback_audio(session_id, character_id)
 
             except asyncio.TimeoutError:
                 elapsed = time.perf_counter() - t0
@@ -445,8 +469,16 @@ class Pipeline:
             if first_chunk:
                 self._t(session_id)["tts_first_chunk"] = time.perf_counter() - t0
                 first_chunk = False
+
+            # Check abort flag — verifier may have flagged this session mid-stream
+            if session_id in self._tts_abort:
+                print(f"🚫 [TTS] Abort signal received mid-stream — cutting off session {session_id}")
+                return False
+
             await self.send_queue.put((session_id, item, chunk_index))
             chunk_index += 1
+
+        return True
 
     async def _send_worker(self):
         first_chunk_sent: dict[str, bool] = {}

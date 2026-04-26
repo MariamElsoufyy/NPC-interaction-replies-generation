@@ -918,5 +918,49 @@
             "sources": [],
             "emotion": "angry"
         }
+    },
+    "86": {
+        "character_id": "p1",
+        "timestamp": "Apr 26, 2026  09:13:43 PM",
+        "question": "That's...",
+        "response": {
+            "answer": "I see you are quite inquisitive, much like my students who ask to know the intricacies of steam flow rates, no?",
+            "emotion": "surprise",
+            "sources": [
+                {
+                    "confidence": 0.98,
+                    "type": "oral tradition",
+                    "name": "Professor Amin Saleh El-Shazly's lecture notes",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "87": {
+        "character_id": "p1",
+        "timestamp": "Apr 26, 2026  09:15:07 PM",
+        "question": "Test viewer test test test. Thank you.",
+        "response": {
+            "answer": "I see you are merely testing, ah, very well. Let us see how you fare in actual examination.",
+            "emotion": "neutral",
+            "sources": [
+                {
+                    "confidence": 1,
+                    "type": "personal",
+                    "name": "Internal narrative",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "88": {
+        "character_id": "p1",
+        "timestamp": "Apr 26, 2026  09:19:11 PM",
+        "question": "Test test test.",
+        "response": {
+            "answer": "Very well, let us proceed with the lesson, gentlemen.",
+            "emotion": "neutral",
+            "sources": []
+        }
     }
 }
