@@ -17,7 +17,7 @@ Output strict JSON only:
   "appropriateness": {"pass": true, "notes": "..."},
   "modern_references": {"found": false, "examples": []},
   "in_character": {"pass": true, "notes": "..."},
-  "overall_pass": true
+  "overall_pass": <true or false>
 }
   """,
 

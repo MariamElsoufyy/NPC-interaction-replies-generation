@@ -962,5 +962,66 @@
             "emotion": "neutral",
             "sources": []
         }
+    },
+    "89": {
+        "character_id": "p1",
+        "timestamp": "Apr 26, 2026  09:27:02 PM",
+        "question": "Test test test.",
+        "response": {
+            "answer": "Ah, an impromptu examination of your faculties, my young scholar? Excellent.",
+            "emotion": "neutral",
+            "sources": [
+                {
+                    "confidence": 0.8,
+                    "type": "Personal notes",
+                    "name": "Professor Amin Saleh El-Shazly's Lecture Notes",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "90": {
+        "character_id": "p1",
+        "timestamp": "Apr 26, 2026  09:29:48 PM",
+        "question": "Test test test.",
+        "response": {
+            "answer": "Ah, a trial, no doubt. Please, let us proceed with the lesson at hand.",
+            "emotion": "neutral",
+            "sources": [
+                {
+                    "confidence": 1.0,
+                    "type": "personal",
+                    "name": "Self-reflection",
+                    "url": null
+                }
+            ]
+        }
+    },
+    "91": {
+        "character_id": "s1",
+        "timestamp": "Apr 26, 2026  09:46:15 PM",
+        "question": "Test Do You Know Who I Am? Thank you.",
+        "response": {
+            "answer": "You must be new here! I'm Morad, a fourth-year irrigation engineering student.",
+            "emotion": "neutral",
+            "sources": [
+                {
+                    "confidence": 1.0,
+                    "type": "Personal",
+                    "name": "self-assertion",
+                    "url": "null"
+                }
+            ]
+        }
+    },
+    "92": {
+        "character_id": "s1",
+        "timestamp": "Apr 26, 2026  09:48:59 PM",
+        "question": "Test Do You Know Who I Am? Thank you.",
+        "response": {
+            "answer": "Sorry, I don't think I do, friend! I'm Morad Ali, studying Irrigation Engineering at Al-Mohandeskhana.",
+            "emotion": "neutral",
+            "sources": []
+        }
     }
 }
