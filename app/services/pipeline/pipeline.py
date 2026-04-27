@@ -24,7 +24,6 @@ from app.services.streaming.event_protocol import (
     build_tts_audio_chunk_event,
     build_tts_done_event,
 )
-from app.utils.response_logger import save_response
 from app.utils.content_filter import check_question, check_answer
 from app.services.embedding_service import generate_embedding
 from app.db.repositories.faq_repository import search_similar_faq
@@ -50,6 +49,8 @@ class Pipeline:
         # session_id → collected timings for this utterance
         self._timings: dict[str, dict] = {}
 
+        # Sessions whose TTS stream should be cut — verifier flagged them mid-stream
+        self._verify_abort: set[str] = set()
 
         # In-memory FAQ cache: (normalized_transcript, character_id) → FAQ | None
         # Skips embedding + DB entirely for repeated/identical questions
@@ -127,7 +128,6 @@ class Pipeline:
         lines.append("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
         report = "\n".join(lines)
         print(report)
-        self._save_latency_log(report)
 
     async def enqueue(self, session_id: str, audio_bytes: bytes, is_final: bool = False):
         await self.preprocess_queue.put((session_id, audio_bytes, is_final))
@@ -235,7 +235,6 @@ class Pipeline:
                         print(f"   ↳ emotion: {faq_emotion}")
                         print(f"   ↳ audio_url: {faq.audio_url or 'none (will use TTS)'}")
                         parsed = {"answer": faq.answer, "sources": [], "emotion": faq_emotion}
-                        save_response(question=transcript, response=parsed, character_id=character_id)
                         if session:
                             session.set_reply_text(parsed)
                         await self.connection_manager.send_json(session_id, build_reply_text_done_event(faq.answer, emotion=faq_emotion))
@@ -288,30 +287,33 @@ class Pipeline:
                     continue
                 self._t(session_id)["content_filter_pass"] = True
 
-                save_response(question=transcript, response=parsed, character_id=character_id)
                 if session:
                     session.set_reply_text(parsed)
 
                 await self.connection_manager.send_json(session_id, build_reply_text_done_event(parsed["answer"], emotion=emotion))
-                t_ver = time.perf_counter()
-                passed, ver_result = await self._verify_response(transcript, parsed["answer"], character_id)
-                self._t(session_id)["verifier"] = time.perf_counter() - t_ver
-                if ver_result:
-                    self._t(session_id)["verifier_pass"] = bool(ver_result.get("overall_pass"))
-                    self._t(session_id)["verifier_historical_accuracy"] = json.dumps(ver_result.get("historical_accuracy"))
-                    self._t(session_id)["verifier_appropriateness"] = json.dumps(ver_result.get("appropriateness"))
-                    self._t(session_id)["verifier_modern_references"] = json.dumps(ver_result.get("modern_references"))
-                    self._t(session_id)["verifier_in_character"] = json.dumps(ver_result.get("in_character"))
-                if passed:
-                    await self.tts_queue.put((session_id, parsed["answer"]))
-                else:
-                    print(f"🚫 [VERIFIER] Verification failed — sending fallback audio for session {session_id}")
-                    await self._send_fallback_audio(session_id, character_id)
+                # TTS starts immediately — verification races alongside it
+                await self.tts_queue.put((session_id, parsed["answer"]))
+                asyncio.create_task(self._run_verification(session_id, transcript, parsed["answer"], character_id))
             except Exception as e:
                 await self._send_error(session_id, f"LLM failed: {e}")
 
+    async def _run_verification(self, session_id: str, transcript: str, answer: str, character_id: str | None):
+        """Background task: runs verification in parallel with TTS. Aborts stream if response fails."""
+        t_ver = time.perf_counter()
+        passed, ver_result = await self._verify_response(transcript, answer, character_id)
+        self._t(session_id)["verifier"] = time.perf_counter() - t_ver
+        if ver_result:
+            self._t(session_id)["verifier_pass"] = bool(ver_result.get("overall_pass"))
+            self._t(session_id)["verifier_historical_accuracy"] = json.dumps(ver_result.get("historical_accuracy"))
+            self._t(session_id)["verifier_appropriateness"] = json.dumps(ver_result.get("appropriateness"))
+            self._t(session_id)["verifier_modern_references"] = json.dumps(ver_result.get("modern_references"))
+            self._t(session_id)["verifier_in_character"] = json.dumps(ver_result.get("in_character"))
+        if not passed:
+            print(f"🚫 [VERIFIER] Failed — aborting TTS stream for session {session_id}")
+            self._verify_abort.add(session_id)
+
     async def _verify_response(self, transcript: str, answer: str, character_id: str | None) -> tuple[bool, dict | None]:
-        """Verify the LLM response via OpenAI. Returns (passed, result_dict). Errors are fail-open (True, None)."""
+        """Verify the LLM response via OpenAI (non-streaming). Returns (passed, result_dict). Errors are fail-open (True, None)."""
         if not self.openai_client:
             return True, None
         try:
@@ -325,22 +327,17 @@ class Pipeline:
                 return True, None
 
             def _call_openai():
-                stream = self.openai_client.chat.completions.create(
+                completion = self.openai_client.chat.completions.create(
                     model=config.openai_verifier_model_name,
                     messages=[
                         {"role": "system", "content": system_prompt},
                         {"role": "user", "content": user_prompt},
                     ],
-                    max_completion_tokens=512,
+                    max_tokens=config.openai_verifier_max_tokens,
                     response_format={"type": "json_object"},
-                    stream=True,
+                    stream=False,
                 )
-                tokens = []
-                for chunk in stream:
-                    delta = chunk.choices[0].delta.content
-                    if delta:
-                        tokens.append(delta)
-                return "".join(tokens).strip()
+                return completion.choices[0].message.content.strip()
 
             raw = await asyncio.to_thread(_call_openai)
             if not raw:
@@ -349,7 +346,7 @@ class Pipeline:
 
             result = json.loads(raw)
             overall = result.get("overall_pass", True)
-            print(f"🔎 [VERIFIER] character={character_id} | overall_pass={overall}")
+            print(f"🔎 [VERIFIER] character={character_id} | model={config.openai_verifier_model_name} | overall_pass={overall}")
             print(f"   ↳ historical_accuracy : {result.get('historical_accuracy')}")
             print(f"   ↳ appropriateness     : {result.get('appropriateness')}")
             print(f"   ↳ modern_references   : {result.get('modern_references')}")
@@ -372,9 +369,12 @@ class Pipeline:
                     session.set_state("STREAMING_TTS")
                     session.dead_time_end = time.time()
 
-                await self._stream_tts_live(session_id, reply_text, t0, character_id)
+                completed = await self._stream_tts_live(session_id, reply_text, t0, character_id)
                 self._t(session_id)["tts_total"] = time.perf_counter() - t0
-                await self.send_queue.put((session_id, None, -1))  # signal TTS done
+                if completed:
+                    await self.send_queue.put((session_id, None, -1))  # signal TTS done
+                else:
+                    await self._send_verifier_fallback_audio(session_id, character_id)
 
             except asyncio.TimeoutError:
                 elapsed = time.perf_counter() - t0
@@ -498,8 +498,15 @@ class Pipeline:
                 self._t(session_id)["tts_first_chunk"] = time.perf_counter() - t0
                 first_chunk = False
 
+            if session_id in self._verify_abort:
+                self._verify_abort.discard(session_id)
+                print(f"🚫 [TTS] Verifier abort — cutting stream for session {session_id}")
+                return False
+
             await self.send_queue.put((session_id, item, chunk_index))
             chunk_index += 1
+
+        return True
 
     async def _send_worker(self):
         first_chunk_sent: dict[str, bool] = {}
@@ -581,19 +588,7 @@ class Pipeline:
         # Rebuild a proper WAV in memory (correct header sizes) and process.
         # No temp file → no Windows file-locking issues, no librosa/audioread fallback.
         audio = self.audio_preprocessor.load_audio_from_wav_bytes(audio_bytes)
-        processed = self.audio_preprocessor.process_audio(audio)
-        path = self.elevenlabs_service._debug_path("preprocessed_audio.wav")
-        self.audio_preprocessor.save_audio(processed, filename=path)
-        return processed
-
-    def _save_latency_log(self, report: str):
-        path = self.elevenlabs_service._debug_path("latency_log.txt")
-        try:
-            with open(path, "a", encoding="utf-8") as f:
-                f.write(report + "\n\n")
-        except Exception as e:
-            print(f"[DEBUG] Failed to save latency log: {e}")
-
+        return self.audio_preprocessor.process_audio(audio)
 
     async def _lookup_faq(self, transcript: str, character_id: str, spec_embed_task: asyncio.Task = None):
         """Embed the transcript and find the best-matching FAQ.
@@ -660,6 +655,29 @@ class Pipeline:
             # audio_url fetch failed — signal done so session resets cleanly
         finally:
             await self.send_queue.put((session_id, None, -1))  # TTS done signal
+
+    async def _send_verifier_fallback_audio(self, session_id: str, character_id: str = None):
+        """Stream <character_id>_verify.wav from data/verification_audios/ when the verifier rejects a response."""
+        try:
+            filename = f"{str(character_id).lower()}_verify.wav" if character_id else "verify.wav"
+            path = os.path.normpath(os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "data", "verification_audios", filename
+            ))
+            if not os.path.exists(path):
+                print(f"[VERIFIER] Verification audio not found: {path} — falling back to default")
+                await self._send_fallback_audio(session_id, character_id)
+                return
+
+            audio, sr = sf.read(path, dtype="float32", always_2d=False)
+            wav_buf = io.BytesIO()
+            sf.write(wav_buf, audio, sr, format="WAV", subtype="PCM_16")
+            await self.send_queue.put((session_id, wav_buf.getvalue(), 0))
+            print(f"[VERIFIER] Sent verification audio ({filename}) to session {session_id}")
+        except Exception as e:
+            print(f"[VERIFIER] Could not load verification audio: {e} — falling back to default")
+            await self._send_fallback_audio(session_id, character_id)
+        finally:
+            await self.send_queue.put((session_id, None, -1))
 
     async def _send_fallback_audio(self, session_id: str, character_id: str = None):
         """Stream <character_id>_fallback.wav to the client as a single TTS chunk, then signal done.

@@ -32,8 +32,9 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 openAI_model_name = "gpt-5-nano"
 openAI_max_completion_tokens = 3000
 openai_verifier_model_name = "gpt-4.1-nano"
+openai_verifier_max_tokens = 350                    # enough for all 5 JSON fields with notes
 VERIFIER_TIMEOUT = 10.0   # seconds — if OpenAI doesn't respond in time, pass through to TTS
-groq_model_name = "llama-3.1-8b-instant"  
+groq_model_name = "llama-3.1-8b-instant"
 groq_max_completion_tokens = 1024
 
 

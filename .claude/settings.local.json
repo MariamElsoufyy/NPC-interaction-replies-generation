@@ -3,7 +3,8 @@
     "allow": [
       "Bash(xargs grep *)",
       "Bash(grep -E \"\\\\.py$|^d\")",
-      "Bash(alembic current *)"
+      "Bash(alembic current *)",
+      "Bash(del \"D:\\\\Projects\\\\IMMERSA-Voice-Chat-API\\\\app\\\\utils\\\\response_logger.py\")"
     ]
   }
 }
