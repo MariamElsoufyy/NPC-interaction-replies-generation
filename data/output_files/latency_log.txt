@@ -1305,3 +1305,21 @@
   Total                  : 3.744s
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ⏱  LATENCY REPORT  —  Apr 27, 2026  04:40:27 PM (Cairo)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━══
+  Preprocess  (batch 1)  : 0.013s
+  Preprocess  (batch 2)  : 0.009s
+  STT         (batch 1)  : 3.304s
+  STT         (batch 2)  : 0.504s
+  FAQ lookup  (miss ❌)  : 0.008s
+  LLM                    : 0.405s
+  Content filter         : 0.000s
+  Verifier               : 5.821s
+  TTS first chunk        : 4.786s
+  TTS total              : 4.786s
+  ─────────────────────────────────────
+  Time to first audio    : 14.360s
+  Total                  : 14.441s
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+

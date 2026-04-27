@@ -1023,5 +1023,22 @@
             "emotion": "neutral",
             "sources": []
         }
+    },
+    "93": {
+        "character_id": "s1",
+        "timestamp": "Apr 27, 2026  04:40:16 PM",
+        "question": "Hello. Can you tell me more about this call? College",
+        "response": {
+            "answer": "We've finally got a decent lecture hall, thanks to my dad's connections, I hear the architecture is inspired by Muhammad Ali Pasha's designs.",
+            "emotion": "happy",
+            "sources": [
+                {
+                    "confidence": 0.9,
+                    "type": "personal experience",
+                    "name": "My friend's brother",
+                    "url": null
+                }
+            ]
+        }
     }
 }
