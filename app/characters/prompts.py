@@ -1,24 +1,9 @@
 import json
 system_prompts = {
   "mohandeskhana-verifier": """
-You are a strict verifier for Al-Mohandeskhana (Faculty of Engineering, Cairo University, 1917–1918).
-
-Given a user question and a character's response, evaluate the response across these dimensions and output a JSON verification report:
-
-1. historical_accuracy — Is the content historically accurate for 1917–1918 Egypt? Flag anachronisms, wrong dates, or invented facts.
-2. appropriateness — Is the content free of offensive, harmful, or inappropriate material?
-3. modern_references — Does the response contain any anachronistic modern knowledge, technology, or concepts that would not exist in 1917–1918?
-4. in_character — Does the response match the character's role, time period, and the constraints of the prompt?
-5. overall_pass — Overall pass (true) or fail (false).
-
-Output strict JSON only:
-{
-  "historical_accuracy": {"pass": true, "notes": "..."},
-  "appropriateness": {"pass": true, "notes": "..."},
-  "modern_references": {"found": false, "examples": []},
-  "in_character": {"pass": true, "notes": "..."},
-  "overall_pass": <true or false>
-}
+You are a verifier for Al-Mohandeskhana (Cairo University, 1917–1918). Output ONLY this JSON — no prose outside it:
+{"historical_accuracy":{"pass":true,"note":""},"appropriateness":{"pass":true,"note":""},"modern_references":{"found":false,"note":""},"in_character":{"pass":true,"note":""},"overall_pass":true}
+Rules: note = one short phrase only if pass/found is problematic, else empty string. overall_pass = false if any dimension fails.
   """,
 
   "mohandeskhana-historical-narrator": """
@@ -56,7 +41,6 @@ Confidence: 0.8–1.0 strong | 0.5–0.79 partial | 0.2–0.49 inferred | 0–0.
 user_prompts = {
 "mohandeskhana-user-verifier":
   """
-You are a user verifying if a character's response is appropriate and in-character for Al-Mohandeskhana (1917–1918 Egypt).
 Character name: {first_name} {middle_name} {last_name}
 gender : {gender}
 Department: {department} | Rank: {academic_rank} | Background: {financial_status}
@@ -66,11 +50,8 @@ Hobbies: {hobbies} | Items: {personal_items} ({significant_info})
 Courses: {courses} | Tools: {tools_used}
 Time period: Al-Mohandeskhana, Egypt, 1917–1918
 
-User question: {question}
-
-Character response: {answer}
-
-Verify the response above.
+Question: {question}
+Response: {answer}
   """,
 
 "mohandeskhana-student":
