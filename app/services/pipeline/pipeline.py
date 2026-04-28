@@ -381,7 +381,7 @@ class Pipeline:
                 return True, None
 
             result = json.loads(raw)
-            overall = False #result.get("overall_pass", True)
+            overall =  result.get("overall_pass", True)
             print(f"🔎 [VERIFIER] character={character_id} | model={config.openai_verifier_model_name} | overall_pass={overall}")
             print(f"   ↳ historical_accuracy : {result.get('historical_accuracy')}")
             print(f"   ↳ appropriateness     : {result.get('appropriateness')}")
