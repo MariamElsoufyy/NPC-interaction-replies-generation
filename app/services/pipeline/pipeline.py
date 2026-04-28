@@ -52,6 +52,13 @@ class Pipeline:
         # Sessions whose TTS stream should be cut — verifier flagged them mid-stream
         self._verify_abort: set[str] = set()
 
+        # Per-session event fired by _tts_worker when streaming ends (normally or aborted)
+        # _run_verification awaits this before sending the final done/verify signal
+        self._tts_done_events: dict[str, asyncio.Event] = {}
+
+        # Sessions where TTS failed with a real error — _run_verification skips them
+        self._tts_error_sessions: set[str] = set()
+
         # In-memory FAQ cache: (normalized_transcript, character_id) → FAQ | None
         # Skips embedding + DB entirely for repeated/identical questions
         self._faq_cache: dict[tuple[str, str], object] = {}
@@ -292,25 +299,54 @@ class Pipeline:
 
                 await self.connection_manager.send_json(session_id, build_reply_text_done_event(parsed["answer"], emotion=emotion))
                 # TTS starts immediately — verification races alongside it
+                self._tts_done_events[session_id] = asyncio.Event()
                 await self.tts_queue.put((session_id, parsed["answer"]))
                 asyncio.create_task(self._run_verification(session_id, transcript, parsed["answer"], character_id))
             except Exception as e:
                 await self._send_error(session_id, f"LLM failed: {e}")
 
     async def _run_verification(self, session_id: str, transcript: str, answer: str, character_id: str | None):
-        """Background task: runs verification in parallel with TTS. Aborts stream if response fails."""
-        t_ver = time.perf_counter()
-        passed, ver_result = await self._verify_response(transcript, answer, character_id)
-        self._t(session_id)["verifier"] = time.perf_counter() - t_ver
-        if ver_result:
-            self._t(session_id)["verifier_pass"] = bool(ver_result.get("overall_pass"))
-            self._t(session_id)["verifier_historical_accuracy"] = json.dumps(ver_result.get("historical_accuracy"))
-            self._t(session_id)["verifier_appropriateness"] = json.dumps(ver_result.get("appropriateness"))
-            self._t(session_id)["verifier_modern_references"] = json.dumps(ver_result.get("modern_references"))
-            self._t(session_id)["verifier_in_character"] = json.dumps(ver_result.get("in_character"))
-        if not passed:
-            print(f"🚫 [VERIFIER] Failed — aborting TTS stream for session {session_id}")
-            self._verify_abort.add(session_id)
+        """Background task: runs verification in parallel with TTS.
+        Always owns the final done signal or verify audio — _tts_worker just sets the event."""
+        try:
+            t_ver = time.perf_counter()
+            passed, ver_result = await self._verify_response(transcript, answer, character_id)
+            self._t(session_id)["verifier"] = time.perf_counter() - t_ver
+            if ver_result:
+                self._t(session_id)["verifier_pass"] = bool(ver_result.get("overall_pass"))
+                self._t(session_id)["verifier_historical_accuracy"] = json.dumps(ver_result.get("historical_accuracy"))
+                self._t(session_id)["verifier_appropriateness"] = json.dumps(ver_result.get("appropriateness"))
+                self._t(session_id)["verifier_modern_references"] = json.dumps(ver_result.get("modern_references"))
+                self._t(session_id)["verifier_in_character"] = json.dumps(ver_result.get("in_character"))
+
+            if not passed:
+                # Abort if TTS still streaming — has no effect if already done
+                self._verify_abort.add(session_id)
+
+            # Wait for TTS to finish streaming (aborted or natural end) before finalizing
+            event = self._tts_done_events.get(session_id)
+            if event:
+                try:
+                    await asyncio.wait_for(event.wait(), timeout=15.0)
+                except asyncio.TimeoutError:
+                    print(f"⚠️  [VERIFIER] Timed out waiting for TTS to finish — session {session_id}")
+
+            # If TTS had a real error, fallback audio is already playing — do nothing
+            if session_id in self._tts_error_sessions:
+                self._tts_error_sessions.discard(session_id)
+                return
+
+            if passed:
+                await self.send_queue.put((session_id, None, -1))
+            else:
+                print(f"🚫 [VERIFIER] Failed — playing verify audio for session {session_id}")
+                await self._send_verifier_fallback_audio(session_id, character_id)
+
+        except Exception as e:
+            print(f"⚠️  [VERIFIER] Unexpected error in _run_verification: {e} — sending done")
+            self._tts_done_events.pop(session_id, None)
+            self._tts_error_sessions.discard(session_id)
+            await self.send_queue.put((session_id, None, -1))
 
     async def _verify_response(self, transcript: str, answer: str, character_id: str | None) -> tuple[bool, dict | None]:
         """Verify the LLM response via OpenAI (non-streaming). Returns (passed, result_dict). Errors are fail-open (True, None)."""
@@ -345,7 +381,7 @@ class Pipeline:
                 return True, None
 
             result = json.loads(raw)
-            overall = result.get("overall_pass", True)
+            overall = False #result.get("overall_pass", True)
             print(f"🔎 [VERIFIER] character={character_id} | model={config.openai_verifier_model_name} | overall_pass={overall}")
             print(f"   ↳ historical_accuracy : {result.get('historical_accuracy')}")
             print(f"   ↳ appropriateness     : {result.get('appropriateness')}")
@@ -371,10 +407,15 @@ class Pipeline:
 
                 completed = await self._stream_tts_live(session_id, reply_text, t0, character_id)
                 self._t(session_id)["tts_total"] = time.perf_counter() - t0
-                if completed:
-                    await self.send_queue.put((session_id, None, -1))  # signal TTS done
+                # Signal _run_verification that streaming has ended (pass or abort)
+                # _run_verification owns the final done/verify signal on the LLM path
+                event = self._tts_done_events.pop(session_id, None)
+                if event:
+                    event.set()
                 else:
-                    await self._send_verifier_fallback_audio(session_id, character_id)
+                    # FAQ path — no verification running, send done directly
+                    if completed:
+                        await self.send_queue.put((session_id, None, -1))
 
             except asyncio.TimeoutError:
                 elapsed = time.perf_counter() - t0
@@ -382,10 +423,18 @@ class Pipeline:
                     f"[PIPELINE] TTS first-chunk timeout ({elapsed:.2f}s > {config.TTS_FIRST_CHUNK_TIMEOUT}s) "
                     f"— streaming fallback for session {session_id}"
                 )
+                self._tts_error_sessions.add(session_id)
+                event = self._tts_done_events.pop(session_id, None)
+                if event:
+                    event.set()
                 await self._send_fallback_audio(session_id, character_id)
 
             except Exception as e:
                 print(f"[PIPELINE ERROR] TTS failed for session {session_id}: {e}")
+                self._tts_error_sessions.add(session_id)
+                event = self._tts_done_events.pop(session_id, None)
+                if event:
+                    event.set()
                 await self._send_fallback_audio(session_id, character_id)
 
     # --- TTS sentence helpers ---
