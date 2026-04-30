@@ -46,7 +46,8 @@ class PastQuestion(Base):
     character_id: Mapped[str] = mapped_column(String(10), nullable=False, index=True)
     question: Mapped[str] = mapped_column(Text, nullable=False)
     answer: Mapped[str | None] = mapped_column(Text, nullable=True)
-    audio_url: Mapped[str | None] = mapped_column(Text, nullable=True)   # FAQ cached audio URL if applicable
+    audio_url: Mapped[str | None] = mapped_column(Text, nullable=True)   # response audio (TTS or FAQ cached)
+    question_audio_url: Mapped[str | None] = mapped_column(Text, nullable=True)  # original client-recorded question audio
     source: Mapped[str] = mapped_column(String(10), nullable=False, default="llm")  # 'faq' or 'llm'
     faq_hit: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     emotion: Mapped[str | None] = mapped_column(String(50), nullable=True)

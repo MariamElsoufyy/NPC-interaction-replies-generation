@@ -600,6 +600,14 @@ class Pipeline:
                 if audio_chunk is None:
                     first_chunk_sent.pop(session_id, None)
                     session = self.connection_manager.get_session(session_id)
+
+                    # Snapshot the client-recorded question audio BEFORE the buffer
+                    # gets cleared — _save_past_question runs as a background task and
+                    # would otherwise see an empty buffer.
+                    question_wav: bytes | None = None
+                    if session and self.db_session_factory:
+                        question_wav = self._assemble_question_wav(session)
+
                     if session:
                         if session.dead_time_start:
                             self._t(session_id)["total"] = time.time() - session.dead_time_start
@@ -611,7 +619,7 @@ class Pipeline:
                     chunks = collected_audio.pop(session_id, [])
                     self._print_report(session_id)
                     if self.db_session_factory and session:
-                        asyncio.create_task(self._save_past_question(session, t, chunks))
+                        asyncio.create_task(self._save_past_question(session, t, chunks, question_wav))
                     await self.connection_manager.send_json(session_id, build_tts_done_event())
                 else:
                     if not first_chunk_sent.get(session_id):
@@ -796,6 +804,65 @@ class Pipeline:
                 # Always signal TTS done so the client and session state reset cleanly.
                 await self.send_queue.put((session_id, None, -1))
 
+    def _assemble_question_wav(self, session) -> bytes | None:
+        """Reassemble all client-recorded audio chunks for the current utterance into a single valid WAV file.
+
+        Two formats are supported (set on the session via `start_session`):
+        - "pcm16_base64_chunks": every chunk is raw PCM16 LE → concat all, wrap in fresh WAV header.
+        - "wav": chunk 1 is a complete WAV file (header + PCM); chunks 2+ are headerless PCM →
+          strip chunk 1's header, concat its PCM with the rest, wrap in a fresh WAV header
+          so the data-size field reflects the full length.
+        """
+        try:
+            chunks_b64 = session.audio_buffer.get_all_chunks()
+            if not chunks_b64:
+                return None
+            decoded = [base64.b64decode(c) for c in chunks_b64]
+
+            if session.audio_format == "pcm16_base64_chunks":
+                raw_pcm = b"".join(decoded)
+            else:
+                first = decoded[0]
+                idx = first.find(b"data")
+                if idx == -1 or idx + 8 > len(first):
+                    print(f"   ↳ question audio: chunk 1 missing 'data' marker — cannot assemble")
+                    return None
+                raw_pcm = first[idx + 8:] + b"".join(decoded[1:])
+
+            if not raw_pcm:
+                return None
+            return self._pcm_chunk_to_wav(raw_pcm, sample_rate=session.sample_rate, channels=1)
+        except Exception as e:
+            print(f"   ↳ question audio assembly failed: {e}")
+            return None
+
+    async def _upload_question_audio(self, audio_bytes: bytes, character_id: str) -> str | None:
+        """Upload the assembled question audio (already a complete WAV) to the questions bucket."""
+        if not audio_bytes or not config.SUPABASE_URL or not config.SUPABASE_SERVICE_KEY:
+            return None
+        try:
+            import uuid as _uuid
+            filename = f"{character_id.lower()}_{_uuid.uuid4().hex[:8]}_q.wav"
+            url = f"{config.SUPABASE_URL}/storage/v1/object/{config.QUESTIONS_AUDIO_BUCKET}/{filename}"
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    url,
+                    content=audio_bytes,
+                    headers={
+                        "Authorization": f"Bearer {config.SUPABASE_SERVICE_KEY}",
+                        "Content-Type": "audio/wav",
+                    },
+                )
+            if response.status_code in (200, 201):
+                public_url = f"{config.SUPABASE_URL}/storage/v1/object/public/{config.QUESTIONS_AUDIO_BUCKET}/{filename}"
+                print(f"   ↳ question audio uploaded → {public_url}")
+                return public_url
+            print(f"   ↳ question audio upload failed: {response.status_code} — {response.text}")
+            return None
+        except Exception as e:
+            print(f"   ↳ question audio upload error: {e}")
+            return None
+
     async def _combine_and_upload_audio(self, wav_chunks: list[bytes], character_id: str) -> str | None:
         """Combine WAV chunks into one file and upload to Supabase Storage."""
         if not wav_chunks or not config.SUPABASE_URL or not config.SUPABASE_SERVICE_KEY:
@@ -842,7 +909,7 @@ class Pipeline:
             print(f"   ↳ audio combine/upload error: {e}")
             return None
 
-    async def _save_past_question(self, session, timings: dict, wav_chunks: list[bytes]):
+    async def _save_past_question(self, session, timings: dict, wav_chunks: list[bytes], question_wav: bytes | None = None):
         """Fire-and-forget: combine audio, upload to storage, save interaction to past_questions.
         Runs as a background task so it never blocks the pipeline."""
         try:
@@ -853,6 +920,11 @@ class Pipeline:
             if not audio_url and wav_chunks:
                 print(f"💾 [DB] Uploading response audio ({len(wav_chunks)} chunks)...")
                 audio_url = await self._combine_and_upload_audio(wav_chunks, character_id)
+
+            question_audio_url: str | None = None
+            if question_wav:
+                print(f"💾 [DB] Uploading question audio ({len(question_wav)} bytes)...")
+                question_audio_url = await self._upload_question_audio(question_wav, character_id)
 
             from datetime import datetime, timezone, timedelta
             cairo = timezone(timedelta(hours=3))  # Africa/Cairo — UTC+3
@@ -865,6 +937,7 @@ class Pipeline:
                     "question": session.final_transcript or "",
                     "answer": session.reply_text or "",
                     "audio_url": audio_url,
+                    "question_audio_url": question_audio_url,
                     "source": "faq" if timings.get("faq_hit") else "llm",
                     "faq_hit": bool(timings.get("faq_hit")),
                     "emotion": timings.get("emotion"),
