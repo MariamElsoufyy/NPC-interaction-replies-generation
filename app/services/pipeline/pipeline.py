@@ -301,13 +301,18 @@ class Pipeline:
                 # TTS starts immediately — verification races alongside it
                 self._tts_done_events[session_id] = asyncio.Event()
                 await self.tts_queue.put((session_id, parsed["answer"]))
-                asyncio.create_task(self._run_verification(session_id, transcript, parsed["answer"], character_id))
+                asyncio.create_task(self._run_verification(session_id, transcript, parsed["answer"], character_id, emotion))
             except Exception as e:
                 await self._send_error(session_id, f"LLM failed: {e}")
 
-    async def _run_verification(self, session_id: str, transcript: str, answer: str, character_id: str | None):
+    async def _run_verification(self, session_id: str, transcript: str, answer: str, character_id: str | None, emotion: str | None = None):
         """Background task: runs verification in parallel with TTS.
-        Always owns the final done signal or verify audio — _tts_worker just sets the event."""
+        Always owns the final done signal or verify audio — _tts_worker just sets the event.
+
+        On failure, if the verifier provided a `corrected_answer`, replace the original
+        text/audio with the corrected reply (text event + TTS) instead of the verifier
+        fallback audio. Falls back to the static verify audio only if no correction is given.
+        """
         try:
             t_ver = time.perf_counter()
             passed, ver_result = await self._verify_response(transcript, answer, character_id)
@@ -338,8 +343,26 @@ class Pipeline:
 
             if passed:
                 await self.send_queue.put((session_id, None, -1))
+                return
+
+            corrected = ((ver_result or {}).get("corrected_answer") or "").strip()
+            if corrected:
+                print(f"✏️  [VERIFIER] Playing verify audio, then replaying with corrected answer for session {session_id}")
+                print(f"   ↳ corrected: {corrected}")
+                session = self.connection_manager.get_session(session_id)
+                if session:
+                    session.set_reply_text({"answer": corrected, "sources": [], "emotion": emotion})
+                await self.connection_manager.send_json(session_id, build_reply_text_done_event(corrected, emotion=emotion))
+                # Play the static verify audio first; suppress its `done` signal so the
+                # corrected TTS that follows can stream into the same utterance.
+                await self._send_verifier_fallback_audio(session_id, character_id, send_done=False)
+                # Clear any leftover abort flag — original TTS may have finished naturally
+                # before the abort was added, leaving a stale flag that would cut the corrected stream.
+                self._verify_abort.discard(session_id)
+                # No event registered → _tts_worker will send `done` itself when the corrected TTS finishes.
+                await self.tts_queue.put((session_id, corrected))
             else:
-                print(f"🚫 [VERIFIER] Failed — playing verify audio for session {session_id}")
+                print(f"🚫 [VERIFIER] Failed (no corrected_answer) — playing verify audio for session {session_id}")
                 await self._send_verifier_fallback_audio(session_id, character_id)
 
         except Exception as e:
@@ -705,8 +728,12 @@ class Pipeline:
         finally:
             await self.send_queue.put((session_id, None, -1))  # TTS done signal
 
-    async def _send_verifier_fallback_audio(self, session_id: str, character_id: str = None):
-        """Stream <character_id>_verify.wav from data/verification_audios/ when the verifier rejects a response."""
+    async def _send_verifier_fallback_audio(self, session_id: str, character_id: str = None, send_done: bool = True):
+        """Stream <character_id>_verify.wav from data/verification_audios/ when the verifier rejects a response.
+
+        Pass send_done=False to chain more audio after this clip (e.g. a corrected answer's TTS).
+        """
+        sent = False
         try:
             filename = f"{str(character_id).lower()}_verify.wav" if character_id else "verify.wav"
             path = os.path.normpath(os.path.join(
@@ -714,25 +741,28 @@ class Pipeline:
             ))
             if not os.path.exists(path):
                 print(f"[VERIFIER] Verification audio not found: {path} — falling back to default")
-                await self._send_fallback_audio(session_id, character_id)
+                await self._send_fallback_audio(session_id, character_id, send_done=send_done)
                 return
 
             audio, sr = sf.read(path, dtype="float32", always_2d=False)
             wav_buf = io.BytesIO()
             sf.write(wav_buf, audio, sr, format="WAV", subtype="PCM_16")
             await self.send_queue.put((session_id, wav_buf.getvalue(), 0))
+            sent = True
             print(f"[VERIFIER] Sent verification audio ({filename}) to session {session_id}")
         except Exception as e:
             print(f"[VERIFIER] Could not load verification audio: {e} — falling back to default")
-            await self._send_fallback_audio(session_id, character_id)
+            await self._send_fallback_audio(session_id, character_id, send_done=send_done)
+            return
         finally:
-            await self.send_queue.put((session_id, None, -1))
+            if sent and send_done:
+                await self.send_queue.put((session_id, None, -1))
 
-    async def _send_fallback_audio(self, session_id: str, character_id: str = None):
+    async def _send_fallback_audio(self, session_id: str, character_id: str = None, send_done: bool = True):
         """Stream <character_id>_fallback.wav to the client as a single TTS chunk, then signal done.
 
         Called on pipeline errors and TTS first-chunk timeouts so the user always
-        hears something instead of silence.
+        hears something instead of silence. Pass send_done=False to chain more audio after.
         """
         try:
             filename = f"{str(character_id).lower()}_fallback.wav" if character_id else "fallback.wav"
@@ -751,8 +781,9 @@ class Pipeline:
         except Exception as e:
             print(f"[PIPELINE] Could not load fallback audio: {e}")
         finally:
-            # Always signal TTS done so the client and session state reset cleanly.
-            await self.send_queue.put((session_id, None, -1))
+            if send_done:
+                # Always signal TTS done so the client and session state reset cleanly.
+                await self.send_queue.put((session_id, None, -1))
 
     async def _combine_and_upload_audio(self, wav_chunks: list[bytes], character_id: str) -> str | None:
         """Combine WAV chunks into one file and upload to Supabase Storage."""
