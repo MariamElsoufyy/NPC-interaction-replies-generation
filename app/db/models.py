@@ -65,6 +65,10 @@ class PastQuestion(Base):
     verifier_appropriateness: Mapped[str | None] = mapped_column(Text, nullable=True)
     verifier_modern_references: Mapped[str | None] = mapped_column(Text, nullable=True)
     verifier_in_character: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Replacement reply produced by the verifier when it rejects the original answer.
+    # NULL when the verifier passes (or fails without producing a correction).
+    verifier_corrected_answer: Mapped[str | None] = mapped_column(Text, nullable=True)
+    verifier_corrected_emotion: Mapped[str | None] = mapped_column(String(50), nullable=True)
     tts_first_chunk_s: Mapped[float | None] = mapped_column(Float, nullable=True)
     tts_total_s: Mapped[float | None] = mapped_column(Float, nullable=True)
     time_to_first_audio_s: Mapped[float | None] = mapped_column(Float, nullable=True)

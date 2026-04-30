@@ -90,6 +90,8 @@ class Pipeline:
                 "verifier_appropriateness": None,
                 "verifier_modern_references": None,
                 "verifier_in_character": None,
+                "verifier_corrected_answer": None,
+                "verifier_corrected_emotion": None,
                 "tts_first_chunk": None,
                 "tts_total": None,
                 "time_to_first_audio": None,
@@ -336,6 +338,11 @@ class Pipeline:
                 except asyncio.TimeoutError:
                     print(f"⚠️  [VERIFIER] Timed out waiting for TTS to finish — session {session_id}")
 
+            # Always clear the abort flag once TTS has stopped — _stream_tts_live only
+            # consumes it when it sees it mid-stream, so a flag added after TTS already
+            # finished naturally would otherwise leak and cut the next utterance.
+            self._verify_abort.discard(session_id)
+
             # If TTS had a real error, fallback audio is already playing — do nothing
             if session_id in self._tts_error_sessions:
                 self._tts_error_sessions.discard(session_id)
@@ -347,18 +354,21 @@ class Pipeline:
 
             corrected = ((ver_result or {}).get("corrected_answer") or "").strip()
             if corrected:
+                allowed_emotions = {"happy", "sad", "angry", "disgust", "surprise", "neutral"}
+                raw_corrected_emotion = ((ver_result or {}).get("corrected_emotion") or "").strip().lower()
+                corrected_emotion = raw_corrected_emotion if raw_corrected_emotion in allowed_emotions else emotion
+
                 print(f"✏️  [VERIFIER] Playing verify audio, then replaying with corrected answer for session {session_id}")
                 print(f"   ↳ corrected: {corrected}")
-                session = self.connection_manager.get_session(session_id)
-                if session:
-                    session.set_reply_text({"answer": corrected, "sources": [], "emotion": emotion})
-                await self.connection_manager.send_json(session_id, build_reply_text_done_event(corrected, emotion=emotion))
+                print(f"   ↳ corrected_emotion: {corrected_emotion} (verifier returned: {raw_corrected_emotion or '∅'})")
+                # Record the verifier's replacement separately — the row's `answer`/`emotion`
+                # stay as the original LLM output (the thing the verifier reviewed).
+                self._t(session_id)["verifier_corrected_answer"] = corrected
+                self._t(session_id)["verifier_corrected_emotion"] = corrected_emotion
+                await self.connection_manager.send_json(session_id, build_reply_text_done_event(corrected, emotion=corrected_emotion))
                 # Play the static verify audio first; suppress its `done` signal so the
                 # corrected TTS that follows can stream into the same utterance.
                 await self._send_verifier_fallback_audio(session_id, character_id, send_done=False)
-                # Clear any leftover abort flag — original TTS may have finished naturally
-                # before the abort was added, leaving a stale flag that would cut the corrected stream.
-                self._verify_abort.discard(session_id)
                 # No event registered → _tts_worker will send `done` itself when the corrected TTS finishes.
                 await self.tts_queue.put((session_id, corrected))
             else:
@@ -369,6 +379,7 @@ class Pipeline:
             print(f"⚠️  [VERIFIER] Unexpected error in _run_verification: {e} — sending done")
             self._tts_done_events.pop(session_id, None)
             self._tts_error_sessions.discard(session_id)
+            self._verify_abort.discard(session_id)
             await self.send_queue.put((session_id, None, -1))
 
     async def _verify_response(self, transcript: str, answer: str, character_id: str | None) -> tuple[bool, dict | None]:
@@ -870,6 +881,8 @@ class Pipeline:
                     "verifier_appropriateness": timings.get("verifier_appropriateness"),
                     "verifier_modern_references": timings.get("verifier_modern_references"),
                     "verifier_in_character": timings.get("verifier_in_character"),
+                    "verifier_corrected_answer": timings.get("verifier_corrected_answer"),
+                    "verifier_corrected_emotion": timings.get("verifier_corrected_emotion"),
                     "tts_first_chunk_s": round(timings["tts_first_chunk"], 4) if timings.get("tts_first_chunk") else None,
                     "tts_total_s": round(timings["tts_total"], 4) if timings.get("tts_total") else None,
                     "time_to_first_audio_s": round(timings["time_to_first_audio"], 4) if timings.get("time_to_first_audio") else None,
