@@ -816,8 +816,10 @@ class Pipeline:
         try:
             chunks_b64 = session.audio_buffer.get_all_chunks()
             if not chunks_b64:
+                print(f"🎙️  [QUESTION AUDIO] buffer empty — nothing to assemble")
                 return None
             decoded = [base64.b64decode(c) for c in chunks_b64]
+            print(f"🎙️  [QUESTION AUDIO] assembling {len(decoded)} chunks | format={session.audio_format} | sr={session.sample_rate}")
 
             if session.audio_format == "pcm16_base64_chunks":
                 raw_pcm = b"".join(decoded)
@@ -825,20 +827,27 @@ class Pipeline:
                 first = decoded[0]
                 idx = first.find(b"data")
                 if idx == -1 or idx + 8 > len(first):
-                    print(f"   ↳ question audio: chunk 1 missing 'data' marker — cannot assemble")
+                    print(f"🎙️  [QUESTION AUDIO] chunk 1 missing 'data' marker (first 32 bytes: {first[:32]!r}) — cannot assemble")
                     return None
                 raw_pcm = first[idx + 8:] + b"".join(decoded[1:])
 
             if not raw_pcm:
+                print(f"🎙️  [QUESTION AUDIO] raw_pcm empty after assembly")
                 return None
-            return self._pcm_chunk_to_wav(raw_pcm, sample_rate=session.sample_rate, channels=1)
+            wav = self._pcm_chunk_to_wav(raw_pcm, sample_rate=session.sample_rate, channels=1)
+            print(f"🎙️  [QUESTION AUDIO] assembled {len(wav)} bytes")
+            return wav
         except Exception as e:
-            print(f"   ↳ question audio assembly failed: {e}")
+            print(f"🎙️  [QUESTION AUDIO] assembly failed: {e}")
             return None
 
     async def _upload_question_audio(self, audio_bytes: bytes, character_id: str) -> str | None:
         """Upload the assembled question audio (already a complete WAV) to the questions bucket."""
-        if not audio_bytes or not config.SUPABASE_URL or not config.SUPABASE_SERVICE_KEY:
+        if not audio_bytes:
+            print(f"   ↳ question audio upload skipped: empty bytes")
+            return None
+        if not config.SUPABASE_URL or not config.SUPABASE_SERVICE_KEY:
+            print(f"   ↳ question audio upload skipped: SUPABASE_URL or SUPABASE_SERVICE_KEY not configured")
             return None
         try:
             import uuid as _uuid
@@ -857,10 +866,10 @@ class Pipeline:
                 public_url = f"{config.SUPABASE_URL}/storage/v1/object/public/{config.QUESTIONS_AUDIO_BUCKET}/{filename}"
                 print(f"   ↳ question audio uploaded → {public_url}")
                 return public_url
-            print(f"   ↳ question audio upload failed: {response.status_code} — {response.text}")
+            print(f"   ↳ question audio upload failed: HTTP {response.status_code} (bucket={config.QUESTIONS_AUDIO_BUCKET}) — {response.text}")
             return None
         except Exception as e:
-            print(f"   ↳ question audio upload error: {e}")
+            print(f"   ↳ question audio upload error: {e!r}")
             return None
 
     async def _combine_and_upload_audio(self, wav_chunks: list[bytes], character_id: str) -> str | None:
@@ -925,6 +934,8 @@ class Pipeline:
             if question_wav:
                 print(f"💾 [DB] Uploading question audio ({len(question_wav)} bytes)...")
                 question_audio_url = await self._upload_question_audio(question_wav, character_id)
+            else:
+                print(f"💾 [DB] No question audio to upload (question_wav is None)")
 
             from datetime import datetime, timezone, timedelta
             cairo = timezone(timedelta(hours=3))  # Africa/Cairo — UTC+3
