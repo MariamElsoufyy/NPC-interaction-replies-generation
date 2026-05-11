@@ -68,6 +68,15 @@ SIMILARITY_THRESHOLD = 0.65
 FAQ_LOOKUP_TIMEOUT = 2.0   # seconds — if DB doesn't respond in time, skip FAQ and fall through to LLM
 
 
+#verification
+MODERATION_ENABLED = True              # OpenAI Moderation API on questions and answers
+ANACHRONISM_ENABLED = True             # regex check for future years / modern terms / URLs / emails
+
+# Anachronism cutoff — any 4-digit year in the LLM answer that exceeds this
+# year is flagged.
+ANACHRONISM_DEFAULT_LATEST_YEAR = 1918
+
+
 #functions 
 def get_prompt_key_by_character_id(character_id):
     cid = character_id.lower()

@@ -70,6 +70,18 @@ class PastQuestion(Base):
     # NULL when the verifier passes (or fails without producing a correction).
     verifier_corrected_answer: Mapped[str | None] = mapped_column(Text, nullable=True)
     verifier_corrected_emotion: Mapped[str | None] = mapped_column(String(50), nullable=True)
+
+    # Tier 1 — regex anachronism (future years / modern terms / URLs / emails)
+    anachronism_pass: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    anachronism_reasons: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # Tier 2 — OpenAI Moderation API on the question (run parallel to FAQ lookup)
+    moderation_q_pass: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    moderation_q_categories: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    # Tier 2 — OpenAI Moderation API on the answer (run parallel to TTS)
+    moderation_a_pass: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
+    moderation_a_categories: Mapped[str | None] = mapped_column(Text, nullable=True)
     tts_first_chunk_s: Mapped[float | None] = mapped_column(Float, nullable=True)
     tts_total_s: Mapped[float | None] = mapped_column(Float, nullable=True)
     time_to_first_audio_s: Mapped[float | None] = mapped_column(Float, nullable=True)

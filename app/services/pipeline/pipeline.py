@@ -15,7 +15,7 @@ import soundfile as sf
 import httpx
 
 import app.core.config as config
-from app.characters.build_prompt import build_narrator_prompts, build_verifier_prompts
+from app.characters.build_prompt import build_narrator_prompts
 from app.db.repositories.past_questions_repository import create_past_question
 from app.services.streaming.event_protocol import (
     build_error_event,
@@ -24,9 +24,10 @@ from app.services.streaming.event_protocol import (
     build_tts_audio_chunk_event,
     build_tts_done_event,
 )
-from app.utils.content_filter import check_question, check_answer
+from app.services.verification import Verifier
 from app.services.embedding_service import generate_embedding
 from app.db.repositories.faq_repository import search_similar_faq
+from app.utils.log import log
 
 
 class Pipeline:
@@ -39,6 +40,7 @@ class Pipeline:
         self.db_session_factory = db_session_factory  # async session factory for past_questions writes
         self.faq_memory_cache = faq_memory_cache       # in-memory FAQ index (no DB hit for lookups)
         self.openai_client = openai_client             # OpenAI client for parallel response verification
+        self.verifier = Verifier(openai_client=openai_client)  # tiered regex / models orchestrator
 
         self.preprocess_queue: asyncio.Queue = asyncio.Queue()
         self.stt_queue: asyncio.Queue = asyncio.Queue()
@@ -69,7 +71,7 @@ class Pipeline:
         asyncio.create_task(self._llm_worker())
         asyncio.create_task(self._tts_worker())
         asyncio.create_task(self._send_worker())
-        print("✅ [PIPELINE] All 5 workers started")
+        log.ok("PIPE", "all 5 workers started (preprocess → stt → llm → tts → send)")
 
     def _t(self, session_id: str) -> dict:
         """Return (or create) the timings dict for a session."""
@@ -92,6 +94,12 @@ class Pipeline:
                 "verifier_in_character": None,
                 "verifier_corrected_answer": None,
                 "verifier_corrected_emotion": None,
+                "anachronism_pass": None,
+                "anachronism_reasons": None,
+                "moderation_q_pass": None,
+                "moderation_q_categories": None,
+                "moderation_a_pass": None,
+                "moderation_a_categories": None,
                 "tts_first_chunk": None,
                 "tts_total": None,
                 "time_to_first_audio": None,
@@ -123,6 +131,15 @@ class Pipeline:
             lines.append(f"  LLM                    : {t['llm']:.3f}s")
         if t["content_filter"] is not None:
             lines.append(f"  Content filter         : {t['content_filter']:.3f}s")
+        if t["anachronism_pass"] is not None:
+            label = "PASS ✅" if t["anachronism_pass"] else f"FAIL ❌ ({t['anachronism_reasons']})"
+            lines.append(f"  Anachronism            : {label}")
+        if t["moderation_q_pass"] is not None:
+            label = "PASS ✅" if t["moderation_q_pass"] else f"FAIL ❌ ({t['moderation_q_categories']})"
+            lines.append(f"  Moderation (question)  : {label}")
+        if t["moderation_a_pass"] is not None:
+            label = "PASS ✅" if t["moderation_a_pass"] else f"FAIL ❌ ({t['moderation_a_categories']})"
+            lines.append(f"  Moderation (answer)    : {label}")
         if t["verifier"] is not None:
             lines.append(f"  Verifier               : {t['verifier']:.3f}s")
         if t["tts_first_chunk"] is not None:
@@ -191,7 +208,7 @@ class Pipeline:
                             _speculative_embed[session_id] = asyncio.create_task(
                                 asyncio.to_thread(generate_embedding, partial)
                             )
-                            print(f"   ↳ speculative embedding started on partial transcript")
+                            log.detail("speculative embedding started on partial transcript")
 
                 if not is_final:
                     continue
@@ -221,9 +238,13 @@ class Pipeline:
                 session = self.connection_manager.get_session(session_id)
                 character_id = session.character_id if session else None
 
+                # Tier 3 — kick off question moderation in parallel with FAQ lookup so we
+                # don't pay its 200-300ms latency on FAQ hits or legitimate questions.
+                question_moderation_task = self.verifier.start_question_moderation(transcript)
+
                 # --- FAQ lookup (skip LLM if we have a matching answer) ---
                 if self.faq_memory_cache or self.db_session_factory:
-                    print(f"🔍 [FAQ] Searching for: {transcript[:60]!r} (character: {character_id})")
+                    log.step("FAQ", f"lookup (character={character_id}) — {transcript[:60]!r}")
                     t_faq = time.perf_counter()
                     try:
                         faq = await asyncio.wait_for(
@@ -231,43 +252,59 @@ class Pipeline:
                             timeout=config.FAQ_LOOKUP_TIMEOUT,
                         )
                     except asyncio.TimeoutError:
-                        print(f"⏱ [FAQ] Lookup timed out after {config.FAQ_LOOKUP_TIMEOUT}s — falling through to LLM")
+                        log.warn("FAQ", f"lookup timed out after {config.FAQ_LOOKUP_TIMEOUT}s — falling through to LLM")
                         faq = None
                     self._t(session_id)["faq_lookup"] = time.perf_counter() - t_faq
                     if faq:
+                        # FAQ wins — discard the in-flight question moderation, no LLM call needed.
+                        if question_moderation_task:
+                            question_moderation_task.cancel()
                         self._t(session_id)["faq_hit"] = True
                         self._t(session_id)["faq_audio_url"] = faq.audio_url
                         faq_emotion = getattr(faq, "emotion", None)
                         self._t(session_id)["emotion"] = faq_emotion
-                        print(f"✅ [FAQ] Hit — question: {faq.question[:60]!r}")
-                        print(f"   ↳ answer: {faq.answer}")
-                        print(f"   ↳ emotion: {faq_emotion}")
-                        print(f"   ↳ audio_url: {faq.audio_url or 'none (will use TTS)'}")
+                        log.ok("FAQ", f"hit ({self._t(session_id)['faq_lookup']*1000:.0f}ms) — {faq.question[:60]!r}")
+                        log.detail(f"answer    : {faq.answer}")
+                        log.detail(f"emotion   : {faq_emotion}")
+                        log.detail(f"audio_url : {faq.audio_url or '(none — will use TTS)'}")
                         parsed = {"answer": faq.answer, "sources": [], "emotion": faq_emotion}
                         if session:
                             session.set_reply_text(parsed)
                         await self.connection_manager.send_json(session_id, build_reply_text_done_event(faq.answer, emotion=faq_emotion))
 
                         if faq.audio_url:
-                            print(f"🎵 [FAQ] Streaming cached audio — skipping LLM + TTS")
+                            log.step("FAQ", "streaming cached audio (skipping LLM + TTS)")
                             await self._stream_cached_audio(session_id, faq.audio_url)
                         else:
-                            print(f"🗣️  [FAQ] No cached audio — sending to TTS")
+                            log.step("FAQ", "no cached audio — sending to TTS")
                             await self.tts_queue.put((session_id, faq.answer))
                         continue  # skip LLM
                     else:
-                        print(f"❌ [FAQ] No match — falling through to LLM")
+                        log.info("FAQ", f"miss ({self._t(session_id)['faq_lookup']*1000:.0f}ms) — falling through to LLM")
 
                 # --- No FAQ hit — proceed with LLM ---
-                t_cf = time.perf_counter()
-                q_clean, q_flagged = check_question(transcript)
-                self._t(session_id)["content_filter"] = time.perf_counter() - t_cf
-                if not q_clean:
+                # Tier 1 — synchronous regex profanity gate on the question.
+                q_regex = self.verifier.regex_check_question(transcript)
+                self._t(session_id)["content_filter"] = q_regex.latency_s
+                if not q_regex.passed:
                     self._t(session_id)["content_filter_pass"] = False
-                    self._t(session_id)["content_filter_flagged"] = ", ".join(q_flagged)
-                    print(f"🚫 [CONTENT FILTER] Question blocked (flagged: {q_flagged}) — sending fallback audio")
+                    self._t(session_id)["content_filter_flagged"] = ", ".join(q_regex.details.get("flagged", []))
+                    log.fail("PIPE", "question blocked by REGEX — playing fallback audio")
+                    if question_moderation_task:
+                        question_moderation_task.cancel()
                     await self._send_fallback_audio(session_id, character_id)
                     continue
+
+                # Tier 3 — question moderation result (already running since FAQ kickoff).
+                if question_moderation_task:
+                    q_mod = await question_moderation_task
+                    cats = q_mod.details.get("categories", [])
+                    self._t(session_id)["moderation_q_pass"] = q_mod.passed
+                    self._t(session_id)["moderation_q_categories"] = ", ".join(cats) if cats else None
+                    if not q_mod.passed:
+                        log.fail("PIPE", f"question blocked by MODELS moderation: {cats} — playing fallback audio")
+                        await self._send_fallback_audio(session_id, character_id)
+                        continue
 
                 prompt_key = config.get_prompt_key_by_character_id(character_id) if character_id else "mohandeskhana-student"
                 user_prompt, system_prompt = build_narrator_prompts(
@@ -275,26 +312,44 @@ class Pipeline:
                     question=transcript,
                     prompt_key=prompt_key,
                 )
+                log.step("LLM", f"generating reply (model={config.openAI_model_name}, prompt_key={prompt_key})")
                 reply_raw = await asyncio.to_thread(self.llm_service.generate_reply, user_prompt, system_prompt)
                 self._t(session_id)["llm"] = time.perf_counter() - t0
                 parsed = self._parse_llm_reply(reply_raw)
                 emotion = parsed.get("emotion")
                 self._t(session_id)["emotion"] = emotion
 
-                print(f"🤖 [LLM] Raw response: {reply_raw}")
-                print(f"   ↳ answer: {parsed['answer']}")
-                print(f"   ↳ emotion: {emotion}")
+                log.ok("LLM", f"reply generated ({self._t(session_id)['llm']:.2f}s)")
+                log.detail(f"answer  : {parsed['answer']}")
+                log.detail(f"emotion : {emotion}")
+                log.detail(f"raw     : {reply_raw}")
 
-                t_cf2 = time.perf_counter()
-                a_clean, a_flagged = check_answer(parsed["answer"])
-                self._t(session_id)["content_filter"] = (self._t(session_id).get("content_filter") or 0) + (time.perf_counter() - t_cf2)
-                if not a_clean:
+                # Tier 1 — synchronous regex on the answer (profanity + anachronism).
+                # Profanity hits → generic fallback (inappropriate content).
+                # Anachronism hits → verifier-style verify audio (historical-accuracy failure).
+                a_regex = self.verifier.regex_check_answer(parsed["answer"], character_id)
+                self._t(session_id)["content_filter"] = (
+                    (self._t(session_id).get("content_filter") or 0) + (a_regex.total_latency_s or 0)
+                )
+
+                profanity_result = a_regex.by_name("regex.profanity_answer")
+                anachronism_result = a_regex.by_name("regex.anachronism")
+
+                if profanity_result and not profanity_result.passed:
                     self._t(session_id)["content_filter_pass"] = False
-                    self._t(session_id)["content_filter_flagged"] = ", ".join(a_flagged)
-                    print(f"🚫 [CONTENT FILTER] Answer blocked (flagged: {a_flagged}) — sending fallback audio")
+                    self._t(session_id)["content_filter_flagged"] = ", ".join(profanity_result.details.get("flagged", []))
+                    log.fail("PIPE", "answer blocked by REGEX profanity — playing fallback audio")
                     await self._send_fallback_audio(session_id, character_id)
                     continue
                 self._t(session_id)["content_filter_pass"] = True
+
+                if anachronism_result is not None:
+                    self._t(session_id)["anachronism_pass"] = anachronism_result.passed
+                    if not anachronism_result.passed:
+                        self._t(session_id)["anachronism_reasons"] = "; ".join(anachronism_result.reasons)
+                        log.fail("PIPE", "answer blocked by REGEX anachronism — playing verify audio")
+                        await self._send_verifier_fallback_audio(session_id, character_id)
+                        continue
 
                 if session:
                     session.set_reply_text(parsed)
@@ -308,26 +363,37 @@ class Pipeline:
                 await self._send_error(session_id, f"LLM failed: {e}")
 
     async def _run_verification(self, session_id: str, transcript: str, answer: str, character_id: str | None, emotion: str | None = None):
-        """Background task: runs verification in parallel with TTS.
-        Always owns the final done signal or verify audio — _tts_worker just sets the event.
+        """Background task: runs Tier 2/3 verification in parallel with TTS.
 
-        On failure, if the verifier provided a `corrected_answer`, replace the original
-        text/audio with the corrected reply (text event + TTS) instead of the verifier
-        fallback audio. Falls back to the static verify audio only if no correction is given.
+        Owns the final done signal or verify audio — _tts_worker just sets the event.
+        On failure, if the LLM judge provided a ``corrected_answer``, replace the
+        original text/audio with the corrected reply. Otherwise plays the static
+        verify audio.
         """
         try:
-            t_ver = time.perf_counter()
-            passed, ver_result = await self._verify_response(transcript, answer, character_id)
-            self._t(session_id)["verifier"] = time.perf_counter() - t_ver
-            if ver_result:
-                self._t(session_id)["verifier_pass"] = bool(ver_result.get("overall_pass"))
-                self._t(session_id)["verifier_historical_accuracy"] = json.dumps(ver_result.get("historical_accuracy"))
-                self._t(session_id)["verifier_appropriateness"] = json.dumps(ver_result.get("appropriateness"))
-                self._t(session_id)["verifier_modern_references"] = json.dumps(ver_result.get("modern_references"))
-                self._t(session_id)["verifier_in_character"] = json.dumps(ver_result.get("in_character"))
+            agg = await self.verifier.run_answer_async_checks(
+                transcript=transcript,
+                answer=answer,
+                character_id=character_id,
+                fallback_emotion=emotion,
+            )
+            self._t(session_id)["verifier"] = agg.total_latency_s
 
-            if not passed:
-                # Abort if TTS still streaming — has no effect if already done
+            # Persist per-check timings + flagged details
+            for r in agg.results:
+                if r.name == "models.moderation_answer":
+                    self._t(session_id)["moderation_a_pass"] = r.passed
+                    cats = r.details.get("categories", [])
+                    self._t(session_id)["moderation_a_categories"] = ", ".join(cats) if cats else None
+                elif r.name == "models.llm_judge":
+                    self._t(session_id)["verifier_pass"] = r.passed
+                    self._t(session_id)["verifier_historical_accuracy"] = json.dumps(r.details.get("historical_accuracy"))
+                    self._t(session_id)["verifier_appropriateness"] = json.dumps(r.details.get("appropriateness"))
+                    self._t(session_id)["verifier_modern_references"] = json.dumps(r.details.get("modern_references"))
+                    self._t(session_id)["verifier_in_character"] = json.dumps(r.details.get("in_character"))
+
+            if not agg.passed:
+                # Abort if TTS still streaming — no effect if already done
                 self._verify_abort.add(session_id)
 
             # Wait for TTS to finish streaming (aborted or natural end) before finalizing
@@ -336,33 +402,27 @@ class Pipeline:
                 try:
                     await asyncio.wait_for(event.wait(), timeout=15.0)
                 except asyncio.TimeoutError:
-                    print(f"⚠️  [VERIFIER] Timed out waiting for TTS to finish — session {session_id}")
+                    log.warn("VERIFY", f"timed out waiting for TTS to finish (session={session_id})")
 
             # Always clear the abort flag once TTS has stopped — _stream_tts_live only
             # consumes it when it sees it mid-stream, so a flag added after TTS already
             # finished naturally would otherwise leak and cut the next utterance.
             self._verify_abort.discard(session_id)
 
-            # If TTS had a real error, fallback audio is already playing — do nothing
             if session_id in self._tts_error_sessions:
                 self._tts_error_sessions.discard(session_id)
                 return
 
-            if passed:
+            if agg.passed:
                 await self.send_queue.put((session_id, None, -1))
                 return
 
-            corrected = ((ver_result or {}).get("corrected_answer") or "").strip()
+            corrected = (agg.corrected_answer or "").strip()
             if corrected:
-                allowed_emotions = {"happy", "sad", "angry", "disgust", "surprise", "neutral"}
-                raw_corrected_emotion = ((ver_result or {}).get("corrected_emotion") or "").strip().lower()
-                corrected_emotion = raw_corrected_emotion if raw_corrected_emotion in allowed_emotions else emotion
-
-                print(f"✏️  [VERIFIER] Playing verify audio, then replaying with corrected answer for session {session_id}")
-                print(f"   ↳ corrected: {corrected}")
-                print(f"   ↳ corrected_emotion: {corrected_emotion} (verifier returned: {raw_corrected_emotion or '∅'})")
-                # Record the verifier's replacement separately — the row's `answer`/`emotion`
-                # stay as the original LLM output (the thing the verifier reviewed).
+                corrected_emotion = agg.corrected_emotion or emotion
+                log.step("VERIFY", "replaying with corrected answer (verify audio first, then corrected TTS)")
+                log.detail(f"corrected         : {corrected}")
+                log.detail(f"corrected_emotion : {corrected_emotion}")
                 self._t(session_id)["verifier_corrected_answer"] = corrected
                 self._t(session_id)["verifier_corrected_emotion"] = corrected_emotion
                 await self.connection_manager.send_json(session_id, build_reply_text_done_event(corrected, emotion=corrected_emotion))
@@ -372,60 +432,15 @@ class Pipeline:
                 # No event registered → _tts_worker will send `done` itself when the corrected TTS finishes.
                 await self.tts_queue.put((session_id, corrected))
             else:
-                print(f"🚫 [VERIFIER] Failed (no corrected_answer) — playing verify audio for session {session_id}")
+                log.fail("VERIFY", "no corrected_answer — playing verify audio")
                 await self._send_verifier_fallback_audio(session_id, character_id)
 
         except Exception as e:
-            print(f"⚠️  [VERIFIER] Unexpected error in _run_verification: {e} — sending done")
+            log.warn("VERIFY", f"unexpected error in _run_verification: {e} — sending done")
             self._tts_done_events.pop(session_id, None)
             self._tts_error_sessions.discard(session_id)
             self._verify_abort.discard(session_id)
             await self.send_queue.put((session_id, None, -1))
-
-    async def _verify_response(self, transcript: str, answer: str, character_id: str | None) -> tuple[bool, dict | None]:
-        """Verify the LLM response via OpenAI (non-streaming). Returns (passed, result_dict). Errors are fail-open (True, None)."""
-        if not self.openai_client:
-            return True, None
-        try:
-            user_prompt, system_prompt = build_verifier_prompts(
-                character_id=character_id,
-                question=transcript,
-                answer=answer,
-            )
-            if not user_prompt or not system_prompt:
-                print(f"⚠️  [VERIFIER] Failed to build prompts for character={character_id} — passing through")
-                return True, None
-
-            def _call_openai():
-                completion = self.openai_client.chat.completions.create(
-                    model=config.openai_verifier_model_name,
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": user_prompt},
-                    ],
-                    max_tokens=config.openai_verifier_max_tokens,
-                    response_format={"type": "json_object"},
-                    stream=False,
-                )
-                return completion.choices[0].message.content.strip()
-
-            raw = await asyncio.to_thread(_call_openai)
-            if not raw:
-                print(f"⚠️  [VERIFIER] Empty response from OpenAI (model={config.openai_verifier_model_name}) — passing through")
-                return True, None
-
-            result = json.loads(raw)
-            overall =  result.get("overall_pass", True)
-            print(f"🔎 [VERIFIER] character={character_id} | model={config.openai_verifier_model_name} | overall_pass={overall}")
-            print(f"   ↳ historical_accuracy : {result.get('historical_accuracy')}")
-            print(f"   ↳ appropriateness     : {result.get('appropriateness')}")
-            print(f"   ↳ modern_references   : {result.get('modern_references')}")
-            print(f"   ↳ in_character        : {result.get('in_character')}")
-            return bool(overall), result
-
-        except Exception as e:
-            print(f"⚠️  [VERIFIER] Error: {e} — passing through")
-            return True, None
 
     async def _tts_worker(self):
         while True:
@@ -453,10 +468,7 @@ class Pipeline:
 
             except asyncio.TimeoutError:
                 elapsed = time.perf_counter() - t0
-                print(
-                    f"[PIPELINE] TTS first-chunk timeout ({elapsed:.2f}s > {config.TTS_FIRST_CHUNK_TIMEOUT}s) "
-                    f"— streaming fallback for session {session_id}"
-                )
+                log.fail("TTS", f"first-chunk timeout ({elapsed:.2f}s > {config.TTS_FIRST_CHUNK_TIMEOUT}s) — streaming fallback")
                 self._tts_error_sessions.add(session_id)
                 event = self._tts_done_events.pop(session_id, None)
                 if event:
@@ -464,7 +476,7 @@ class Pipeline:
                 await self._send_fallback_audio(session_id, character_id)
 
             except Exception as e:
-                print(f"[PIPELINE ERROR] TTS failed for session {session_id}: {e}")
+                log.fail("TTS", f"streaming failed (session={session_id}): {e}")
                 self._tts_error_sessions.add(session_id)
                 event = self._tts_done_events.pop(session_id, None)
                 if event:
@@ -583,7 +595,7 @@ class Pipeline:
 
             if session_id in self._verify_abort:
                 self._verify_abort.discard(session_id)
-                print(f"🚫 [TTS] Verifier abort — cutting stream for session {session_id}")
+                log.fail("TTS", f"verifier abort — cutting stream (session={session_id})")
                 return False
 
             await self.send_queue.put((session_id, item, chunk_index))
@@ -637,7 +649,7 @@ class Pipeline:
                         build_tts_audio_chunk_event(chunk_index=chunk_index, audio=encoded),
                     )
             except Exception as e:
-                print(f"[SEND ERROR] session_id={session_id} | {e}")
+                log.fail("PIPE", f"send worker error (session={session_id}): {e}")
 
     # --- Helpers ---
 
@@ -693,7 +705,7 @@ class Pipeline:
 
         if cache_key in self._faq_cache:
             cached = self._faq_cache[cache_key]
-            print(f"   ↳ exact-match cache {'HIT ✅' if cached else 'miss (no match)'} — skipped embed + search")
+            log.detail(f"exact-match cache {'HIT' if cached else 'miss (no match)'} — skipped embed + search")
             return cached
 
         try:
@@ -702,13 +714,13 @@ class Pipeline:
             if spec_embed_task is not None:
                 try:
                     embedding = await spec_embed_task
-                    print(f"   ↳ speculative embedding reused in {time.perf_counter() - t_embed:.3f}s")
+                    log.detail(f"speculative embedding reused ({(time.perf_counter() - t_embed)*1000:.0f}ms)")
                 except Exception:
                     embedding = await asyncio.to_thread(generate_embedding, transcript)
-                    print(f"   ↳ embedding (fallback) generated in {time.perf_counter() - t_embed:.3f}s")
+                    log.detail(f"embedding (fallback) generated ({(time.perf_counter() - t_embed)*1000:.0f}ms)")
             else:
                 embedding = await asyncio.to_thread(generate_embedding, transcript)
-                print(f"   ↳ embedding generated in {time.perf_counter() - t_embed:.3f}s")
+                log.detail(f"embedding generated ({(time.perf_counter() - t_embed)*1000:.0f}ms)")
 
             # Search: memory index first, DB fallback
             if self.faq_memory_cache and self.faq_memory_cache.is_loaded:
@@ -716,19 +728,19 @@ class Pipeline:
                 result = await asyncio.to_thread(
                     self.faq_memory_cache.search, embedding, character_id
                 )
-                print(f"   ↳ in-memory search: {time.perf_counter() - t_search:.4f}s")
+                log.detail(f"in-memory search ({(time.perf_counter() - t_search)*1000:.1f}ms)")
             elif self.db_session_factory:
                 t_db = time.perf_counter()
                 async with self.db_session_factory() as db:
                     result = await search_similar_faq(db, embedding, character_id.lower() if character_id else character_id)
-                print(f"   ↳ DB query completed in {time.perf_counter() - t_db:.3f}s")
+                log.detail(f"DB query completed ({(time.perf_counter() - t_db)*1000:.0f}ms)")
             else:
                 result = None
 
             self._faq_cache[cache_key] = result  # cache both hits and misses
             return result
         except Exception as e:
-            print(f"[PIPELINE] FAQ lookup failed (non-fatal): {e}")
+            log.warn("FAQ", f"lookup failed (non-fatal): {e}")
             return None
 
     async def _stream_cached_audio(self, session_id: str, audio_url: str):
@@ -740,9 +752,9 @@ class Pipeline:
                 audio_bytes = response.content
 
             await self.send_queue.put((session_id, audio_bytes, 0))
-            print(f"[PIPELINE] Sent cached audio to session {session_id}")
+            log.ok("AUDIO", f"sent cached audio (session={session_id})")
         except Exception as e:
-            print(f"[PIPELINE] Failed to fetch cached audio: {e} — falling back to TTS")
+            log.warn("AUDIO", f"failed to fetch cached audio: {e} — falling back to TTS")
             # audio_url fetch failed — signal done so session resets cleanly
         finally:
             await self.send_queue.put((session_id, None, -1))  # TTS done signal
@@ -759,7 +771,7 @@ class Pipeline:
                 os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "data", "verification_audios", filename
             ))
             if not os.path.exists(path):
-                print(f"[VERIFIER] Verification audio not found: {path} — falling back to default")
+                log.warn("AUDIO", f"verify audio not found: {path} — falling back to default")
                 await self._send_fallback_audio(session_id, character_id, send_done=send_done)
                 return
 
@@ -768,9 +780,9 @@ class Pipeline:
             sf.write(wav_buf, audio, sr, format="WAV", subtype="PCM_16")
             await self.send_queue.put((session_id, wav_buf.getvalue(), 0))
             sent = True
-            print(f"[VERIFIER] Sent verification audio ({filename}) to session {session_id}")
+            log.ok("AUDIO", f"sent verify audio ({filename}) → session={session_id}")
         except Exception as e:
-            print(f"[VERIFIER] Could not load verification audio: {e} — falling back to default")
+            log.warn("AUDIO", f"could not load verify audio: {e} — falling back to default")
             await self._send_fallback_audio(session_id, character_id, send_done=send_done)
             return
         finally:
@@ -789,16 +801,16 @@ class Pipeline:
                 os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "data", "fallback_audios", filename
             ))
             if not os.path.exists(fallback_path):
-                print(f"[PIPELINE] Fallback audio not found: {fallback_path}")
+                log.warn("AUDIO", f"fallback audio not found: {fallback_path}")
                 return
 
             audio, sr = sf.read(fallback_path, dtype="float32", always_2d=False)
             wav_buf = io.BytesIO()
             sf.write(wav_buf, audio, sr, format="WAV", subtype="PCM_16")
             await self.send_queue.put((session_id, wav_buf.getvalue(), 0))
-            print(f"[PIPELINE] Sent fallback audio ({filename}) to session {session_id}")
+            log.ok("AUDIO", f"sent fallback audio ({filename}) → session={session_id}")
         except Exception as e:
-            print(f"[PIPELINE] Could not load fallback audio: {e}")
+            log.warn("AUDIO", f"could not load fallback audio: {e}")
         finally:
             if send_done:
                 # Always signal TTS done so the client and session state reset cleanly.
@@ -816,10 +828,10 @@ class Pipeline:
         try:
             chunks_b64 = session.audio_buffer.get_all_chunks()
             if not chunks_b64:
-                print(f"🎙️  [QUESTION AUDIO] buffer empty — nothing to assemble")
+                log.info("AUDIO", "question buffer empty — nothing to assemble")
                 return None
             decoded = [base64.b64decode(c) for c in chunks_b64]
-            print(f"🎙️  [QUESTION AUDIO] assembling {len(decoded)} chunks | format={session.audio_format} | sr={session.sample_rate}")
+            log.step("AUDIO", f"assembling question wav ({len(decoded)} chunks, format={session.audio_format}, sr={session.sample_rate})")
 
             if session.audio_format == "pcm16_base64_chunks":
                 raw_pcm = b"".join(decoded)
@@ -827,27 +839,27 @@ class Pipeline:
                 first = decoded[0]
                 idx = first.find(b"data")
                 if idx == -1 or idx + 8 > len(first):
-                    print(f"🎙️  [QUESTION AUDIO] chunk 1 missing 'data' marker (first 32 bytes: {first[:32]!r}) — cannot assemble")
+                    log.fail("AUDIO", f"question chunk 1 missing 'data' marker — cannot assemble (first 32 bytes: {first[:32]!r})")
                     return None
                 raw_pcm = first[idx + 8:] + b"".join(decoded[1:])
 
             if not raw_pcm:
-                print(f"🎙️  [QUESTION AUDIO] raw_pcm empty after assembly")
+                log.fail("AUDIO", "raw_pcm empty after assembly")
                 return None
             wav = self._pcm_chunk_to_wav(raw_pcm, sample_rate=session.sample_rate, channels=1)
-            print(f"🎙️  [QUESTION AUDIO] assembled {len(wav)} bytes")
+            log.ok("AUDIO", f"question wav assembled ({len(wav)} bytes)")
             return wav
         except Exception as e:
-            print(f"🎙️  [QUESTION AUDIO] assembly failed: {e}")
+            log.fail("AUDIO", f"question assembly failed: {e}")
             return None
 
     async def _upload_question_audio(self, audio_bytes: bytes, character_id: str) -> str | None:
         """Upload the assembled question audio (already a complete WAV) to the questions bucket."""
         if not audio_bytes:
-            print(f"   ↳ question audio upload skipped: empty bytes")
+            log.detail("question audio upload skipped: empty bytes")
             return None
         if not config.SUPABASE_URL or not config.SUPABASE_SERVICE_KEY:
-            print(f"   ↳ question audio upload skipped: SUPABASE_URL or SUPABASE_SERVICE_KEY not configured")
+            log.detail("question audio upload skipped: SUPABASE_URL or SUPABASE_SERVICE_KEY not configured")
             return None
         try:
             import uuid as _uuid
@@ -864,12 +876,12 @@ class Pipeline:
                 )
             if response.status_code in (200, 201):
                 public_url = f"{config.SUPABASE_URL}/storage/v1/object/public/{config.QUESTIONS_AUDIO_BUCKET}/{filename}"
-                print(f"   ↳ question audio uploaded → {public_url}")
+                log.detail(f"question audio uploaded → {public_url}")
                 return public_url
-            print(f"   ↳ question audio upload failed: HTTP {response.status_code} (bucket={config.QUESTIONS_AUDIO_BUCKET}) — {response.text}")
+            log.detail(f"question audio upload failed: HTTP {response.status_code} (bucket={config.QUESTIONS_AUDIO_BUCKET}) — {response.text}")
             return None
         except Exception as e:
-            print(f"   ↳ question audio upload error: {e!r}")
+            log.detail(f"question audio upload error: {e!r}")
             return None
 
     async def _combine_and_upload_audio(self, wav_chunks: list[bytes], character_id: str) -> str | None:
@@ -909,13 +921,13 @@ class Pipeline:
                 )
             if response.status_code in (200, 201):
                 public_url = f"{config.SUPABASE_URL}/storage/v1/object/public/{config.RESPONSES_AUDIO_BUCKET}/{filename}"
-                print(f"   ↳ response audio uploaded → {public_url}")
+                log.detail(f"response audio uploaded → {public_url}")
                 return public_url
             else:
-                print(f"   ↳ audio upload failed: {response.status_code} — {response.text}")
+                log.detail(f"response audio upload failed: HTTP {response.status_code} — {response.text}")
                 return None
         except Exception as e:
-            print(f"   ↳ audio combine/upload error: {e}")
+            log.detail(f"response audio combine/upload error: {e}")
             return None
 
     async def _save_past_question(self, session, timings: dict, wav_chunks: list[bytes], question_wav: bytes | None = None):
@@ -927,15 +939,15 @@ class Pipeline:
             # Use FAQ cached audio URL if already available, otherwise upload the streamed audio
             audio_url = timings.get("faq_audio_url")
             if not audio_url and wav_chunks:
-                print(f"💾 [DB] Uploading response audio ({len(wav_chunks)} chunks)...")
+                log.step("DB", f"uploading response audio ({len(wav_chunks)} chunks)")
                 audio_url = await self._combine_and_upload_audio(wav_chunks, character_id)
 
             question_audio_url: str | None = None
             if question_wav:
-                print(f"💾 [DB] Uploading question audio ({len(question_wav)} bytes)...")
+                log.step("DB", f"uploading question audio ({len(question_wav)} bytes)")
                 question_audio_url = await self._upload_question_audio(question_wav, character_id)
             else:
-                print(f"💾 [DB] No question audio to upload (question_wav is None)")
+                log.info("DB", "no question audio to upload")
 
             from datetime import datetime, timezone, timedelta
             cairo = timezone(timedelta(hours=3))  # Africa/Cairo — UTC+3
@@ -967,20 +979,26 @@ class Pipeline:
                     "verifier_in_character": timings.get("verifier_in_character"),
                     "verifier_corrected_answer": timings.get("verifier_corrected_answer"),
                     "verifier_corrected_emotion": timings.get("verifier_corrected_emotion"),
+                    "anachronism_pass": timings.get("anachronism_pass"),
+                    "anachronism_reasons": timings.get("anachronism_reasons"),
+                    "moderation_q_pass": timings.get("moderation_q_pass"),
+                    "moderation_q_categories": timings.get("moderation_q_categories"),
+                    "moderation_a_pass": timings.get("moderation_a_pass"),
+                    "moderation_a_categories": timings.get("moderation_a_categories"),
                     "tts_first_chunk_s": round(timings["tts_first_chunk"], 4) if timings.get("tts_first_chunk") else None,
                     "tts_total_s": round(timings["tts_total"], 4) if timings.get("tts_total") else None,
                     "time_to_first_audio_s": round(timings["time_to_first_audio"], 4) if timings.get("time_to_first_audio") else None,
                     "total_s": round(timings["total"], 4) if timings.get("total") else None,
                     "created_at": datetime.now(tz=cairo),
                 })
-            print(f"💾 [DB] Past question saved (source={'faq' if timings.get('faq_hit') else 'llm'}, audio={'✅' if audio_url else '❌'})")
+            log.ok("DB", f"past question saved (source={'faq' if timings.get('faq_hit') else 'llm'}, audio={'yes' if audio_url else 'no'})")
         except Exception as e:
             import traceback
-            print(f"⚠️  [DB] Failed to save past question: {e}")
+            log.fail("DB", f"failed to save past question: {e}")
             traceback.print_exc()
 
     async def _send_error(self, session_id: str, message: str):
-        print(f"[PIPELINE ERROR] session_id={session_id} | {message}")
+        log.fail("PIPE", f"error (session={session_id}): {message}")
         session = self.connection_manager.get_session(session_id)
         character_id = session.character_id if session else None
         await self._send_fallback_audio(session_id, character_id)

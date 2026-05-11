@@ -4,7 +4,10 @@
       "Bash(xargs grep *)",
       "Bash(grep -E \"\\\\.py$|^d\")",
       "Bash(alembic current *)",
-      "Bash(del \"D:\\\\Projects\\\\IMMERSA-Voice-Chat-API\\\\app\\\\utils\\\\response_logger.py\")"
+      "Bash(del \"D:\\\\Projects\\\\IMMERSA-Voice-Chat-API\\\\app\\\\utils\\\\response_logger.py\")",
+      "PowerShell(& \".\\\\IMMERSA\\\\Scripts\\\\python.exe\" -m py_compile app/utils/anachronism_filter.py app/utils/safety_classifier.py app/utils/relevance_check.py app/services/pipeline/pipeline.py app/characters/characters_info.py app/core/config.py)",
+      "PowerShell(if \\($?\\) { \"OK\" })",
+      "PowerShell($env:PYTHONIOENCODING='utf-8'; & \".\\\\IMMERSA\\\\Scripts\\\\python.exe\" -c \"from app.services.verification import Verifier, CheckResult, AggregateResult; from app.services.verification.regex_checks import check_profanity, check_anachronism; from app.services.verification.cosine_checks import check_relevance; from app.services.verification.model_checks import check_moderation, check_llm_judge; v = Verifier\\(openai_client=None\\); r1 = v.regex_check_question\\('hello there'\\); r2 = v.regex_check_answer\\('I love my smartphone in 2024', 's1'\\); r3 = v.regex_check_answer\\('A perfectly normal answer.', 's1'\\); print\\('Q regex passed:', r1.passed\\); print\\('A regex \\(bad\\) passed:', r2.passed, '| reasons:', r2.all_reasons\\(\\)[:3]\\); print\\('A regex \\(good\\) passed:', r3.passed\\)\")"
     ]
   }
 }
